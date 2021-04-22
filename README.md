@@ -1,3 +1,3 @@
 # FTX API
 
-Unofficial API binding for the FTX exchange.
+Unofficial API binding for the FTX exchange. Work in progress.
