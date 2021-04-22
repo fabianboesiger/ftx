@@ -8,6 +8,7 @@ keywords = ["exchange", "trading", "crypto", "market"]
 categories = ["api-bindings"]
 description = "Unofficial API Binding for the FTX Exchange."
 repository = "https://github.com/fabianboesiger/ftx"
+readme = "README.md"
 
 [dependencies]
 reqwest = { version = "0.11", features = ["json"] }
