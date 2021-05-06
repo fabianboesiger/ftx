@@ -34,7 +34,7 @@ pub struct Api {
 impl Api {
     pub const ENDPOINT: &'static str = "https://ftx.com/api";
 
-    pub fn new(key: String, secret: String, subaccount: Option<String>) -> Self {        
+    pub fn new(key: String, secret: String, subaccount: Option<String>) -> Self {
         // Set default headers.
         let mut headers = HeaderMap::new();
         headers.insert("FTX-KEY", HeaderValue::from_str(&key).unwrap());
@@ -46,7 +46,7 @@ impl Api {
             .default_headers(headers)
             .build()
             .unwrap();
-        
+
         Self {
             secret,
             client,
@@ -210,5 +210,13 @@ impl Api {
                 "end_time": end_time.map(|t| t.timestamp_millis()),
             }))
         ).await
+    }
+
+    pub async fn get_account(&self) -> Result<accounts::Account> {
+        self.get("/account", None).await
+    }
+
+    pub async fn get_positions(&self) -> Result<Vec<accounts::Position>> {
+        self.get("/positions", None).await
     }
 }

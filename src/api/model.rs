@@ -1,6 +1,6 @@
-use serde::{Deserialize};
-use rust_decimal::prelude::*;
 use chrono::{DateTime, Utc};
+use rust_decimal::prelude::*;
+use serde::Deserialize;
 
 pub type Id = u64;
 pub type Coin = String;
@@ -9,14 +9,8 @@ pub type Coin = String;
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum Response<T> {
-    Result {
-        success: bool,
-        result: T,
-    },
-    Error {
-        success: bool,
-        error: String,
-    },
+    Result { success: bool, result: T },
+    Error { success: bool, error: String },
 }
 
 pub mod subaccounts {
@@ -108,7 +102,7 @@ pub mod markets {
         pub quote_volume24h: Decimal,
         pub volume_usd24h: Decimal,
     }
-    
+
     pub type Markets = Vec<Market>;
 
     #[derive(Debug, Deserialize)]
@@ -137,4 +131,67 @@ pub mod markets {
     }
 
     pub type Trades = Vec<Trade>;
+}
+
+pub mod accounts {
+    use super::*;
+
+    /// Returned by GET /account.
+    /// See https://docs.ftx.com/#get-account-information.
+    #[derive(Debug, Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Account {
+        pub backstop_provider: bool,
+        pub charge_interest_on_negative_usd: bool,
+        pub collateral: Decimal,
+        pub free_collateral: Decimal,
+        pub initial_margin_requirement: Decimal,
+        pub liquidating: bool,
+        pub maintenance_margin_requirement: Decimal,
+        pub maker_fee: Decimal,
+        pub margin_fraction: Decimal,
+        pub open_margin_fraction: Decimal,
+        pub position_limit: Option<Decimal>,
+        pub position_limit_used: Option<Decimal>,
+        pub taker_fee: Decimal,
+        pub total_account_value: Decimal,
+        pub total_position_size: Decimal,
+        pub use_ftt_collateral: bool,
+        pub username: String,
+        pub leverage: Decimal,
+        pub positions: Vec<Position>,
+        pub spot_lending_enabled: bool,
+        pub spot_margin_enabled: bool,
+    }
+
+    /// Returned by GET /positions.
+    /// See https://docs.ftx.com/#get-positions.
+    pub type Positions = Vec<Position>;
+
+    #[derive(Debug, Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub struct Position {
+        pub cost: Decimal,
+        pub entry_price: Option<Decimal>,
+        pub estimated_liquidation_price: Option<Decimal>,
+        pub future: String,
+        pub initial_margin_requirement: Decimal,
+        pub long_order_size: Decimal,
+        pub maintenance_margin_requirement: Decimal,
+        pub net_size: Decimal,
+        pub open_size: Decimal,
+        pub realized_pnl: Decimal,
+        pub short_order_size: Decimal,
+        pub side: Side,
+        pub size: Decimal,
+        pub unrealized_pnl: Decimal,
+        pub collateral_used: Decimal,
+    }
+
+    #[derive(Debug, Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    pub enum Side {
+        Sell,
+        Buy,
+    }
 }
