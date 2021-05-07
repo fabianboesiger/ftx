@@ -261,4 +261,12 @@ impl Rest {
     pub async fn get_future(&self, future_name: &str) -> Result<Future> {
         self.get(&format!("/futures/{}", future_name), None).await
     }
+
+    pub async fn get_account(&self) -> Result<Account> {
+        self.get("/account", None).await
+    }
+
+    pub async fn get_positions(&self) -> Result<Positions> {
+        self.get("/positions", None).await
+    }
 }

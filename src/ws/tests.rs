@@ -22,29 +22,3 @@ async fn trades() {
         .await
         .unwrap();
 }
-
-#[tokio::test]
-async fn keep_alive() {
-    let mut ws = init_ws().await;
-
-    ws.subscribe(Channel::Trades, "BTC/USD")
-        .await
-        .expect("Subscription failed.");
-
-    let sleep = tokio::time::sleep(tokio::time::Duration::from_secs(60 * 60));
-    tokio::pin!(sleep);
-
-    while !sleep.is_elapsed() {
-        tokio::select! {
-            _ = &mut sleep, if !sleep.is_elapsed() => {
-                println!("operation timed out");
-            }
-            _ = async {
-                while let Ok(_) = ws.next().await {}
-            } => {
-                panic!("Websocket connection closed.");
-            }
-        }
-    }
-}
-

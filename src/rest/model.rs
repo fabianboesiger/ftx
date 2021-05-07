@@ -14,6 +14,8 @@ pub enum Response<T> {
     Error { success: bool, error: String },
 }
 
+// REST API -> Subaccounts
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Subaccount {
@@ -62,6 +64,8 @@ pub struct Transfer {
     pub time: DateTime<Utc>,
     pub notes: String,
 }
+
+// REST API -> Markets
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -139,6 +143,8 @@ pub struct Price {
 
 pub type Prices = Vec<Price>;
 
+// REST API -> Futures
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum FutureType {
@@ -202,44 +208,63 @@ pub struct FundingRate {
 
 pub type FundingRates = Vec<FundingRate>;
 
+
+// REST API -> Account
+
+/// Returned by GET /account.
+/// See https://docs.ftx.com/#get-account-information.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AccountInformation {
-    backstop_provider: bool,
-    collateral: Decimal,
-    free_collateral: Decimal,
-    initial_margin_requirement: Decimal,
-    leverage: Decimal,
-    liquidating: bool,
-    maintenance_margin_requirement: Decimal,
-    maker_fee: Decimal,
-    margin_fraction: Decimal,
-    open_margin_fraction: Decimal,
-    taker_fee: Decimal,
-    total_account_value: Decimal,
-    total_position_size: Decimal,
-    username: String,
-    positions: Positions,
+pub struct Account {
+    pub backstop_provider: bool,
+    pub charge_interest_on_negative_usd: bool,
+    pub collateral: Decimal,
+    pub free_collateral: Decimal,
+    pub initial_margin_requirement: Decimal,
+    pub liquidating: bool,
+    pub maintenance_margin_requirement: Decimal,
+    pub maker_fee: Decimal,
+    pub margin_fraction: Decimal,
+    pub open_margin_fraction: Decimal,
+    pub position_limit: Option<Decimal>,
+    pub position_limit_used: Option<Decimal>,
+    pub taker_fee: Decimal,
+    pub total_account_value: Decimal,
+    pub total_position_size: Decimal,
+    pub use_ftt_collateral: bool,
+    pub username: String,
+    pub leverage: Decimal,
+    pub positions: Vec<Position>,
+    pub spot_lending_enabled: bool,
+    pub spot_margin_enabled: bool,
 }
+
+/// Returned by GET /positions.
+/// See https://docs.ftx.com/#get-positions.
+pub type Positions = Vec<Position>;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
-    cost: Decimal,
-    entry_price: Decimal,
-    estimated_liquidation_price: Decimal,
-    future: Symbol,
-    initial_margin_requirement: Decimal,
-    long_order_size: Decimal,
-    maintenance_margin_requirement: Decimal,
-    net_size: Decimal,
-    open_size: Decimal,
-    realized_pnl: Decimal,
-    short_order_size: Decimal,
-    side: Side,
-    size: Decimal,
-    unrealized_pnl: Decimal,
-    collateral_used: Decimal,
+    pub cost: Decimal,
+    pub entry_price: Option<Decimal>,
+    pub estimated_liquidation_price: Option<Decimal>,
+    pub future: String,
+    pub initial_margin_requirement: Decimal,
+    pub long_order_size: Decimal,
+    pub maintenance_margin_requirement: Decimal,
+    pub net_size: Decimal,
+    pub open_size: Decimal,
+    pub realized_pnl: Decimal,
+    pub short_order_size: Decimal,
+    pub side: Side,
+    pub size: Decimal,
+    pub unrealized_pnl: Decimal,
+    pub collateral_used: Decimal,
 }
 
-pub type Positions = Vec<Position>;
+// REST API -> Wallet
+// TODO
+
+// REST API -> Orders
+// TODO
