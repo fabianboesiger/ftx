@@ -20,7 +20,15 @@ log = "0.4"
 hex = "0.4"
 rust_decimal = "1.11"
 chrono = { version = "0.4", features = ["serde"] }
+tokio-tungstenite = { verion = "0.14", features = ["native-tls"], optional = true }
+futures-util = { verion = "0.3", optional = true }
+tokio = { version = "1.5", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1.5", features = ["full"] }
 env_logger = "0.8"
+
+[features]
+default = ["ws", "stateful"]
+ws = ["tokio-tungstenite", "tokio", "futures-util"]
+stateful = ["ws"]
