@@ -11,24 +11,24 @@ repository = "https://github.com/fabianboesiger/ftx"
 readme = "README.md"
 
 [dependencies]
-reqwest = { version = "0.11", features = ["json"] }
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-hmac-sha256 = "0.1"
-dotenv = "0.15"
-log = "0.4"
-hex = "0.4"
-rust_decimal = "1.11"
-chrono = { version = "0.4", features = ["serde"] }
-tokio-tungstenite = { verion = "0.14", features = ["native-tls"], optional = true }
-futures-util = { verion = "0.3", optional = true }
-tokio = { version = "1.5", optional = true }
+reqwest = { version = "^0.11.3", features = ["json"] }
+serde = { version = "^1.0.125", features = ["derive"] }
+serde_json = "^1.0.64"
+hmac-sha256 = "^0.1.7"
+dotenv = "^0.15.0"
+log = "^0.4.14"
+hex = "^0.4.3"
+rust_decimal = "^1.13.0"
+chrono = { version = "^0.4.19", features = ["serde"] }
+tokio-tungstenite = { verion = "^0.14.0", features = ["native-tls"], optional = true }
+futures-util = { verion = "^0.3.14", optional = true }
+tokio = { version = "^1.5.0", optional = true }
 
 [dev-dependencies]
-tokio = { version = "1.5", features = ["full"] }
-env_logger = "0.8"
+tokio = { version = "^1.5.0", features = ["full"] }
+env_logger = "^0.8.3"
 
 [features]
-default = ["ws", "stateful"]
+default = ["ws"]
 ws = ["tokio-tungstenite", "tokio", "futures-util"]
 stateful = ["ws"]
