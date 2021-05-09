@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
 use rust_decimal::prelude::*;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 pub type Id = u64;
 pub type Coin = String;
@@ -284,6 +284,14 @@ pub struct WalletBalance {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub enum DepositStatus {
+    Confirmed,
+    Unconfirmed,
+    Cancelled,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WalletDeposit {
     pub coin: String,
     pub confirmations: usize,
@@ -291,7 +299,7 @@ pub struct WalletDeposit {
     pub fee: f64, // fee, not included in size
     pub id: usize,
     pub size: f64,
-    pub status: String, // "confirmed", "unconfirmed", or "cancelled"
+    pub status: DepositStatus,
     pub time: String,
     pub txid: Option<String>,
     pub notes: Option<String>,
@@ -299,3 +307,44 @@ pub struct WalletDeposit {
 
 // REST API -> Orders
 // TODO
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum OrderType {
+    Market,
+    Limit,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum OrderSide {
+    Buy,
+    Sell,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum OrderStatus {
+    New, // accepted but not processed yet
+    Open,
+    Closed, // filled or cancelled
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrderInfo {
+    pub id: usize,
+    pub market: String,
+    pub r#type: String,
+    pub side: OrderSide,
+    pub price: f64,
+    pub size: f64,
+    pub status: OrderStatus,
+    pub filled_size: f64,
+    pub remaining_size: f64,
+    pub created_at: String,
+    pub reduce_only: bool,
+    pub ioc: bool,
+    pub post_only: bool,
+    pub client_id: Option<String>,
+}
