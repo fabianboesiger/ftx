@@ -11,7 +11,7 @@ pub use model::*;
 use chrono::{DateTime, Utc};
 use hmac_sha256::HMAC;
 use reqwest::{
-    header::{HeaderMap, HeaderValue},
+    header::{HeaderMap, HeaderName, HeaderValue},
     Client, ClientBuilder, Method,
 };
 use rust_decimal::prelude::*;
@@ -23,6 +23,7 @@ pub struct Rest {
     secret: String,
     client: Client,
     endpoint: &'static str,
+    header_prefix: &'static str,
 }
 
 impl Rest {
@@ -31,16 +32,20 @@ impl Rest {
 
     fn new_with_endpoint(
         endpoint: &'static str,
+        header_prefix: &'static str,
         key: String,
         secret: String,
         subaccount: Option<String>,
     ) -> Self {
         // Set default headers.
         let mut headers = HeaderMap::new();
-        headers.insert("FTX-KEY", HeaderValue::from_str(&key).unwrap());
+        headers.insert(
+            HeaderName::from_str(&format!("{}-KEY", header_prefix)).unwrap(),
+            HeaderValue::from_str(&key).unwrap(),
+        );
         if let Some(subaccount) = subaccount {
             headers.insert(
-                "FTX-SUBACCOUNT",
+                HeaderName::from_str(&format!("{}-SUBACCOUNT", header_prefix)).unwrap(),
                 HeaderValue::from_str(&subaccount).unwrap(),
             );
         }
@@ -54,15 +59,16 @@ impl Rest {
             secret,
             client,
             endpoint,
+            header_prefix,
         }
     }
 
     pub fn new(key: String, secret: String, subaccount: Option<String>) -> Self {
-        Self::new_with_endpoint(Self::ENDPOINT, key, secret, subaccount)
+        Self::new_with_endpoint(Self::ENDPOINT, "FTX", key, secret, subaccount)
     }
 
     pub fn new_us(key: String, secret: String, subaccount: Option<String>) -> Self {
-        Self::new_with_endpoint(Self::ENDPOINT_US, key, secret, subaccount)
+        Self::new_with_endpoint(Self::ENDPOINT_US, "FTXUS", key, secret, subaccount)
     }
 
     async fn get<T: DeserializeOwned>(&self, path: &str, params: Option<Value>) -> Result<T> {
@@ -134,10 +140,13 @@ impl Rest {
             .request(method, url)
             .query(&params)
             .header(
-                "FTX-TS",
+                &format!("{}-TS", self.header_prefix),
                 HeaderValue::from_str(&format!("{}", timestamp)).unwrap(),
             )
-            .header("FTX-SIGN", HeaderValue::from_str(&sign).unwrap())
+            .header(
+                &format!("{}-SIGN", self.header_prefix),
+                HeaderValue::from_str(&sign).unwrap(),
+            )
             .body(body)
             .send()
             .await?
@@ -283,5 +292,46 @@ impl Rest {
 
     pub async fn get_positions(&self) -> Result<Positions> {
         self.get("/positions", None).await
+    }
+
+    pub async fn get_wallet_deposit_address(
+        &self,
+        coin: &str,
+        method: Option<&str>,
+    ) -> Result<WalletDepositAddress> {
+        self.get(
+            &format!(
+                "/wallet/deposit_address/{}{}",
+                coin,
+                if let Some(method) = method {
+                    format!("?method={}", method)
+                } else {
+                    "".to_string()
+                }
+            ),
+            None,
+        )
+        .await
+    }
+
+    pub async fn get_wallet_balances(&self) -> Result<Vec<WalletBalance>> {
+        self.get("/wallet/balances", None).await
+    }
+
+    pub async fn get_wallet_deposits(
+        &self,
+        limit: Option<usize>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Result<Vec<WalletDeposit>> {
+        self.get(
+            "/wallet/deposits",
+            Some(json!({
+                "limit": limit,
+                "start_time": start_time.map(|t| t.timestamp_millis()),
+                "end_time": end_time.map(|t| t.timestamp_millis()),
+            })),
+        )
+        .await
     }
 }
