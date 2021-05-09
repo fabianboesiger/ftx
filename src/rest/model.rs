@@ -265,5 +265,37 @@ pub struct Position {
 // REST API -> Wallet
 // TODO
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WalletDepositAddress {
+    pub address: String,
+    pub tag: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WalletBalance {
+    pub coin: String,
+    pub free: f64,
+    pub total: f64,
+    pub spot_borrow: f64,
+    pub available_without_borrow: f64,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WalletDeposit {
+    pub coin: String,
+    pub confirmations: usize,
+    pub confirmed_time: String,
+    pub fee: f64, // fee, not included in size
+    pub id: usize,
+    pub size: f64,
+    pub status: String, // "confirmed", "unconfirmed", or "cancelled"
+    pub time: String,
+    pub txid: Option<String>,
+    pub notes: Option<String>,
+}
+
 // REST API -> Orders
 // TODO
