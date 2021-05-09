@@ -1,12 +1,12 @@
 //! This module is used to interact with the REST API.
 
-mod model;
 mod error;
+mod model;
 #[cfg(test)]
 mod tests;
 
-pub use model::*;
 pub use error::*;
+pub use model::*;
 
 use chrono::{DateTime, Utc};
 use hmac_sha256::HMAC;
@@ -202,11 +202,7 @@ impl Rest {
         self.get(&format!("/markets/{}", market_name), None).await
     }
 
-    pub async fn get_orderbook(
-        &self,
-        market_name: &str,
-        depth: Option<u32>,
-    ) -> Result<Orderbook> {
+    pub async fn get_orderbook(&self, market_name: &str, depth: Option<u32>) -> Result<Orderbook> {
         self.get(
             &format!("/markets/{}/orderbook", market_name),
             Some(json!({

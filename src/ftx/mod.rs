@@ -3,23 +3,23 @@
 //! the Websocket APIs. It provides an intuitive way to interact
 //! with the FTX exchange.
 
+mod error;
 mod market;
 mod wallet;
-mod error;
 
+pub use error::*;
 pub use market::*;
 pub use wallet::*;
-pub use error::*;
 
 use crate::{
-    rest::{Rest, Symbol, Coin},
+    rest::{Coin, Rest, Symbol},
     ws::Ws,
 };
-use std::collections::HashMap;
-use market::Market;
 use error::Result;
-use tokio::sync::{Mutex, MutexGuard};
+use market::Market;
 use rust_decimal::prelude::*;
+use std::collections::HashMap;
+use tokio::sync::{Mutex, MutexGuard};
 
 pub struct Ftx {
     rest: Rest,
@@ -31,7 +31,7 @@ impl Ftx {
     pub async fn new(key: String, secret: String, subaccount: Option<String>) -> Result<Self> {
         let rest = Rest::new(key.clone(), secret.clone(), subaccount);
         let ws = Ws::connect(key, secret).await?;
-        
+
         Ok(Self {
             rest,
             ws,

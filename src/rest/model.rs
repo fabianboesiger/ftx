@@ -208,7 +208,6 @@ pub struct FundingRate {
 
 pub type FundingRates = Vec<FundingRate>;
 
-
 // REST API -> Account
 
 /// Returned by GET /account.

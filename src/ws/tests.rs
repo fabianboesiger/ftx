@@ -7,7 +7,9 @@ async fn init_ws() -> Ws {
     Ws::connect(
         var("API_KEY").expect("API Key is not defined."),
         var("API_SECRET").expect("API Secret is not defined."),
-    ).await.expect("Connection failed.")
+    )
+    .await
+    .expect("Connection failed.")
 }
 
 #[tokio::test]
@@ -18,7 +20,5 @@ async fn trades() {
         .await
         .expect("Subscription failed.");
 
-    ws.next()
-        .await
-        .unwrap();
+    ws.next().await.unwrap();
 }
