@@ -40,10 +40,11 @@ pub struct Ws {
 
 impl Ws {
     pub const ENDPOINT: &'static str = "wss://ftx.com/ws";
+    pub const ENDPOINT_US: &'static str = "wss://ftx.us/ws";
 
-    pub async fn connect(key: String, secret: String) -> Result<Self> {
-        let (mut stream, _) = connect_async(Self::ENDPOINT).await?;
-        
+    async fn connect_with_endpoint(endpoint: &str, key: String, secret: String) -> Result<Self> {
+        let (mut stream, _) = connect_async(endpoint).await?;
+
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -66,6 +67,14 @@ impl Ws {
         })
     }
 
+    pub async fn connect(key: String, secret: String) -> Result<Self> {
+        Self::connect_with_endpoint(Self::ENDPOINT, key, secret).await
+    }
+
+    pub async fn connect_us(key: String, secret: String) -> Result<Self> {
+        Self::connect_with_endpoint(Self::ENDPOINT_US, key, secret).await
+    }
+
     async fn ping(&mut self) -> Result<()> {
         self.stream.send(Message::Text(json!({
             "op": "ping",
@@ -84,7 +93,7 @@ impl Ws {
             },
             "market": market,
         }).to_string())).await?;
-    
+
         Ok(())
     }
 
@@ -96,7 +105,7 @@ impl Ws {
                 return Ok(serde_json::from_str(&text)?);
             }
         }
-        
+
         Err(Error::Terminated)
     }
 }
