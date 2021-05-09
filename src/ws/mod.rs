@@ -82,6 +82,7 @@ impl Ws {
         Self::connect_with_endpoint(Self::ENDPOINT_US, key, secret).await
     }
 
+    /*
     async fn ping(&mut self) -> Result<()> {
         self.stream
             .send(Message::Text(
@@ -94,6 +95,7 @@ impl Ws {
 
         Ok(())
     }
+    */
 
     pub async fn subscribe(&mut self, channel: Channel, market: &str) -> Result<()> {
         self.stream
