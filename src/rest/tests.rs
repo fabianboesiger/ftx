@@ -49,7 +49,11 @@ async fn delete_subaccount() {
 
 #[tokio::test]
 async fn get_subaccount_balances() {
-    init_api().await.get_subaccount_balances("Bot").await.unwrap_err();
+    init_api()
+        .await
+        .get_subaccount_balances("Bot")
+        .await
+        .unwrap_err();
 }
 
 #[tokio::test]
@@ -73,8 +77,16 @@ async fn get_market() {
 
 #[tokio::test]
 async fn get_orderbook() {
-    init_api().await.get_orderbook("BTC/USD", None).await.unwrap();
-    init_api().await.get_orderbook("BTC/USD", Some(50)).await.unwrap();
+    init_api()
+        .await
+        .get_orderbook("BTC/USD", None)
+        .await
+        .unwrap();
+    init_api()
+        .await
+        .get_orderbook("BTC/USD", Some(50))
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
@@ -95,7 +107,6 @@ async fn get_historical_prices() {
         .unwrap();
 }
 
-
 #[tokio::test]
 async fn get_futures() {
     init_api().await.get_futures().await.unwrap();
@@ -105,7 +116,6 @@ async fn get_futures() {
 async fn get_future() {
     init_api().await.get_future("BTC-PERP").await.unwrap();
 }
-
 
 #[tokio::test]
 async fn account_deserialization() {

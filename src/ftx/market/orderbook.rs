@@ -5,5 +5,4 @@ use tokio::sync::Mutex;
 #[derive(Clone)]
 pub struct Orderbook(Arc<Mutex<InternalOrderbook>>);
 
-struct InternalOrderbook {
-}
+struct InternalOrderbook {}

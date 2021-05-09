@@ -1,10 +1,10 @@
 mod orderbook;
 
 use crate::rest::Rest;
-use std::sync::Arc;
-use tokio::sync::Mutex;
 use orderbook::Orderbook;
 use rust_decimal::prelude::*;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 /// Represents some market.
 #[derive(Clone)]
@@ -16,9 +16,7 @@ impl Market {
         self.0.lock().await.orderbook.clone()
     }
 
-    pub async fn order(&self) {
-        
-    }
+    pub async fn order(&self) {}
 }
 
 struct InternalMarket {

@@ -6,12 +6,16 @@ mod tests;
 
 pub use model::*;
 
-use tokio::net::TcpStream;
-use tokio_tungstenite::{connect_async, WebSocketStream, MaybeTlsStream, tungstenite::{self, Message}};
-use futures_util::{StreamExt, SinkExt};
+use futures_util::{SinkExt, StreamExt};
+use hmac_sha256::HMAC;
 use serde_json::json;
 use std::time::{SystemTime, UNIX_EPOCH};
-use hmac_sha256::HMAC;
+use tokio::net::TcpStream;
+use tokio_tungstenite::{
+    connect_async,
+    tungstenite::{self, Message},
+    MaybeTlsStream, WebSocketStream,
+};
 
 pub type Result<T> = std::result::Result<T, Error>;
 
@@ -35,7 +39,7 @@ impl From<serde_json::Error> for Error {
 }
 
 pub struct Ws {
-    stream: WebSocketStream<MaybeTlsStream<TcpStream>>
+    stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
 }
 
 impl Ws {
@@ -53,18 +57,21 @@ impl Ws {
         let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
         let sign = hex::encode(sign);
 
-        stream.send(Message::Text(json!({
-            "op": "login",
-            "args": {
-                "key": key,
-                "sign": sign,
-                "time": timestamp as u64,
-            }
-        }).to_string())).await?;
+        stream
+            .send(Message::Text(
+                json!({
+                    "op": "login",
+                    "args": {
+                        "key": key,
+                        "sign": sign,
+                        "time": timestamp as u64,
+                    }
+                })
+                .to_string(),
+            ))
+            .await?;
 
-        Ok(Self {
-            stream
-        })
+        Ok(Self { stream })
     }
 
     pub async fn connect(key: String, secret: String) -> Result<Self> {
@@ -76,23 +83,33 @@ impl Ws {
     }
 
     async fn ping(&mut self) -> Result<()> {
-        self.stream.send(Message::Text(json!({
-            "op": "ping",
-        }).to_string())).await?;
+        self.stream
+            .send(Message::Text(
+                json!({
+                    "op": "ping",
+                })
+                .to_string(),
+            ))
+            .await?;
 
         Ok(())
     }
 
     pub async fn subscribe(&mut self, channel: Channel, market: &str) -> Result<()> {
-        self.stream.send(Message::Text(json!({
-            "op": "subscribe",
-            "channel": match channel {
-                Channel::Orderbook => "orderbook",
-                Channel::Trades => "trades",
-                Channel::Ticker => "ticker",
-            },
-            "market": market,
-        }).to_string())).await?;
+        self.stream
+            .send(Message::Text(
+                json!({
+                    "op": "subscribe",
+                    "channel": match channel {
+                        Channel::Orderbook => "orderbook",
+                        Channel::Trades => "trades",
+                        Channel::Ticker => "ticker",
+                    },
+                    "market": market,
+                })
+                .to_string(),
+            ))
+            .await?;
 
         Ok(())
     }

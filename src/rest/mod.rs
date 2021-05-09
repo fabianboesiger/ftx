@@ -1,12 +1,12 @@
 //! This module is used to interact with the REST API.
 
-mod model;
 mod error;
+mod model;
 #[cfg(test)]
 mod tests;
 
-pub use model::*;
 pub use error::*;
+pub use model::*;
 
 use chrono::{DateTime, Utc};
 use hmac_sha256::HMAC;
@@ -29,7 +29,12 @@ impl Rest {
     pub const ENDPOINT: &'static str = "https://ftx.com/api";
     pub const ENDPOINT_US: &'static str = "https://ftx.us/api";
 
-    fn new_with_endpoint(endpoint: &'static str, key: String, secret: String, subaccount: Option<String>) -> Self {
+    fn new_with_endpoint(
+        endpoint: &'static str,
+        key: String,
+        secret: String,
+        subaccount: Option<String>,
+    ) -> Self {
         // Set default headers.
         let mut headers = HeaderMap::new();
         headers.insert("FTX-KEY", HeaderValue::from_str(&key).unwrap());
@@ -45,7 +50,11 @@ impl Rest {
             .build()
             .unwrap();
 
-        Self { secret, client, endpoint }
+        Self {
+            secret,
+            client,
+            endpoint,
+        }
     }
 
     pub fn new(key: String, secret: String, subaccount: Option<String>) -> Self {
@@ -55,7 +64,6 @@ impl Rest {
     pub fn new_us(key: String, secret: String, subaccount: Option<String>) -> Self {
         Self::new_with_endpoint(Self::ENDPOINT_US, key, secret, subaccount)
     }
-
 
     async fn get<T: DeserializeOwned>(&self, path: &str, params: Option<Value>) -> Result<T> {
         self.request(Method::GET, path, params, None).await
@@ -213,11 +221,7 @@ impl Rest {
         self.get(&format!("/markets/{}", market_name), None).await
     }
 
-    pub async fn get_orderbook(
-        &self,
-        market_name: &str,
-        depth: Option<u32>,
-    ) -> Result<Orderbook> {
+    pub async fn get_orderbook(&self, market_name: &str, depth: Option<u32>) -> Result<Orderbook> {
         self.get(
             &format!("/markets/{}/orderbook", market_name),
             Some(json!({

@@ -1,7 +1,7 @@
+pub use crate::rest::{Coin, Id, MarketType, Side, Symbol};
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
-pub use crate::rest::{Symbol, Id, Side, MarketType, Coin};
 use rust_decimal::Decimal;
+use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
