@@ -139,6 +139,7 @@ impl Rest {
             .client
             .request(method, url)
             .query(&params)
+            .header(reqwest::header::CONTENT_TYPE, "application/json")
             .header(
                 &format!("{}-TS", self.header_prefix),
                 HeaderValue::from_str(&format!("{}", timestamp)).unwrap(),
@@ -324,14 +325,88 @@ impl Rest {
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
     ) -> Result<Vec<WalletDeposit>> {
-        self.get(
-            "/wallet/deposits",
+        let mut params = vec![];
+        if let Some(limit) = limit {
+            params.push(format!("limit={}", limit));
+        }
+        if let Some(start_time) = start_time {
+            params.push(format!("start_time={}", start_time));
+        }
+        if let Some(end_time) = end_time {
+            params.push(format!("end_time={}", end_time));
+        }
+
+        self.get(&format!("/wallet/deposits?{}", params.join("&")), None)
+            .await
+    }
+
+    pub async fn get_open_orders(&self, market: &str) -> Result<Vec<OrderInfo>> {
+        self.get(&format!("/orders?market={}", market), None).await
+    }
+
+    pub async fn get_order_history(
+        &self,
+        market: &str,
+        limit: Option<usize>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Result<Vec<OrderInfo>> {
+        let mut params = vec![format!("market={}", market)];
+        if let Some(limit) = limit {
+            params.push(format!("limit={}", limit));
+        }
+        if let Some(start_time) = start_time {
+            params.push(format!("start_time={}", start_time));
+        }
+        if let Some(end_time) = end_time {
+            params.push(format!("end_time={}", end_time));
+        }
+
+        self.get(&format!("/orders/history?{}", params.join("&")), None)
+            .await
+    }
+
+    pub async fn place_order(
+        &self,
+        market: &str,
+        side: OrderSide,
+        price: Option<f64>,
+        r#type: OrderType,
+        size: f64,
+        client_id: Option<&str>,
+    ) -> Result<OrderInfo> {
+        self.post(
+            "/orders",
             Some(json!({
-                "limit": limit,
-                "start_time": start_time.map(|t| t.timestamp_millis()),
-                "end_time": end_time.map(|t| t.timestamp_millis()),
+                "market": market,
+                "side": side,
+                "price": price,
+                "type": r#type,
+                "size": size,
+                "reduceOnly": false,
+                "ioc": false,
+                "postOnly": false,
+                "clientId": client_id,
             })),
         )
         .await
+    }
+
+    pub async fn get_order(&self, order_id: usize) -> Result<OrderInfo> {
+        self.get(&format!("/orders/{}", order_id), None).await
+    }
+
+    pub async fn get_order_by_client_id(&self, client_id: &str) -> Result<OrderInfo> {
+        self.get(&format!("/orders/by_client_id/{}", client_id), None)
+            .await
+    }
+
+    pub async fn cancel_order(&self, order_id: usize) -> Result<String> {
+        self.delete(&format!("/orders/{}", order_id), None).await
+    }
+
+    pub async fn cancel_order_by_client_id(&self, client_id: &str) -> Result<String> {
+        self.delete(&dbg!(format!("/orders/by_client_id/{}", client_id)), None)
+            .await
     }
 }
