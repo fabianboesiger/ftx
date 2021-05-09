@@ -18,11 +18,7 @@ async fn init_api() -> Rest {
 
 fn read_only<T>(result: Result<T>) {
     match result {
-        Err(Error::Api(error))
-            if error == String::from("Not allowed with read-only permissions") =>
-        {
-            ()
-        }
+        Err(Error::Api(error)) if error == *"Not allowed with read-only permissions" => {}
         _ => panic!("Expected read-only subaccount."),
     }
 }
