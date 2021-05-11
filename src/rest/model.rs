@@ -67,7 +67,7 @@ pub struct Transfer {
 
 // REST API -> Markets
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum MarketType {
     Future,
@@ -110,7 +110,7 @@ pub struct Orderbook {
     pub bids: Vec<(Decimal, Decimal)>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum Side {
     Buy,
@@ -145,7 +145,7 @@ pub type Prices = Vec<Price>;
 
 // REST API -> Futures
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum FutureType {
     Future,
@@ -282,7 +282,7 @@ pub struct WalletBalance {
     pub available_without_borrow: f64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum DepositStatus {
     Confirmed,
@@ -308,21 +308,21 @@ pub struct WalletDeposit {
 // REST API -> Orders
 // TODO
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderType {
     Market,
     Limit,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderSide {
     Buy,
     Sell,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderStatus {
     New, // accepted but not processed yet
