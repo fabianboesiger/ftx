@@ -336,8 +336,15 @@ impl Rest {
             params.push(format!("end_time={}", end_time));
         }
 
-        self.get(&format!("/wallet/deposits?{}", params.join("&")), None)
-            .await
+        self.get(
+            &format!(
+                "/wallet/deposits{}{}",
+                if params.is_empty() { "" } else { "?" },
+                params.join("&")
+            ),
+            None,
+        )
+        .await
     }
 
     pub async fn get_open_orders(&self, market: &str) -> Result<Vec<OrderInfo>> {
