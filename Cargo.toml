@@ -31,4 +31,3 @@ env_logger = "^0.8.3"
 [features]
 default = ["ws"]
 ws = ["tokio-tungstenite", "tokio", "futures-util"]
-stateful = ["ws"]
