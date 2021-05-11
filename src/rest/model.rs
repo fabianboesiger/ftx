@@ -335,7 +335,7 @@ pub enum OrderStatus {
 pub struct OrderInfo {
     pub id: usize,
     pub market: String,
-    pub r#type: String,
+    pub r#type: OrderType,
     pub side: OrderSide,
     pub price: f64,
     pub size: f64,
