@@ -280,6 +280,9 @@ pub struct WalletBalance {
     pub total: f64,
     pub spot_borrow: f64,
     pub available_without_borrow: f64,
+    /// As of 2021-05-12, usdValue is not documented on
+    /// https://docs.ftx.com/#get-balances, but it is returned.
+    pub usd_value: Option<f64>,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
