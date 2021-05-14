@@ -252,8 +252,8 @@ impl Rest {
             &format!("/markets/{}/trades", market_name),
             Some(json!({
                 "limit": limit,
-                "start_time": start_time.map(|t| t.timestamp_millis() / 1000),
-                "end_time": end_time.map(|t| t.timestamp_millis() / 1000),
+                "start_time": start_time.map(|t| t.timestamp()),
+                "end_time": end_time.map(|t| t.timestamp()),
             })),
         )
         .await
@@ -272,8 +272,8 @@ impl Rest {
             Some(json!({
                 "resolution": resolution,
                 "limit": limit,
-                "start_time": start_time.map(|t| t.timestamp_millis() / 1000),
-                "end_time": end_time.map(|t| t.timestamp_millis() / 1000),
+                "start_time": start_time.map(|t| t.timestamp()),
+                "end_time": end_time.map(|t| t.timestamp()),
             })),
         )
         .await
