@@ -9,6 +9,7 @@ pub use model::*;
 use futures_util::{SinkExt, StreamExt};
 use hmac_sha256::HMAC;
 use serde_json::json;
+use std::collections::VecDeque;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::net::TcpStream;
 use tokio_tungstenite::{
@@ -23,7 +24,6 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     Tungstenite(tungstenite::Error),
     Serde(serde_json::Error),
-    Terminated,
 }
 
 impl From<tungstenite::Error> for Error {
@@ -40,6 +40,7 @@ impl From<serde_json::Error> for Error {
 
 pub struct Ws {
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
+    buf: VecDeque<Data>,
 }
 
 impl Ws {
@@ -71,7 +72,10 @@ impl Ws {
             ))
             .await?;
 
-        Ok(Self { stream })
+        Ok(Self {
+            stream,
+            buf: VecDeque::new(),
+        })
     }
 
     pub async fn connect(key: String, secret: String) -> Result<Self> {
@@ -97,34 +101,67 @@ impl Ws {
     }
     */
 
-    pub async fn subscribe(&mut self, channel: Channel, market: &str) -> Result<()> {
-        self.stream
-            .send(Message::Text(
-                json!({
-                    "op": "subscribe",
-                    "channel": match channel {
-                        Channel::Orderbook => "orderbook",
-                        Channel::Trades => "trades",
-                        Channel::Ticker => "ticker",
-                    },
-                    "market": market,
-                })
-                .to_string(),
-            ))
-            .await?;
+    pub async fn subscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
+        for channel in channels {
+            let (channel, symbol) = match channel {
+                Channel::Orderbook(symbol) => ("orderbook", symbol),
+                Channel::Trades(symbol) => ("trades", symbol),
+                Channel::Ticker(symbol) => ("ticker", symbol),
+            };
+
+            self.stream
+                .send(Message::Text(
+                    json!({
+                        "op": "subscribe",
+                        "channel": channel,
+                        "market": symbol,
+                    })
+                    .to_string(),
+                ))
+                .await?;
+
+            match self.next_internal().await? {
+                Some(Response {
+                    r#type: Type::Subscribed,
+                    ..
+                }) => {}
+                _ => panic!("Subscription confirmation expected."),
+            }
+        }
 
         Ok(())
     }
 
-    pub async fn next(&mut self) -> Result<Response> {
+    async fn next_internal(&mut self) -> Result<Option<Response>> {
         if let Some(msg) = self.stream.next().await {
             let msg = msg?;
             if let Message::Text(text) = msg {
-                println!("{}", text);
-                return Ok(serde_json::from_str(&text)?);
+                return Ok(Some(serde_json::from_str(&text)?));
             }
         }
 
-        Err(Error::Terminated)
+        Ok(None)
+    }
+
+    pub async fn next(&mut self) -> Result<Option<Data>> {
+        // If buffer contains data, we can directly return it.
+        if let Some(data) = self.buf.pop_front() {
+            return Ok(Some(data));
+        }
+
+        // Fetch new data if buffer is empty.
+        while let Some(response) = self.next_internal().await? {
+            if let Some(data) = response.data {
+                for data in data {
+                    self.buf.push_back(data);
+                }
+            }
+
+            if let Some(data) = self.buf.pop_front() {
+                return Ok(Some(data));
+            }
+        }
+
+        Ok(None)
     }
 }

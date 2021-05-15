@@ -16,9 +16,12 @@ async fn init_ws() -> Ws {
 async fn trades() {
     let mut ws = init_ws().await;
 
-    ws.subscribe(Channel::Trades, "BTC/USD")
+    ws.subscribe(vec![Channel::Trades("BTC-PERP".to_owned())])
         .await
         .expect("Subscription failed.");
 
-    ws.next().await.unwrap();
+    match ws.next().await.unwrap() {
+        Some(Data::Trade(..)) => {}
+        _ => panic!("Trade data expected."),
+    }
 }

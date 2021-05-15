@@ -6,9 +6,9 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Channel {
-    Orderbook,
-    Trades,
-    Ticker,
+    Orderbook(Symbol),
+    Trades(Symbol),
+    Ticker(Symbol),
 }
 
 /*
@@ -23,8 +23,24 @@ pub struct Response {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub channel: Channel,
     pub market: Symbol,
+    pub r#type: Type,
+    pub data: Option<Vec<Data>>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum Type {
+    Subscribed,
+    Update,
+    Error,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+#[serde(untagged)]
+pub enum Data {
+    Trade(Trade),
 }
 
 #[derive(Debug, Deserialize)]
