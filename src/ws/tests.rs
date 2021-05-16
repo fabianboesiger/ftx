@@ -7,6 +7,7 @@ async fn init_ws() -> Ws {
     Ws::connect(
         var("API_KEY").expect("API Key is not defined."),
         var("API_SECRET").expect("API Secret is not defined."),
+        var("SUBACCOUNT").ok(),
     )
     .await
     .expect("Connection failed.")

@@ -9,7 +9,7 @@ async fn main() -> Result<()> {
     let api = Rest::new(
         var("API_KEY").expect("API Key is not defined."),
         var("API_SECRET").expect("API Secret is not defined."),
-        None,
+        var("SUBACCOUNT").ok(),
     );
 
     let price = api.get_market("BTC/USD").await?.price;
