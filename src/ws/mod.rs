@@ -47,7 +47,12 @@ impl Ws {
     pub const ENDPOINT: &'static str = "wss://ftx.com/ws";
     pub const ENDPOINT_US: &'static str = "wss://ftx.us/ws";
 
-    async fn connect_with_endpoint(endpoint: &str, key: String, secret: String) -> Result<Self> {
+    async fn connect_with_endpoint(
+        endpoint: &str,
+        key: String,
+        secret: String,
+        subaccount: Option<String>
+    ) -> Result<Self> {
         let (mut stream, _) = connect_async(endpoint).await?;
 
         let timestamp = SystemTime::now()
@@ -66,6 +71,7 @@ impl Ws {
                         "key": key,
                         "sign": sign,
                         "time": timestamp as u64,
+                        "subaccount": subaccount,
                     }
                 })
                 .to_string(),
@@ -78,12 +84,12 @@ impl Ws {
         })
     }
 
-    pub async fn connect(key: String, secret: String) -> Result<Self> {
-        Self::connect_with_endpoint(Self::ENDPOINT, key, secret).await
+    pub async fn connect(key: String, secret: String, subaccount: Option<String>) -> Result<Self> {
+        Self::connect_with_endpoint(Self::ENDPOINT, key, secret, subaccount).await
     }
 
-    pub async fn connect_us(key: String, secret: String) -> Result<Self> {
-        Self::connect_with_endpoint(Self::ENDPOINT_US, key, secret).await
+    pub async fn connect_us(key: String, secret: String, subaccount: Option<String>) -> Result<Self> {
+        Self::connect_with_endpoint(Self::ENDPOINT_US, key, secret, subaccount).await
     }
 
     /*

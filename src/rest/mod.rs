@@ -22,6 +22,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub struct Rest {
     secret: String,
     client: Client,
+    subaccount: Option<String>,
     endpoint: &'static str,
     header_prefix: &'static str,
 }
@@ -43,7 +44,7 @@ impl Rest {
             HeaderName::from_str(&format!("{}-KEY", header_prefix)).unwrap(),
             HeaderValue::from_str(&key).unwrap(),
         );
-        if let Some(subaccount) = subaccount {
+        if let Some(subaccount) = subaccount.to_owned() {
             headers.insert(
                 HeaderName::from_str(&format!("{}-SUBACCOUNT", header_prefix)).unwrap(),
                 HeaderValue::from_str(&subaccount).unwrap(),
@@ -58,6 +59,7 @@ impl Rest {
         Self {
             secret,
             client,
+            subaccount,
             endpoint,
             header_prefix,
         }
@@ -118,9 +120,32 @@ impl Rest {
         log::trace!("path: {}", path);
         log::trace!("body: {}", body);
 
+        let mut headers = HeaderMap::new();
+        headers.insert(
+            reqwest::header::CONTENT_TYPE,
+            HeaderValue::from_static("application/json"),
+        );
+        headers.insert(
+            HeaderName::from_str(&format!("{}-TS", self.header_prefix)).unwrap(),
+            HeaderValue::from_str(&format!("{}", timestamp)).unwrap(),
+        );
+        headers.insert(
+            HeaderName::from_str(&format!("{}-SIGN", self.header_prefix)).unwrap(),
+            HeaderValue::from_str(&sign).unwrap(),
+        );
+        if let Some(subaccount) = &self.subaccount {
+            headers.insert(
+                HeaderName::from_str(&format!("{}-SUBACCOUNT", self.header_prefix)).unwrap(),
+                HeaderValue::from_str(subaccount).unwrap()
+            );
+        }
+
         /*
-        let response: String = self.client
+        let response: String = self
+            .client
             .request(method, url)
+            .query(&params)
+            .headers(headers)
             .body(body)
             .send()
             .await?
@@ -132,22 +157,14 @@ impl Rest {
         let mut file = File::create("response.json").unwrap();
         file.write_all(response.as_bytes()).unwrap();
 
-        panic!("{:?}", response);
+        panic!("{:#?}", response);
         */
 
         let response: Response<T> = self
             .client
             .request(method, url)
             .query(&params)
-            .header(reqwest::header::CONTENT_TYPE, "application/json")
-            .header(
-                &format!("{}-TS", self.header_prefix),
-                HeaderValue::from_str(&format!("{}", timestamp)).unwrap(),
-            )
-            .header(
-                &format!("{}-SIGN", self.header_prefix),
-                HeaderValue::from_str(&sign).unwrap(),
-            )
+            .headers(headers)
             .body(body)
             .send()
             .await?

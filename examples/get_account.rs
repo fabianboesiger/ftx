@@ -1,12 +1,14 @@
 use ftx::rest::Rest;
 use std::env::var;
+use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
     let api = Rest::new(
         var("API_KEY").expect("API key not defined"),
         var("API_SECRET").expect("API secret not defined"),
-        None,
+        var("SUBACCOUNT").ok(),
     );
     println!("Account:");
     println!("{:#?}", api.get_account().await.unwrap());
