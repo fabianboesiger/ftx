@@ -168,8 +168,8 @@ impl Ws {
                             self.buf.push_back(Data::Trade(trade));
                         }
                     }
-                    ResponseData::OrderBook(orderbook) => {
-                        self.buf.push_back(Data::OrderBook(orderbook));
+                    ResponseData::OrderBookData(orderbook) => {
+                        self.buf.push_back(Data::OrderBookData(orderbook));
                     }
                 }
             }

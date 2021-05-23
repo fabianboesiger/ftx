@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::Deserialize;
 use serde_with::{serde_as, TimestampSecondsWithFrac};
+use std::collections::BTreeMap;
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -40,21 +41,21 @@ pub enum Type {
     // Info,         // May need this in the future
 }
 
-/// This represents the response received from FTX, and is used for
+/// Represents the response received from FTX, and is used for
 /// deserialization
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum ResponseData {
     Trades(Vec<Trade>),
-    OrderBook(OrderBook),
+    OrderBookData(OrderBookData),
 }
 
-/// This represents the data we return to the user
+/// Represents the data we return to the user
 #[derive(Debug)]
 pub enum Data {
     Trade(Trade),
-    OrderBook(OrderBook),
+    OrderBookData(OrderBookData),
 }
 
 #[derive(Debug, Deserialize)]
@@ -68,25 +69,46 @@ pub struct Trade {
     pub time: DateTime<Utc>, // API returns "2021-05-23T05:24:24.315884+00:00"
 }
 
+/// Order book data received from FTX which is used for initializing and updating
+/// the OrderBook struct
 #[serde_as]
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OrderBook {
+pub struct OrderBookData {
     pub action: OrderBookAction,
-    pub bids: Vec<[Decimal; 2]>,
-    pub asks: Vec<[Decimal; 2]>,
+    // Note that bids and asks are returned in 'best' order,
+    // i.e. highest to lowest bids, lowest to highest asks
+    pub bids: Vec<(Decimal, Decimal)>,
+    pub asks: Vec<(Decimal, Decimal)>,
     pub checksum: u32,
     #[serde_as(as = "TimestampSecondsWithFrac<f64>")]
     pub time: DateTime<Utc>, // API returns 1621740952.5079553
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderBookAction {
     /// Initial snapshot of the orderbook
     Partial,
     /// Updates to the orderbook
     Update,
+}
+
+/// Represents the current state of the orderbook, guaranteed to be accurate
+/// up to the best 100 bids and best 100 asks since the latest update.
+/// Supports efficient insertions, updates, and deletions via a BTreeMap.
+#[derive(Debug)]
+pub struct OrderBook {
+    pub bids: BTreeMap<Decimal, Decimal>,
+    pub asks: BTreeMap<Decimal, Decimal>,
+}
+impl OrderBook {
+    pub fn new() -> OrderBook {
+        OrderBook {
+            bids: BTreeMap::new(),
+            asks: BTreeMap::new(),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
