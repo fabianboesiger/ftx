@@ -142,6 +142,7 @@ impl Ws {
         if let Some(msg) = self.stream.next().await {
             let msg = msg?;
             if let Message::Text(text) = msg {
+                // println!("{}", text); // Uncomment for debugging
                 return Ok(Some(serde_json::from_str(&text)?));
             }
         }
