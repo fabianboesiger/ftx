@@ -46,12 +46,12 @@ pub enum Data {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Trade {
-    id: Id,
-    price: Decimal,
-    size: Decimal,
-    side: Side,
-    liquidation: bool,
-    time: DateTime<Utc>,
+    pub id: Id,
+    pub price: Decimal,
+    pub size: Decimal,
+    pub side: Side,
+    pub liquidation: bool,
+    pub time: DateTime<Utc>,
 }
 
 #[derive(Debug, Deserialize)]
