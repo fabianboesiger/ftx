@@ -111,6 +111,37 @@ impl OrderBook {
             asks: BTreeMap::new(),
         }
     }
+
+    pub fn update(&mut self, data: &OrderBookData) {
+        match data.action {
+            OrderBookAction::Partial => {
+                for bid in &data.bids {
+                    self.bids.insert(bid.0, bid.1);
+                }
+                for ask in &data.asks {
+                    self.asks.insert(ask.0, ask.1);
+                }
+
+            }
+            OrderBookAction::Update => {
+                for bid in &data.bids {
+                    if bid.1 == Decimal::from(0) {
+                        self.bids.remove(&bid.0);
+                    } else {
+                        self.bids.insert(bid.0, bid.1);
+                    }
+                }
+                for ask in &data.asks {
+                    if ask.1 == Decimal::from(0) {
+                        self.asks.remove(&ask.0);
+                    } else {
+                        self.asks.insert(ask.0, ask.1);
+                    }
+                }
+
+            }
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]

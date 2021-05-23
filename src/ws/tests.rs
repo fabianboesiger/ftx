@@ -45,12 +45,7 @@ async fn order_book() {
         Some(Data::OrderBookData(data))
 
         if data.action == OrderBookAction::Partial => {
-            for bid in &data.bids {
-                orderbook.bids.insert(bid.0, bid.1);
-            }
-            for ask in &data.asks {
-                orderbook.asks.insert(ask.0, ask.1);
-            }
+            orderbook.update(&data);
             // println!("{:#?}", orderbook);
         }
         _ => panic!("Order book snapshot data expected."),
@@ -61,24 +56,39 @@ async fn order_book() {
         match ws.next().await.unwrap() {
             Some(Data::OrderBookData(data))
             if data.action == OrderBookAction::Update => {
+
+                // Check that cancelled orders are in the orderbook
                 for bid in &data.bids {
-                    // Remove the bid
                     if bid.1 == Decimal::from(0) {
                         assert!(orderbook.bids.contains_key(&bid.0));
-                        assert!(orderbook.bids.remove(&bid.0).is_some());
-                    } else {
-                        orderbook.bids.insert(bid.0, bid.1);
                     }
                 }
                 for ask in &data.asks {
-                    // Remove the ask
                     if ask.1 == Decimal::from(0) {
                         assert!(orderbook.asks.contains_key(&ask.0));
-                        assert!(orderbook.asks.remove(&ask.0).is_some());
-                    } else {
-                        orderbook.asks.insert(ask.0, ask.1);
                     }
                 }
+
+                // Update the order book
+                orderbook.update(&data);
+
+                // Check that cancelled orders are no longer in the orderbook
+                // Check that inserted orders have been updated correctly
+                for bid in &data.bids {
+                    if bid.1 == Decimal::from(0) {
+                        assert_eq!(orderbook.bids.contains_key(&bid.0), false);
+                    } else {
+                        assert_eq!(orderbook.bids.get(&bid.0), Some(&bid.1));
+                    }
+                }
+                for ask in &data.asks {
+                    if ask.1 == Decimal::from(0) {
+                        assert_eq!(orderbook.asks.contains_key(&ask.0), false);
+                    } else {
+                        assert_eq!(orderbook.asks.get(&ask.0), Some(&ask.1));
+                    }
+                }
+
                 // println!("{:#?}", orderbook);
             }
             _ => panic!("Order book update data expected."),
