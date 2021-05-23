@@ -2,6 +2,7 @@ pub use crate::rest::{Coin, Id, MarketType, Side, Symbol};
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::Deserialize;
+use serde_with::{serde_as, TimestampSecondsWithFrac};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -64,9 +65,10 @@ pub struct Trade {
     pub size: Decimal,
     pub side: Side,
     pub liquidation: bool,
-    pub time: DateTime<Utc>,
+    pub time: DateTime<Utc>, // API returns "2021-05-23T05:24:24.315884+00:00"
 }
 
+#[serde_as]
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderBook {
@@ -74,7 +76,8 @@ pub struct OrderBook {
     pub bids: Vec<[Decimal; 2]>,
     pub asks: Vec<[Decimal; 2]>,
     pub checksum: u32,
-    pub time: Decimal,
+    #[serde_as(as = "TimestampSecondsWithFrac<f64>")]
+    pub time: DateTime<Utc>, // API returns 1621740952.5079553
 }
 
 #[derive(Debug, Deserialize)]

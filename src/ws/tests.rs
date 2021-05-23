@@ -36,7 +36,9 @@ async fn order_book() {
         .expect("Subscription failed.");
 
     match ws.next().await.unwrap() {
-        Some(Data::OrderBook(orderbook)) => {}
+        Some(Data::OrderBook(orderbook)) => {
+            println!("{:?}", orderbook.time);
+        }
         _ => panic!("Order book data expected."),
     }
 }
