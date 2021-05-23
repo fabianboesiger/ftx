@@ -30,13 +30,15 @@ async fn trades() {
 
 #[tokio::test]
 async fn order_book() {
-    let mut orderbook = OrderBook::new();
 
     let mut ws = init_ws().await;
 
-    ws.subscribe(vec![Channel::Orderbook("BTC-PERP".to_owned())])
+    let symbol: Symbol = String::from("BTC-PERP");
+    ws.subscribe(vec![Channel::Orderbook(symbol.to_owned())])
         .await
         .expect("Subscription failed.");
+
+    let mut orderbook = OrderBook::new(symbol);
 
     // The initial snapshot of the order book
     match ws.next().await.unwrap() {

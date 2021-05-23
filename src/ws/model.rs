@@ -99,12 +99,14 @@ pub enum OrderBookAction {
 /// Supports efficient insertions, updates, and deletions via a BTreeMap.
 #[derive(Debug)]
 pub struct OrderBook {
+    pub symbol: Symbol,
     pub bids: BTreeMap<Decimal, Decimal>,
     pub asks: BTreeMap<Decimal, Decimal>,
 }
 impl OrderBook {
-    pub fn new() -> OrderBook {
+    pub fn new(symbol: Symbol) -> OrderBook {
         OrderBook {
+            symbol: symbol,
             bids: BTreeMap::new(),
             asks: BTreeMap::new(),
         }
