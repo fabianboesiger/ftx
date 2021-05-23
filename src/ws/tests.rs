@@ -26,3 +26,17 @@ async fn trades() {
         _ => panic!("Trade data expected."),
     }
 }
+
+#[tokio::test]
+async fn order_book() {
+    let mut ws = init_ws().await;
+
+    ws.subscribe(vec![Channel::Orderbook("BTC-PERP".to_owned())])
+        .await
+        .expect("Subscription failed.");
+
+    match ws.next().await.unwrap() {
+        Some(Data::OrderBook(orderbook)) => {}
+        _ => panic!("Order book data expected."),
+    }
+}

@@ -158,8 +158,19 @@ impl Ws {
         // Fetch new data if buffer is empty.
         while let Some(response) = self.next_internal().await? {
             if let Some(data) = response.data {
-                for data in data {
-                    self.buf.push_back(data);
+                // Trades channel returns an array of single trades, but
+                // Orderbook channel returns just a single orderbook.
+                // Buffer so that the user receives trades one at a time but
+                // order book updates all at once.
+                match data {
+                    ResponseData::Trades(trades) => {
+                        for trade in trades {
+                            self.buf.push_back(Data::Trade(trade));
+                        }
+                    }
+                    ResponseData::OrderBook(orderbook) => {
+                        self.buf.push_back(Data::OrderBook(orderbook));
+                    }
                 }
             }
 
