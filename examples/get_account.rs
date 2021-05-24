@@ -1,6 +1,6 @@
+use dotenv::dotenv;
 use ftx::rest::Rest;
 use std::env::var;
-use dotenv::dotenv;
 
 #[tokio::main]
 async fn main() {

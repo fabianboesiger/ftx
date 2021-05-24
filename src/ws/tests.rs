@@ -1,7 +1,7 @@
 use super::*;
 use dotenv::dotenv;
-use std::env::var;
 use rust_decimal::Decimal;
+use std::env::var;
 
 async fn init_ws() -> Ws {
     dotenv().ok();
@@ -30,7 +30,6 @@ async fn trades() {
 
 #[tokio::test]
 async fn order_book() {
-
     let mut ws = init_ws().await;
 
     let symbol: Symbol = String::from("BTC-PERP");
@@ -42,9 +41,7 @@ async fn order_book() {
 
     // The initial snapshot of the order book
     match ws.next().await.unwrap() {
-        Some(Data::OrderbookData(data))
-
-        if data.action == OrderbookAction::Partial => {
+        Some(Data::OrderbookData(data)) if data.action == OrderbookAction::Partial => {
             orderbook.update(&data);
             // println!("{:#?}", orderbook);
         }
@@ -54,9 +51,7 @@ async fn order_book() {
     // Update the order book 10 times
     for _i in 1..10 {
         match ws.next().await.unwrap() {
-            Some(Data::OrderbookData(data))
-            if data.action == OrderbookAction::Update => {
-
+            Some(Data::OrderbookData(data)) if data.action == OrderbookAction::Update => {
                 // Check that removed orders are in the orderbook
                 for bid in &data.bids {
                     if bid.1 == Decimal::from(0) {

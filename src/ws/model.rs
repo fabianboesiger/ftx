@@ -106,7 +106,7 @@ pub struct Orderbook {
 impl Orderbook {
     pub fn new(symbol: Symbol) -> Orderbook {
         Orderbook {
-            symbol: symbol,
+            symbol,
             bids: BTreeMap::new(),
             asks: BTreeMap::new(),
         }
@@ -121,7 +121,6 @@ impl Orderbook {
                 for ask in &data.asks {
                     self.asks.insert(ask.0, ask.1);
                 }
-
             }
             OrderbookAction::Update => {
                 for bid in &data.bids {
@@ -138,7 +137,6 @@ impl Orderbook {
                         self.asks.insert(ask.0, ask.1);
                     }
                 }
-
             }
         }
     }
