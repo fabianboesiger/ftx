@@ -48,14 +48,14 @@ pub enum Type {
 #[serde(untagged)]
 pub enum ResponseData {
     Trades(Vec<Trade>),
-    OrderBookData(OrderBookData),
+    OrderbookData(OrderbookData),
 }
 
 /// Represents the data we return to the user
 #[derive(Debug)]
 pub enum Data {
     Trade(Trade),
-    OrderBookData(OrderBookData),
+    OrderbookData(OrderbookData),
 }
 
 #[derive(Debug, Deserialize)]
@@ -74,8 +74,8 @@ pub struct Trade {
 #[serde_as]
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OrderBookData {
-    pub action: OrderBookAction,
+pub struct OrderbookData {
+    pub action: OrderbookAction,
     // Note that bids and asks are returned in 'best' order,
     // i.e. highest to lowest bids, lowest to highest asks
     pub bids: Vec<(Decimal, Decimal)>,
@@ -87,7 +87,7 @@ pub struct OrderBookData {
 
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub enum OrderBookAction {
+pub enum OrderbookAction {
     /// Initial snapshot of the orderbook
     Partial,
     /// Updates to the orderbook
@@ -98,23 +98,23 @@ pub enum OrderBookAction {
 /// up to the best 100 bids and best 100 asks since the latest update.
 /// Supports efficient insertions, updates, and deletions via a BTreeMap.
 #[derive(Debug)]
-pub struct OrderBook {
+pub struct Orderbook {
     pub symbol: Symbol,
     pub bids: BTreeMap<Decimal, Decimal>,
     pub asks: BTreeMap<Decimal, Decimal>,
 }
-impl OrderBook {
-    pub fn new(symbol: Symbol) -> OrderBook {
-        OrderBook {
+impl Orderbook {
+    pub fn new(symbol: Symbol) -> Orderbook {
+        Orderbook {
             symbol: symbol,
             bids: BTreeMap::new(),
             asks: BTreeMap::new(),
         }
     }
 
-    pub fn update(&mut self, data: &OrderBookData) {
+    pub fn update(&mut self, data: &OrderbookData) {
         match data.action {
-            OrderBookAction::Partial => {
+            OrderbookAction::Partial => {
                 for bid in &data.bids {
                     self.bids.insert(bid.0, bid.1);
                 }
@@ -123,7 +123,7 @@ impl OrderBook {
                 }
 
             }
-            OrderBookAction::Update => {
+            OrderbookAction::Update => {
                 for bid in &data.bids {
                     if bid.1 == Decimal::from(0) {
                         self.bids.remove(&bid.0);

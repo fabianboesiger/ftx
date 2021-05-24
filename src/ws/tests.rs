@@ -38,13 +38,13 @@ async fn order_book() {
         .await
         .expect("Subscription failed.");
 
-    let mut orderbook = OrderBook::new(symbol);
+    let mut orderbook = Orderbook::new(symbol);
 
     // The initial snapshot of the order book
     match ws.next().await.unwrap() {
-        Some(Data::OrderBookData(data))
+        Some(Data::OrderbookData(data))
 
-        if data.action == OrderBookAction::Partial => {
+        if data.action == OrderbookAction::Partial => {
             orderbook.update(&data);
             // println!("{:#?}", orderbook);
         }
@@ -54,10 +54,10 @@ async fn order_book() {
     // Update the order book 10 times
     for _i in 1..10 {
         match ws.next().await.unwrap() {
-            Some(Data::OrderBookData(data))
-            if data.action == OrderBookAction::Update => {
+            Some(Data::OrderbookData(data))
+            if data.action == OrderbookAction::Update => {
 
-                // Check that cancelled orders are in the orderbook
+                // Check that removed orders are in the orderbook
                 for bid in &data.bids {
                     if bid.1 == Decimal::from(0) {
                         assert!(orderbook.bids.contains_key(&bid.0));
@@ -72,7 +72,7 @@ async fn order_book() {
                 // Update the order book
                 orderbook.update(&data);
 
-                // Check that cancelled orders are no longer in the orderbook
+                // Check that removed orders are no longer in the orderbook
                 // Check that inserted orders have been updated correctly
                 for bid in &data.bids {
                     if bid.1 == Decimal::from(0) {
