@@ -1,9 +1,11 @@
 //! This module is used to interact with the Websocket API.
 
+mod error;
 mod model;
 #[cfg(test)]
 mod tests;
 
+pub use error::*;
 pub use model::*;
 
 use futures_util::{SinkExt, StreamExt};
@@ -14,29 +16,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::net::TcpStream;
 use tokio_tungstenite::{
     connect_async,
-    tungstenite::{self, Message},
+    tungstenite::Message,
     MaybeTlsStream, WebSocketStream,
 };
-
-pub type Result<T> = std::result::Result<T, Error>;
-
-#[derive(Debug)]
-pub enum Error {
-    Tungstenite(tungstenite::Error),
-    Serde(serde_json::Error),
-}
-
-impl From<tungstenite::Error> for Error {
-    fn from(err: tungstenite::Error) -> Error {
-        Error::Tungstenite(err)
-    }
-}
-
-impl From<serde_json::Error> for Error {
-    fn from(err: serde_json::Error) -> Error {
-        Error::Serde(err)
-    }
-}
 
 pub struct Ws {
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
