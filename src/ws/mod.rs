@@ -51,7 +51,7 @@ impl Ws {
         endpoint: &str,
         key: String,
         secret: String,
-        subaccount: Option<String>
+        subaccount: Option<String>,
     ) -> Result<Self> {
         let (mut stream, _) = connect_async(endpoint).await?;
 
@@ -88,7 +88,11 @@ impl Ws {
         Self::connect_with_endpoint(Self::ENDPOINT, key, secret, subaccount).await
     }
 
-    pub async fn connect_us(key: String, secret: String, subaccount: Option<String>) -> Result<Self> {
+    pub async fn connect_us(
+        key: String,
+        secret: String,
+        subaccount: Option<String>,
+    ) -> Result<Self> {
         Self::connect_with_endpoint(Self::ENDPOINT_US, key, secret, subaccount).await
     }
 
@@ -142,6 +146,7 @@ impl Ws {
         if let Some(msg) = self.stream.next().await {
             let msg = msg?;
             if let Message::Text(text) = msg {
+                // println!("{}", text); // Uncomment for debugging
                 return Ok(Some(serde_json::from_str(&text)?));
             }
         }
@@ -158,8 +163,19 @@ impl Ws {
         // Fetch new data if buffer is empty.
         while let Some(response) = self.next_internal().await? {
             if let Some(data) = response.data {
-                for data in data {
-                    self.buf.push_back(data);
+                // Trades channel returns an array of single trades, but
+                // Orderbook channel returns just a single orderbook.
+                // Buffer so that the user receives trades one at a time but
+                // order book updates all at once.
+                match data {
+                    ResponseData::Trades(trades) => {
+                        for trade in trades {
+                            self.buf.push_back(Data::Trade(trade));
+                        }
+                    }
+                    ResponseData::OrderbookData(orderbook) => {
+                        self.buf.push_back(Data::OrderbookData(orderbook));
+                    }
                 }
             }
 

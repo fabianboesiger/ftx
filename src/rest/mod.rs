@@ -136,7 +136,7 @@ impl Rest {
         if let Some(subaccount) = &self.subaccount {
             headers.insert(
                 HeaderName::from_str(&format!("{}-SUBACCOUNT", self.header_prefix)).unwrap(),
-                HeaderValue::from_str(subaccount).unwrap()
+                HeaderValue::from_str(subaccount).unwrap(),
             );
         }
 
