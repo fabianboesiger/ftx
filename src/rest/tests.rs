@@ -14,7 +14,7 @@ async fn init_api() -> Rest {
     );
 
     // Test create subaccount only if credentials are account-wide
-    if let None = subaccount {
+    if subaccount.is_none() {
         read_only(api.create_subaccount("Bot").await);
     }
 
@@ -31,7 +31,8 @@ fn read_only<T>(result: Result<T>) {
 #[tokio::test]
 async fn get_subaccounts() {
     let rest = init_api().await;
-    if let None = rest.subaccount { // Test only if credentials are account-wide
+    if rest.subaccount.is_none() {
+        // Test only if credentials are account-wide
         rest.get_subaccounts().await.unwrap();
     }
 }
@@ -39,7 +40,8 @@ async fn get_subaccounts() {
 #[tokio::test]
 async fn create_subaccount() {
     let rest = init_api().await;
-    if let None = rest.subaccount { // Test only if credentials are account-wide
+    if rest.subaccount.is_none() {
+        // Test only if credentials are account-wide
         read_only(rest.create_subaccount("Bot").await);
     }
 }
@@ -47,7 +49,8 @@ async fn create_subaccount() {
 #[tokio::test]
 async fn change_subaccount_name() {
     let rest = init_api().await;
-    if let None = rest.subaccount { // Test only if credentials are account-wide
+    if rest.subaccount.is_none() {
+        // Test only if credentials are account-wide
         read_only(rest.change_subaccount_name("Bot", "Bot").await);
     }
 }
@@ -55,7 +58,8 @@ async fn change_subaccount_name() {
 #[tokio::test]
 async fn delete_subaccount() {
     let rest = init_api().await;
-    if let None = rest.subaccount { // Test only if credentials are account-wide
+    if rest.subaccount.is_none() {
+        // Test only if credentials are account-wide
         read_only(rest.delete_subaccount("Bot").await);
     }
 }
@@ -68,18 +72,15 @@ async fn get_subaccount_balances() {
         None => "Bot",
         Some(sub) => sub,
     };
-    rest
-        .get_subaccount_balances(&subaccount)
-        .await
-        .unwrap_err();
+    rest.get_subaccount_balances(&subaccount).await.unwrap_err();
 }
 
 #[tokio::test]
 async fn transfer_between_subaccounts() {
     let rest = init_api().await;
-    if let None = rest.subaccount { // Test only if credentials are account-wide
-        rest
-            .transfer_between_subaccounts("BTC", Decimal::zero(), "Source", "Destination")
+    if rest.subaccount.is_none() {
+        // Test only if credentials are account-wide
+        rest.transfer_between_subaccounts("BTC", Decimal::zero(), "Source", "Destination")
             .await
             .unwrap_err();
     }
