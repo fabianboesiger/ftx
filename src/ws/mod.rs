@@ -14,11 +14,7 @@ use serde_json::json;
 use std::collections::VecDeque;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::net::TcpStream;
-use tokio_tungstenite::{
-    connect_async,
-    tungstenite::Message,
-    MaybeTlsStream, WebSocketStream,
-};
+use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 pub struct Ws {
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
