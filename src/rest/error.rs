@@ -4,6 +4,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     Reqwest(reqwest::Error),
     Api(String),
+    PlacingLimitOrderRequiresPrice,
 }
 
 impl From<reqwest::Error> for Error {
