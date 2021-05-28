@@ -419,9 +419,9 @@ impl Rest {
                 "price": if let OrderType::Limit = r#type { price } else { None },
                 "type": r#type,
                 "size": size,
-                "reduceOnly": reduce_only,
-                "ioc": ioc,
-                "postOnly": post_only,
+                "reduceOnly": reduce_only.unwrap_or(false),
+                "ioc": ioc.unwrap_or(false),
+                "postOnly": post_only.unwrap_or(false),
                 "clientId": client_id,
             })),
         )
