@@ -390,6 +390,7 @@ impl Rest {
             .await
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn place_order(
         &self,
         market: &str,
@@ -397,19 +398,30 @@ impl Rest {
         price: Option<f64>,
         r#type: OrderType,
         size: f64,
+        reduce_only: Option<bool>,
+        ioc: Option<bool>,
+        post_only: Option<bool>,
         client_id: Option<&str>,
     ) -> Result<OrderInfo> {
+        // Limit orders should have price specified
+        if let OrderType::Limit = r#type {
+            if price.is_none() {
+                return Err(Error::PlacingLimitOrderRequiresPrice);
+            }
+        }
+
         self.post(
             "/orders",
             Some(json!({
                 "market": market,
                 "side": side,
-                "price": price,
+                // As per docs, send null for market orders
+                "price": if let OrderType::Limit = r#type { price } else { None },
                 "type": r#type,
                 "size": size,
-                "reduceOnly": false,
-                "ioc": false,
-                "postOnly": false,
+                "reduceOnly": reduce_only,
+                "ioc": ioc,
+                "postOnly": post_only,
                 "clientId": client_id,
             })),
         )
