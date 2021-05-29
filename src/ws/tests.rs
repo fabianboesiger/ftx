@@ -1,4 +1,5 @@
 use super::*;
+use crate::rest::Rest;
 use dotenv::dotenv;
 use rust_decimal::Decimal;
 use std::env::var;
@@ -12,6 +13,17 @@ async fn init_ws() -> Ws {
     )
     .await
     .expect("Connection failed.")
+}
+
+#[allow(dead_code)]
+async fn init_api() -> Rest {
+    dotenv().ok();
+
+    Rest::new(
+        var("API_KEY").expect("API Key is not defined."),
+        var("API_SECRET").expect("API Secret is not defined."),
+        var("SUBACCOUNT").ok(),
+    )
 }
 
 #[tokio::test]
@@ -89,4 +101,36 @@ async fn order_book() {
             _ => panic!("Order book update data expected."),
         }
     }
+}
+
+#[tokio::test]
+async fn fills() {
+    let mut ws = init_ws().await;
+
+    ws.subscribe(vec![Channel::Fills])
+        .await
+        .expect("Subscription failed.");
+
+    // A live test that buys 0.0001 BTC-PERP ($4 if BTC is at $40k)
+    /*
+    use crate::rest::{OrderSide, OrderType};
+    let api = init_api().await;
+    api.place_order(
+        "BTC-PERP",
+        OrderSide::Buy,
+        None,
+        OrderType::Market,
+        0.0001,
+        None,
+        None,
+        None,
+        None,
+    )
+        .await
+        .expect("Could not place order for testing purposes");
+    match ws.next().await.unwrap() {
+        Some(Data::Fill(..)) => {}
+        _ => panic!("Fill data expected."),
+    }
+    */
 }

@@ -11,6 +11,7 @@ pub enum Channel {
     Orderbook(Symbol),
     Trades(Symbol),
     Ticker(Symbol),
+    Fills,
 }
 
 /*
@@ -25,7 +26,7 @@ pub struct Response {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    pub market: Symbol,
+    pub market: Option<Symbol>,
     pub r#type: Type,
     pub data: Option<ResponseData>,
 }
@@ -49,6 +50,7 @@ pub enum Type {
 pub enum ResponseData {
     Trades(Vec<Trade>),
     OrderbookData(OrderbookData),
+    Fill(Fill),
 }
 
 /// Represents the data we return to the user
@@ -56,6 +58,7 @@ pub enum ResponseData {
 pub enum Data {
     Trade(Trade),
     OrderbookData(OrderbookData),
+    Fill(Fill),
 }
 
 #[derive(Debug, Deserialize)]
@@ -140,6 +143,34 @@ impl Orderbook {
             }
         }
     }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Fill {
+    pub id: u64,
+    pub market: Symbol,
+    pub future: Option<Symbol>,
+    pub base_currency: Option<Coin>,
+    pub quote_currency: Option<Coin>,
+    pub r#type: String, // e.g. "order"
+    pub side: Side,
+    pub price: Decimal,
+    pub size: Decimal,
+    pub order_id: u64,
+    pub trade_id: u64,
+    pub time: DateTime<Utc>,
+    pub fee: Decimal,
+    pub fee_rate: Decimal,
+    pub fee_currency: Coin,
+    pub liquidity: Liquidity,
+}
+
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum Liquidity {
+    Maker,
+    Taker,
 }
 
 #[derive(Debug, Deserialize)]
