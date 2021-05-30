@@ -35,7 +35,6 @@ async fn main() -> Result<()> {
                     "\n{:?} {} {} at {} - liquidation = {}",
                     trade.side, trade.size, market, trade.price, trade.liquidation
                 );
-                println!("\n{:?}", trade)
             }
             Data::OrderbookData(orderbook_data) => {
                 orderbook.update(&orderbook_data);

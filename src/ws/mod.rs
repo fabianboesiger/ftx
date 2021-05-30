@@ -12,13 +12,16 @@ use futures_util::{SinkExt, StreamExt};
 use hmac_sha256::HMAC;
 use serde_json::json;
 use std::collections::VecDeque;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::net::TcpStream;
+use tokio::time; // 1.3.0
+use tokio::time::Interval;
 use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 pub struct Ws {
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
     buf: VecDeque<Data>,
+    ping_timer: Interval,
 }
 
 impl Ws {
@@ -56,9 +59,12 @@ impl Ws {
             ))
             .await?;
 
+        let ping_timer = time::interval(Duration::from_secs(15));
+
         Ok(Self {
             stream,
             buf: VecDeque::new(),
+            ping_timer,
         })
     }
 
@@ -74,7 +80,6 @@ impl Ws {
         Self::connect_with_endpoint(Self::ENDPOINT_US, key, secret, subaccount).await
     }
 
-    /*
     async fn ping(&mut self) -> Result<()> {
         self.stream
             .send(Message::Text(
@@ -87,7 +92,6 @@ impl Ws {
 
         Ok(())
     }
-    */
 
     pub async fn subscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
         for channel in channels {
@@ -109,11 +113,11 @@ impl Ws {
                 ))
                 .await?;
 
-            match self.next_internal().await? {
-                Some(Response {
+            match self.next_response().await? {
+                Response {
                     r#type: Type::Subscribed,
                     ..
-                }) => {}
+                } => {}
                 _ => panic!("Subscription confirmation expected."),
             }
         }
@@ -121,49 +125,65 @@ impl Ws {
         Ok(())
     }
 
-    async fn next_internal(&mut self) -> Result<Option<Response>> {
-        if let Some(msg) = self.stream.next().await {
-            let msg = msg?;
-            if let Message::Text(text) = msg {
-                // println!("{}", text); // Uncomment for debugging
-                return Ok(Some(serde_json::from_str(&text)?));
+    async fn next_response(&mut self) -> Result<Response> {
+        loop {
+            tokio::select! {
+                _ = self.ping_timer.tick() => {
+                    self.ping().await?;
+                },
+                Some(msg) = self.stream.next() => {
+                    let msg = msg?;
+                    if let Message::Text(text) = msg {
+                        // println!("{}", text); // Uncomment for debugging
+                        let response: Response = serde_json::from_str(&text)?;
+
+                        // Don't return Pong responses
+                        if let Response { r#type: Type::Pong, .. } = response {
+                            continue;
+                        }
+
+                        return Ok(response)
+                    }
+                },
+            }
+        }
+    }
+
+    /// Helper function that takes a response and adds the contents to the buffer
+    fn handle_response(&mut self, response: Response) -> Result<()> {
+        if let Some(data) = response.data {
+            match data {
+                ResponseData::Trades(trades) => {
+                    // Trades channel returns an array of single trades.
+                    // Buffer so that the user receives trades one at a time
+                    for trade in trades {
+                        self.buf.push_back(Data::Trade(trade));
+                    }
+                }
+                ResponseData::OrderbookData(orderbook) => {
+                    self.buf.push_back(Data::OrderbookData(orderbook));
+                }
+                ResponseData::Fill(fill) => {
+                    self.buf.push_back(Data::Fill(fill));
+                }
             }
         }
 
-        Ok(None)
+        Ok(())
     }
 
     pub async fn next(&mut self) -> Result<Option<Data>> {
-        // If buffer contains data, we can directly return it.
-        if let Some(data) = self.buf.pop_front() {
-            return Ok(Some(data));
-        }
-
-        // Fetch new data if buffer is empty.
-        while let Some(response) = self.next_internal().await? {
-            if let Some(data) = response.data {
-                match data {
-                    ResponseData::Trades(trades) => {
-                        // Trades channel returns an array of single trades.
-                        // Buffer so that the user receives trades one at a time
-                        for trade in trades {
-                            self.buf.push_back(Data::Trade(trade));
-                        }
-                    }
-                    ResponseData::OrderbookData(orderbook) => {
-                        self.buf.push_back(Data::OrderbookData(orderbook));
-                    }
-                    ResponseData::Fill(fill) => {
-                        self.buf.push_back(Data::Fill(fill));
-                    }
-                }
-            }
-
+        loop {
+            // If buffer contains data, we can directly return it.
             if let Some(data) = self.buf.pop_front() {
                 return Ok(Some(data));
             }
-        }
 
-        Ok(None)
+            // Fetch new response if buffer is empty.
+            let response = self.next_response().await?;
+
+            // Handle the response, possibly adding to the buffer
+            self.handle_response(response)?;
+        }
     }
 }
