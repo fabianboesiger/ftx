@@ -59,12 +59,10 @@ impl Ws {
             ))
             .await?;
 
-        let ping_timer = time::interval(Duration::from_secs(15));
-
         Ok(Self {
             stream,
             buf: VecDeque::new(),
-            ping_timer,
+            ping_timer: time::interval(Duration::from_secs(15)),
         })
     }
 
