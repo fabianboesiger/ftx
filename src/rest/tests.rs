@@ -227,8 +227,8 @@ async fn place_modify_cancel_order() {
         .await
         .unwrap();
     // println!("Initial order: {:?}", initial_order);
-    assert_eq!(initial_bid_price, initial_order.price.unwrap());
-    assert_eq!(initial_bid_size, initial_order.size);
+    assert!((initial_bid_price - initial_order.price.unwrap()).abs() < f64::EPSILON);
+    assert!((initial_bid_size - initial_order.size).abs() < f64::EPSILON);
 
     // Test modify order
     let modified_order = api
@@ -244,8 +244,8 @@ async fn place_modify_cancel_order() {
     // Order ID is different for the modified order because FTX implements modify
     // as cancelling the order and placing a new one
     assert_ne!(initial_order.id, modified_order.id);
-    assert_eq!(modified_bid_price, modified_order.price.unwrap());
-    assert_eq!(modified_bid_size, modified_order.size);
+    assert!((modified_bid_price - modified_order.price.unwrap()).abs() < f64::EPSILON);
+    assert!((modified_bid_size - modified_order.size).abs() < f64::EPSILON);
 
     // Test cancel order
     let cancelled_response = api.cancel_order(modified_order.id).await.unwrap();
@@ -259,7 +259,7 @@ async fn place_modify_cancel_order() {
     let cancelled_order = api.get_order(modified_order.id).await.unwrap();
     // println!("Cancelled order: {:?}", cancelled_order);
     assert_eq!(modified_order.id, cancelled_order.id);
-    assert_eq!(0f64, cancelled_order.filled_size);
+    assert!((0f64 - cancelled_order.filled_size).abs() < f64::EPSILON);
     assert_eq!(None, cancelled_order.avg_fill_price);
     assert_eq!(OrderStatus::Closed, cancelled_order.status);
 }
