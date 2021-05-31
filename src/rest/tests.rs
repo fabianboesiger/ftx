@@ -182,3 +182,84 @@ async fn account_deserialization() {
     }"#;
     let _account: Account = serde_json::from_str(json).unwrap();
 }
+
+#[tokio::test]
+async fn place_modify_cancel_order() {
+    let api = init_api().await;
+    // Testing with ETH since BTC's minimum provide (maker) size is 0.01 BTC,
+    // too large for testing purposes
+    let market = String::from("ETH-PERP");
+    let price = api.get_market(market.as_str()).await.unwrap().price;
+
+    // Bid size will start at 0.001, which is ETH-PERP's minimum size increment
+    let initial_bid_size = 0.001;
+    // Bid size will double in the modified order
+    let modified_bid_size = 0.002;
+
+    // Bid at 95% of the current price
+    let initial_bid_price = Decimal::from_str("0.95").unwrap() * price;
+    // Bid will be modified to 94% of the current price
+    let modified_bid_price = Decimal::from_str("0.94").unwrap() * price;
+
+    // Round to 0.1, which is ETH-PERP's minimum price increment
+    let initial_bid_price = initial_bid_price.round_dp(1);
+    let modified_bid_price = modified_bid_price.round_dp(1);
+
+    // Convert to f64
+    let initial_bid_price = initial_bid_price.to_f64().unwrap();
+    let modified_bid_price = modified_bid_price.to_f64().unwrap();
+    // println!("Bid price: {}", initial_bid_price);
+    // println!("Modified bid price: {}", modified_bid_price);
+
+    // Test place order
+    let initial_order = api
+        .place_order(
+            market.as_str(),
+            OrderSide::Buy,
+            Some(initial_bid_price),
+            OrderType::Limit,
+            initial_bid_size,
+            None,
+            None,
+            Some(true),
+            None,
+        )
+        .await
+        .unwrap();
+    // println!("Initial order: {:?}", initial_order);
+    assert_eq!(initial_bid_price, initial_order.price.unwrap());
+    assert_eq!(initial_bid_size, initial_order.size);
+
+    // Test modify order
+    let modified_order = api
+        .modify_order(
+            initial_order.id,
+            Some(modified_bid_price),
+            Some(modified_bid_size),
+            None,
+        )
+        .await
+        .unwrap();
+    // println!("Modified order: {:?}", modified_order);
+    // Order ID is different for the modified order because FTX implements modify
+    // as cancelling the order and placing a new one
+    assert_ne!(initial_order.id, modified_order.id);
+    assert_eq!(modified_bid_price, modified_order.price.unwrap());
+    assert_eq!(modified_bid_size, modified_order.size);
+
+    // Test cancel order
+    let cancelled_response = api.cancel_order(modified_order.id).await.unwrap();
+    // println!("Cancelled response: {:?}", cancelled_response);
+    assert_eq!(
+        "Order queued for cancellation".to_string(),
+        cancelled_response
+    );
+
+    // Check that order was actually cancelled
+    let cancelled_order = api.get_order(modified_order.id).await.unwrap();
+    // println!("Cancelled order: {:?}", cancelled_order);
+    assert_eq!(modified_order.id, cancelled_order.id);
+    assert_eq!(0f64, cancelled_order.filled_size);
+    assert_eq!(None, cancelled_order.avg_fill_price);
+    assert_eq!(OrderStatus::Closed, cancelled_order.status);
+}
