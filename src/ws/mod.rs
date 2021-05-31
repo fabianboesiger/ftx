@@ -1,12 +1,12 @@
 //! This module is used to interact with the Websocket API.
 
 mod error;
-mod model;
+pub mod model;
 #[cfg(test)]
 mod tests;
 
 pub use error::*;
-pub use model::*;
+use model::*;
 
 use futures_util::{SinkExt, StreamExt};
 use hmac_sha256::HMAC;

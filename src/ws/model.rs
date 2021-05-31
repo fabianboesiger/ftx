@@ -1,4 +1,4 @@
-pub use crate::rest::{Coin, Id, MarketType, Side, Symbol};
+pub use crate::rest::model::{Coin, Id, MarketType, Side, Symbol};
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
 use serde::Deserialize;

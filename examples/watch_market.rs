@@ -1,6 +1,8 @@
 use dotenv::dotenv;
-use ftx::ws::Result;
-use ftx::ws::{Channel, Data, Orderbook, Ws};
+use ftx::ws::{
+    model::{Channel, Data, Orderbook},
+    Result, Ws,
+};
 use std::env::var;
 use std::io;
 use std::io::Write;
