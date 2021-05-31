@@ -38,6 +38,7 @@ pub enum Type {
     Update,
     Error,
     Partial,
+    Pong,
     // Unsubscribed, // May need this in the future
     // Info,         // May need this in the future
 }
