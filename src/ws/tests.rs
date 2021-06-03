@@ -2,6 +2,7 @@ use super::*;
 use crate::rest::Rest;
 use dotenv::dotenv;
 use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
 use std::env::var;
 
 async fn init_ws() -> Ws {
@@ -41,7 +42,7 @@ async fn trades() {
 }
 
 #[tokio::test]
-async fn order_book() {
+async fn order_book_update() {
     let mut ws = init_ws().await;
 
     let symbol: Symbol = String::from("BTC-PERP");
@@ -101,6 +102,71 @@ async fn order_book() {
             _ => panic!("Order book update data expected."),
         }
     }
+}
+
+#[tokio::test]
+async fn order_book_helpers() {
+    let symbol: Symbol = String::from("SHIT-PERP");
+    let mut ob = Orderbook::new(symbol);
+
+    // All helpers should return None since there are no orders in the book
+    assert_eq!(ob.bid_price(), None);
+    assert_eq!(ob.ask_price(), None);
+    assert_eq!(ob.mid_price(), None);
+    assert_eq!(ob.best_bid(), None);
+    assert_eq!(ob.best_ask(), None);
+    assert_eq!(ob.best_bid_and_ask(), None);
+    assert_eq!(ob.quote(Side::Buy, dec!(100)), None);
+
+    // Asks
+    ob.asks.insert(dec!(7), dec!(40));
+    ob.asks.insert(dec!(6), dec!(30));
+    ob.asks.insert(dec!(5), dec!(20));
+
+    // Bids
+    ob.bids.insert(dec!(4), dec!(5));
+    ob.bids.insert(dec!(3), dec!(10));
+    ob.bids.insert(dec!(2), dec!(15));
+
+    assert_eq!(ob.bid_price().unwrap(), dec!(4));
+    assert_eq!(ob.ask_price().unwrap(), dec!(5));
+    assert_eq!(ob.mid_price().unwrap(), dec!(4.5));
+    assert_eq!(ob.best_bid().unwrap(), (dec!(4), dec!(5)));
+    assert_eq!(ob.best_ask().unwrap(), (dec!(5), dec!(20)));
+    assert_eq!(
+        ob.best_bid_and_ask().unwrap(),
+        ((dec!(4), dec!(5)), (dec!(5), dec!(20)))
+    );
+
+    assert_eq!(ob.quote(Side::Buy, dec!(15)).unwrap(), dec!(5));
+    assert_eq!(ob.quote(Side::Buy, dec!(20)).unwrap(), dec!(5));
+    // 20 at $5, 5 at $6 = $5.2
+    assert_eq!(ob.quote(Side::Buy, dec!(25)).unwrap(), dec!(5.2));
+    // 20 at $5, 30 at $6 = $5.6
+    assert_eq!(ob.quote(Side::Buy, dec!(50)).unwrap(), dec!(5.6));
+    // 20 at $5, 30 at $6, 20 at $7 = 6
+    assert_eq!(ob.quote(Side::Buy, dec!(70)).unwrap(), dec!(6));
+    assert_eq!(ob.quote(Side::Buy, dec!(100)), None);
+
+    // Likewise
+    assert_eq!(ob.quote(Side::Sell, dec!(5)).unwrap(), dec!(4));
+    assert_eq!(
+        ob.quote(Side::Sell, dec!(7)).unwrap(),
+        (dec!(20) + dec!(6)) / dec!(7)
+    );
+    assert_eq!(
+        ob.quote(Side::Sell, dec!(15)).unwrap(),
+        (dec!(20) + dec!(30)) / dec!(15)
+    );
+    assert_eq!(
+        ob.quote(Side::Sell, dec!(17)).unwrap(),
+        (dec!(20) + dec!(30) + dec!(4)) / dec!(17)
+    );
+    assert_eq!(
+        ob.quote(Side::Sell, dec!(30)).unwrap(),
+        (dec!(20) + dec!(30) + dec!(30)) / dec!(30)
+    );
+    assert_eq!(ob.quote(Side::Sell, dec!(100)), None);
 }
 
 #[tokio::test]
