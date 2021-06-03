@@ -116,7 +116,7 @@ impl Ws {
                     r#type: Type::Subscribed,
                     ..
                 } => {}
-                _ => panic!("Subscription confirmation expected."),
+                _ => return Err(Error::MissingSubscriptionConfirmation),
             }
         }
 
