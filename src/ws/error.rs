@@ -6,6 +6,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     Tungstenite(tungstenite::Error),
     Serde(serde_json::Error),
+    MissingSubscriptionConfirmation,
 }
 
 impl From<tungstenite::Error> for Error {

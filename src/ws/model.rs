@@ -1,6 +1,7 @@
 pub use crate::rest::{Coin, Id, MarketType, Side, Symbol};
 use chrono::{DateTime, Utc};
 use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
 use serde::Deserialize;
 use serde_with::{serde_as, TimestampSecondsWithFrac};
 use std::collections::BTreeMap;
@@ -143,6 +144,79 @@ impl Orderbook {
                 }
             }
         }
+    }
+
+    /// Returns the price of the best bid
+    pub fn bid_price(&self) -> Option<Decimal> {
+        self.bids.keys().rev().next().cloned()
+    }
+
+    /// Returns the price of the best ask
+    pub fn ask_price(&self) -> Option<Decimal> {
+        self.asks.keys().next().cloned()
+    }
+
+    /// Returns the midpoint between the best bid price and best ask price.
+    /// Output is not rounded to the smallest price increment.
+    pub fn mid_price(&self) -> Option<Decimal> {
+        Some((self.bid_price()? + self.ask_price()?) / dec!(2))
+    }
+
+    /// Returns the price and quantity of the best bid
+    /// (bid_price, bid_quantity)
+    pub fn best_bid(&self) -> Option<(Decimal, Decimal)> {
+        let (price, quantity) = self.bids.iter().rev().next()?;
+
+        Some((*price, *quantity))
+    }
+
+    /// Returns the price and quantity of the best ask
+    /// (ask_price, ask_quantity)
+    pub fn best_ask(&self) -> Option<(Decimal, Decimal)> {
+        let (price, quantity) = self.asks.iter().next()?;
+
+        Some((*price, *quantity))
+    }
+
+    /// Returns the price and quantity of the best bid and best ask
+    /// ((bid_price, bid_quantity), (ask_price, ask_quantity))
+    pub fn best_bid_and_ask(&self) -> Option<((Decimal, Decimal), (Decimal, Decimal))> {
+        Some((self.best_bid()?, self.best_ask()?))
+    }
+
+    /// Returns the expected execution price of a market order given the current
+    /// orders in the order book. Returns None if the order size exceeds the
+    /// liquidity available on that side of the order book.
+    pub fn quote(&self, side: Side, quantity: Decimal) -> Option<Decimal> {
+        // Step 1: Match with orders in the book
+        let mut bids_iter = self.bids.iter().rev();
+        let mut asks_iter = self.asks.iter();
+
+        let mut fills: Vec<(Decimal, Decimal)> = Vec::new(); // (price, quantity)
+        let mut remaining = quantity;
+
+        while remaining > dec!(0) {
+            let (price, quantity) = match side {
+                Side::Buy => asks_iter.next()?,
+                Side::Sell => bids_iter.next()?,
+            };
+
+            if *quantity <= remaining {
+                remaining -= quantity;
+                fills.push((*price, *quantity));
+            } else {
+                fills.push((*price, remaining));
+                remaining = dec!(0);
+            }
+        }
+
+        // Step 2: Compute the weighted average
+        let mut dot_product = dec!(0);
+        for (fill_price, fill_quantity) in fills.iter() {
+            dot_product += fill_price * fill_quantity;
+        }
+
+        Some(dot_product / quantity)
     }
 }
 

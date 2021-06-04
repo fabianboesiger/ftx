@@ -20,6 +20,7 @@ dotenv = "^0.15.0"
 log = "^0.4.14"
 hex = "^0.4.3"
 rust_decimal = "^1.13.0"
+rust_decimal_macros = "^1.14.1"
 chrono = { version = "^0.4.19", features = ["serde"] }
 tokio-tungstenite = { version = "^0.14.0", features = ["native-tls"], optional = true }
 futures-util = { version = "^0.3.14", optional = true }
