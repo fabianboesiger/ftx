@@ -1,5 +1,6 @@
 use super::*;
 use dotenv::dotenv;
+use rust_decimal_macros::dec;
 use std::env::var;
 
 async fn init_api() -> Rest {
@@ -197,9 +198,9 @@ async fn place_modify_cancel_order() {
     let modified_bid_size = 0.002;
 
     // Bid at 95% of the current price
-    let initial_bid_price = Decimal::from_str("0.95").unwrap() * price;
+    let initial_bid_price = dec!(0.95) * price;
     // Bid will be modified to 94% of the current price
-    let modified_bid_price = Decimal::from_str("0.94").unwrap() * price;
+    let modified_bid_price = dec!(0.94) * price;
 
     // Round to 0.1, which is ETH-PERP's minimum price increment
     let initial_bid_price = initial_bid_price.round_dp(1);

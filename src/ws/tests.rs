@@ -1,7 +1,6 @@
 use super::*;
 use crate::rest::Rest;
 use dotenv::dotenv;
-use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use std::env::var;
 
@@ -56,6 +55,7 @@ async fn order_book_update() {
     match ws.next().await.unwrap() {
         Some(Data::OrderbookData(data)) if data.action == OrderbookAction::Partial => {
             orderbook.update(&data);
+            assert_eq!(orderbook.verify_checksum(data.checksum), true);
             // println!("{:#?}", orderbook);
         }
         _ => panic!("Order book snapshot data expected."),
@@ -67,30 +67,31 @@ async fn order_book_update() {
             Some(Data::OrderbookData(data)) if data.action == OrderbookAction::Update => {
                 // Check that removed orders are in the orderbook
                 for bid in &data.bids {
-                    if bid.1 == Decimal::from(0) {
+                    if bid.1 == dec!(0) {
                         assert!(orderbook.bids.contains_key(&bid.0));
                     }
                 }
                 for ask in &data.asks {
-                    if ask.1 == Decimal::from(0) {
+                    if ask.1 == dec!(0) {
                         assert!(orderbook.asks.contains_key(&ask.0));
                     }
                 }
 
                 // Update the order book
                 orderbook.update(&data);
+                assert_eq!(orderbook.verify_checksum(data.checksum), true);
 
                 // Check that removed orders are no longer in the orderbook
                 // Check that inserted orders have been updated correctly
                 for bid in &data.bids {
-                    if bid.1 == Decimal::from(0) {
+                    if bid.1 == dec!(0) {
                         assert_eq!(orderbook.bids.contains_key(&bid.0), false);
                     } else {
                         assert_eq!(orderbook.bids.get(&bid.0), Some(&bid.1));
                     }
                 }
                 for ask in &data.asks {
-                    if ask.1 == Decimal::from(0) {
+                    if ask.1 == dec!(0) {
                         assert_eq!(orderbook.asks.contains_key(&ask.0), false);
                     } else {
                         assert_eq!(orderbook.asks.get(&ask.0), Some(&ask.1));
@@ -167,6 +168,45 @@ async fn order_book_helpers() {
         (dec!(20) + dec!(30) + dec!(30)) / dec!(30)
     );
     assert_eq!(ob.quote(Side::Sell, dec!(100)), None);
+}
+
+#[tokio::test]
+async fn order_book_checksum() {
+    // BTC-PERP: Whole number prices, decimal and fractional quantities
+    // ETH-PERP: Decimal prices, decimal and fractional quantities
+    // ETH/BTC: Fractional prices, decimal and fractional quantities
+    let symbols = vec!["BTC-PERP", "ETH-PERP", "ETH/BTC"];
+
+    // Subscribe to each symbol and verify orderbook checksums for initial snapshot
+    // and one orderbook update
+    for symbol in symbols {
+        let mut ws = init_ws().await;
+
+        ws.subscribe(vec![Channel::Orderbook(symbol.to_string())])
+            .await
+            .expect("Subscription failed.");
+
+        let mut orderbook = Orderbook::new(symbol.to_string());
+
+        // Initial snapshot
+        match ws.next().await.unwrap() {
+            Some(Data::OrderbookData(data)) if data.action == OrderbookAction::Partial => {
+                orderbook.update(&data);
+                assert_eq!(orderbook.verify_checksum(data.checksum), true);
+                // println!("{:#?}", orderbook);
+            }
+            _ => panic!("Order book snapshot data expected."),
+        }
+
+        // Orderbook update
+        match ws.next().await.unwrap() {
+            Some(Data::OrderbookData(data)) if data.action == OrderbookAction::Update => {
+                orderbook.update(&data);
+                assert_eq!(orderbook.verify_checksum(data.checksum), true);
+            }
+            _ => panic!("Order book update data expected."),
+        }
+    }
 }
 
 #[tokio::test]

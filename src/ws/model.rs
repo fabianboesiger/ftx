@@ -1,5 +1,6 @@
 pub use crate::rest::{Coin, Id, MarketType, Side, Symbol};
 use chrono::{DateTime, Utc};
+use crc32fast::Hasher;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde::Deserialize;
@@ -85,10 +86,11 @@ pub struct OrderbookData {
     // i.e. highest to lowest bids, lowest to highest asks
     pub bids: Vec<(Decimal, Decimal)>,
     pub asks: Vec<(Decimal, Decimal)>,
-    pub checksum: u32,
+    pub checksum: Checksum,
     #[serde_as(as = "TimestampSecondsWithFrac<f64>")]
     pub time: DateTime<Utc>, // API returns 1621740952.5079553
 }
+type Checksum = u32;
 
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -129,14 +131,14 @@ impl Orderbook {
             }
             OrderbookAction::Update => {
                 for bid in &data.bids {
-                    if bid.1 == Decimal::from(0) {
+                    if bid.1 == dec!(0) {
                         self.bids.remove(&bid.0);
                     } else {
                         self.bids.insert(bid.0, bid.1);
                     }
                 }
                 for ask in &data.asks {
-                    if ask.1 == Decimal::from(0) {
+                    if ask.1 == dec!(0) {
                         self.asks.remove(&ask.0);
                     } else {
                         self.asks.insert(ask.0, ask.1);
@@ -144,6 +146,50 @@ impl Orderbook {
                 }
             }
         }
+    }
+
+    /// Internal helper function that serializes Decimal to String,
+    /// padding a 0 if the Decimal is a whole number
+    fn _pad_0(&self, value: Decimal) -> String {
+        if value.fract() == dec!(0) {
+            format!("{:.1}", value)
+        } else {
+            value.to_string()
+        }
+    }
+
+    pub fn verify_checksum(&self, checksum: Checksum) -> bool {
+        let mut input: Vec<String> = Vec::new();
+
+        let mut bids_iter = self.bids.iter().rev();
+        let mut asks_iter = self.asks.iter();
+
+        for _i in 0..100 {
+            let bid = bids_iter.next();
+            let ask = asks_iter.next();
+
+            if let Some(bid) = bid {
+                let bid_price = self._pad_0(*bid.0);
+                let bid_quantity = self._pad_0(*bid.1);
+                input.push(format!("{}:{}", bid_price, bid_quantity));
+            }
+            if let Some(ask) = ask {
+                let ask_price = self._pad_0(*ask.0);
+                let ask_quantity = self._pad_0(*ask.1);
+                input.push(format!("{}:{}", ask_price, ask_quantity));
+            }
+        }
+
+        let input: String = input.join(":");
+        // println!("{}", input);
+        let input = input.as_bytes();
+
+        let mut hasher = Hasher::new();
+        hasher.update(input);
+        let output = hasher.finalize();
+
+        // println!("Output: {}, Checksum: {}", output, checksum);
+        output == checksum
     }
 
     /// Returns the price of the best bid
