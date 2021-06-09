@@ -269,7 +269,7 @@ impl Orderbook {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Fill {
-    pub id: u64,
+    pub id: Id,
     pub market: Symbol,
     pub future: Option<Symbol>,
     pub base_currency: Option<Coin>,
@@ -278,8 +278,8 @@ pub struct Fill {
     pub side: Side,
     pub price: Decimal,
     pub size: Decimal,
-    pub order_id: u64,
-    pub trade_id: u64,
+    pub order_id: Id,
+    pub trade_id: Id,
     pub time: DateTime<Utc>,
     pub fee: Decimal,
     pub fee_rate: Decimal,

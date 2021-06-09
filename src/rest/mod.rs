@@ -395,9 +395,9 @@ impl Rest {
         &self,
         market: &str,
         side: OrderSide,
-        price: Option<f64>,
+        price: Option<Decimal>,
         r#type: OrderType,
-        size: f64,
+        size: Decimal,
         reduce_only: Option<bool>,
         ioc: Option<bool>,
         post_only: Option<bool>,
@@ -430,9 +430,9 @@ impl Rest {
 
     pub async fn modify_order(
         &self,
-        order_id: usize,
-        price: Option<f64>,
-        size: Option<f64>,
+        order_id: Id,
+        price: Option<Decimal>,
+        size: Option<Decimal>,
         client_id: Option<&str>,
     ) -> Result<OrderInfo> {
         self.post(
@@ -446,7 +446,7 @@ impl Rest {
         .await
     }
 
-    pub async fn get_order(&self, order_id: usize) -> Result<OrderInfo> {
+    pub async fn get_order(&self, order_id: Id) -> Result<OrderInfo> {
         self.get(&format!("/orders/{}", order_id), None).await
     }
 
@@ -455,7 +455,7 @@ impl Rest {
             .await
     }
 
-    pub async fn cancel_order(&self, order_id: usize) -> Result<String> {
+    pub async fn cancel_order(&self, order_id: Id) -> Result<String> {
         self.delete(&format!("/orders/{}", order_id), None).await
     }
 
