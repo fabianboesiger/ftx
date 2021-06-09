@@ -301,7 +301,7 @@ pub struct WalletDeposit {
     pub confirmations: usize,
     pub confirmed_time: String,
     pub fee: Decimal, // fee, not included in size
-    pub id: usize,
+    pub id: Id,
     pub size: Decimal,
     pub status: DepositStatus,
     pub time: String,
@@ -337,7 +337,7 @@ pub enum OrderStatus {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderInfo {
-    pub id: usize,
+    pub id: Id,
     pub market: String,
     pub future: Option<String>,
     pub r#type: OrderType,

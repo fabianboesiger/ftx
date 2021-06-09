@@ -430,7 +430,7 @@ impl Rest {
 
     pub async fn modify_order(
         &self,
-        order_id: usize,
+        order_id: Id,
         price: Option<Decimal>,
         size: Option<Decimal>,
         client_id: Option<&str>,
@@ -446,7 +446,7 @@ impl Rest {
         .await
     }
 
-    pub async fn get_order(&self, order_id: usize) -> Result<OrderInfo> {
+    pub async fn get_order(&self, order_id: Id) -> Result<OrderInfo> {
         self.get(&format!("/orders/{}", order_id), None).await
     }
 
@@ -455,7 +455,7 @@ impl Rest {
             .await
     }
 
-    pub async fn cancel_order(&self, order_id: usize) -> Result<String> {
+    pub async fn cancel_order(&self, order_id: Id) -> Result<String> {
         self.delete(&format!("/orders/{}", order_id), None).await
     }
 
