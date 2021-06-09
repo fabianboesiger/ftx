@@ -226,7 +226,7 @@ async fn fills() {
         OrderSide::Buy,
         None,
         OrderType::Market,
-        0.0001,
+        dec!(0.0001),
         None,
         None,
         None,

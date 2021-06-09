@@ -277,13 +277,13 @@ pub struct WalletDepositAddress {
 #[serde(rename_all = "camelCase")]
 pub struct WalletBalance {
     pub coin: String,
-    pub free: f64,
-    pub total: f64,
-    pub spot_borrow: f64,
-    pub available_without_borrow: f64,
+    pub free: Decimal,
+    pub total: Decimal,
+    pub spot_borrow: Decimal,
+    pub available_without_borrow: Decimal,
     /// As of 2021-05-12, usdValue is not documented on
     /// https://docs.ftx.com/#get-balances, but it is returned.
-    pub usd_value: Option<f64>,
+    pub usd_value: Option<Decimal>,
 }
 
 #[derive(Debug, Deserialize, PartialEq)]
@@ -300,9 +300,9 @@ pub struct WalletDeposit {
     pub coin: String,
     pub confirmations: usize,
     pub confirmed_time: String,
-    pub fee: f64, // fee, not included in size
+    pub fee: Decimal, // fee, not included in size
     pub id: usize,
-    pub size: f64,
+    pub size: Decimal,
     pub status: DepositStatus,
     pub time: String,
     pub txid: Option<String>,
@@ -342,15 +342,15 @@ pub struct OrderInfo {
     pub future: Option<String>,
     pub r#type: OrderType,
     pub side: OrderSide,
-    pub price: Option<f64>, // null for new market orders
-    pub size: f64,
+    pub price: Option<Decimal>, // null for new market orders
+    pub size: Decimal,
     pub reduce_only: bool,
     pub ioc: bool,
     pub post_only: bool,
     pub status: OrderStatus,
-    pub filled_size: f64,
-    pub remaining_size: f64,
-    pub avg_fill_price: Option<f64>,
+    pub filled_size: Decimal,
+    pub remaining_size: Decimal,
+    pub avg_fill_price: Option<Decimal>,
     pub liquidation: Option<bool>,
     pub created_at: DateTime<Utc>,
     pub client_id: Option<String>,
