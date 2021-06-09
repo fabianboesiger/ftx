@@ -92,7 +92,7 @@ pub struct OrderbookData {
 }
 type Checksum = u32;
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderbookAction {
     /// Initial snapshot of the orderbook
@@ -287,7 +287,7 @@ pub struct Fill {
     pub liquidity: Liquidity,
 }
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum Liquidity {
     Maker,
