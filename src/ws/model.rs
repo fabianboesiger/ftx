@@ -7,7 +7,7 @@ use serde::Deserialize;
 use serde_with::{serde_as, TimestampSecondsWithFrac};
 use std::collections::BTreeMap;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Channel {
     Orderbook(Symbol),
@@ -25,7 +25,7 @@ pub struct Response {
 }
 */
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub market: Option<Symbol>,
@@ -33,7 +33,7 @@ pub struct Response {
     pub data: Option<ResponseData>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Type {
     Subscribed,
@@ -47,7 +47,7 @@ pub enum Type {
 
 /// Represents the response received from FTX, and is used for
 /// deserialization
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum ResponseData {
@@ -57,14 +57,14 @@ pub enum ResponseData {
 }
 
 /// Represents the data we return to the user
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Data {
     Trade(Trade),
     OrderbookData(OrderbookData),
     Fill(Fill),
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Trade {
     pub id: Id,
@@ -78,7 +78,7 @@ pub struct Trade {
 /// Order book data received from FTX which is used for initializing and updating
 /// the OrderBook struct
 #[serde_as]
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderbookData {
     pub action: OrderbookAction,
@@ -90,6 +90,7 @@ pub struct OrderbookData {
     #[serde_as(as = "TimestampSecondsWithFrac<f64>")]
     pub time: DateTime<Utc>, // API returns 1621740952.5079553
 }
+
 type Checksum = u32;
 
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
@@ -266,7 +267,7 @@ impl Orderbook {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Fill {
     pub id: Id,
@@ -294,7 +295,7 @@ pub enum Liquidity {
     Taker,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Market {
     name: Symbol,

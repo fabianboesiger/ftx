@@ -6,7 +6,7 @@ pub type Id = u64;
 pub type Coin = String;
 pub type Symbol = String;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum Response<T> {
@@ -16,7 +16,7 @@ pub enum Response<T> {
 
 // REST API -> Subaccounts
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Subaccount {
     pub nickname: String,
@@ -27,7 +27,7 @@ pub struct Subaccount {
 
 pub type Subaccounts = Vec<Subaccount>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Create {
     pub nickname: String,
@@ -35,15 +35,15 @@ pub struct Create {
     pub editable: bool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChangeName;
 
-#[derive(Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Delete;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Balance {
     pub coin: Coin,
@@ -55,7 +55,7 @@ pub struct Balance {
 
 pub type Balances = Vec<Balance>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Transfer {
     pub id: Id,
@@ -67,14 +67,14 @@ pub struct Transfer {
 
 // REST API -> Markets
 
-#[derive(Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum MarketType {
     Future,
     Spot,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Market {
     #[serde(rename = "type")]
@@ -103,7 +103,7 @@ pub struct Market {
 
 pub type Markets = Vec<Market>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Orderbook {
     pub asks: Vec<(Decimal, Decimal)>,
@@ -117,7 +117,7 @@ pub enum Side {
     Sell,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Trade {
     pub id: Id,
@@ -130,7 +130,7 @@ pub struct Trade {
 
 pub type Trades = Vec<Trade>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Price {
     pub close: Decimal,
@@ -154,7 +154,7 @@ pub enum FutureType {
     Move,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Future {
     pub ask: Option<Decimal>,
@@ -187,7 +187,7 @@ pub struct Future {
 
 pub type Futures = Vec<Future>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FutureStats {
     pub volume: Decimal,
@@ -199,7 +199,7 @@ pub struct FutureStats {
     pub open_interest: Decimal,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FundingRate {
     pub future: Symbol,
@@ -213,7 +213,7 @@ pub type FundingRates = Vec<FundingRate>;
 
 /// Returned by GET /account.
 /// See https://docs.ftx.com/#get-account-information.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Account {
     pub backstop_provider: bool,
@@ -243,7 +243,7 @@ pub struct Account {
 /// See https://docs.ftx.com/#get-positions.
 pub type Positions = Vec<Position>;
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
     pub cost: Decimal,
@@ -266,14 +266,14 @@ pub struct Position {
 // REST API -> Wallet
 // TODO
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WalletDepositAddress {
     pub address: String,
     pub tag: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WalletBalance {
     pub coin: String,
@@ -294,7 +294,7 @@ pub enum DepositStatus {
     Cancelled,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WalletDeposit {
     pub coin: String,
@@ -334,7 +334,7 @@ pub enum OrderStatus {
     Closed, // filled or cancelled
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderInfo {
     pub id: Id,
