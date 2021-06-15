@@ -292,19 +292,20 @@ pub enum DepositStatus {
     Confirmed,
     Unconfirmed,
     Cancelled,
+    Complete,
 }
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WalletDeposit {
-    pub coin: String,
-    pub confirmations: usize,
-    pub confirmed_time: String,
-    pub fee: Decimal, // fee, not included in size
     pub id: Id,
+    pub coin: String,
     pub size: Decimal,
-    pub status: DepositStatus,
     pub time: String,
+    pub status: DepositStatus,
+    pub confirmations: Option<usize>,
+    pub confirmed_time: Option<String>,
+    pub fee: Option<Decimal>, // fee, not included in size
     pub txid: Option<String>,
     pub notes: Option<String>,
 }
