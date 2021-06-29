@@ -173,7 +173,7 @@ impl Ws {
                     }
                     _ => {
                         // Otherwise, continue adding contents to buffer
-                        self.handle_response(response)?;
+                        self.handle_response(response);
                     }
                 }
             }
@@ -209,7 +209,7 @@ impl Ws {
     }
 
     /// Helper function that takes a response and adds the contents to the buffer
-    fn handle_response(&mut self, response: Response) -> Result<()> {
+    fn handle_response(&mut self, response: Response) {
         if let Some(data) = response.data {
             match data {
                 ResponseData::Trades(trades) => {
@@ -227,8 +227,6 @@ impl Ws {
                 }
             }
         }
-
-        Ok(())
     }
 
     pub async fn next(&mut self) -> Result<Option<Data>> {
@@ -242,7 +240,7 @@ impl Ws {
             let response = self.next_response().await?;
 
             // Handle the response, possibly adding to the buffer
-            self.handle_response(response)?;
+            self.handle_response(response);
         }
     }
 }
