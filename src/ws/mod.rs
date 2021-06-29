@@ -19,6 +19,7 @@ use tokio::time::Interval;
 use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 pub struct Ws {
+    channels: Vec<Channel>,
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
     buf: VecDeque<Data>,
     ping_timer: Interval,
@@ -60,6 +61,7 @@ impl Ws {
             .await?;
 
         Ok(Self {
+            channels: Vec::new(),
             stream,
             buf: VecDeque::new(),
             ping_timer: time::interval(Duration::from_secs(15)),
@@ -91,15 +93,32 @@ impl Ws {
         Ok(())
     }
 
+    /// Subscribe to specified `Channel`s
     pub async fn subscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
+        for channel in channels.iter() {
+            self.channels.push(channel.clone());
+        }
+
         self.subscribe_or_unsubscribe(channels, true).await?;
 
         Ok(())
     }
 
-    /// Unsubscribe from the specified `Channel`s
+    /// Unsubscribe from specified `Channel`s
     pub async fn unsubscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
+        // Remove specified channels from self.channels
+        self.channels.retain(|c| !channels.contains(c));
+
         self.subscribe_or_unsubscribe(channels, false).await?;
+
+        Ok(())
+    }
+
+    /// Unsubscribe from all currently subscribed `Channel`s
+    pub async fn unsubscribe_all(&mut self) -> Result<()> {
+        self.unsubscribe(self.channels.clone()).await?;
+
+        self.channels.clear();
 
         Ok(())
     }

@@ -7,7 +7,7 @@ use serde::Deserialize;
 use serde_with::{serde_as, TimestampSecondsWithFrac};
 use std::collections::BTreeMap;
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum Channel {
     Orderbook(Symbol),

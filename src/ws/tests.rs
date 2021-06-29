@@ -27,6 +27,32 @@ async fn init_api() -> Rest {
 }
 
 #[tokio::test]
+async fn subscribe_unsubscribe() {
+    let mut ws = init_ws().await;
+
+    // Channels: BTC, ETH
+    ws.subscribe(vec![
+        Channel::Trades("BTC-PERP".to_owned()),
+        Channel::Trades("ETH-PERP".to_owned()),
+    ])
+    .await
+    .expect("Subscribe failed");
+
+    // Channels: BTC
+    ws.unsubscribe(vec![Channel::Trades("ETH-PERP".to_owned())])
+        .await
+        .expect("Unsubscribe failed");
+
+    // Channels: BTC, LTC
+    ws.subscribe(vec![Channel::Trades("LTC-PERP".to_owned())])
+        .await
+        .expect("Subscribe failed");
+
+    // Channels: None
+    ws.unsubscribe_all().await.expect("Unsubscribe all failed");
+}
+
+#[tokio::test]
 async fn trades() {
     let mut ws = init_ws().await;
 
@@ -39,9 +65,7 @@ async fn trades() {
         _ => panic!("Trade data expected."),
     }
 
-    ws.unsubscribe(vec![Channel::Trades("BTC-PERP".to_owned())])
-        .await
-        .expect("Unsubscribe failed.");
+    ws.unsubscribe_all().await.expect("Unsubscribe failed");
 }
 
 #[tokio::test]
@@ -108,9 +132,7 @@ async fn order_book_update() {
         }
     }
 
-    ws.unsubscribe(vec![Channel::Orderbook("BTC-PERP".to_owned())])
-        .await
-        .expect("Unsubscribe failed.");
+    ws.unsubscribe_all().await.expect("Unsubscribe failed");
 }
 
 #[tokio::test]
@@ -214,6 +236,8 @@ async fn order_book_checksum() {
             }
             _ => panic!("Order book update data expected."),
         }
+
+        ws.unsubscribe_all().await.expect("Unsubscribe failed");
     }
 }
 
@@ -247,4 +271,6 @@ async fn fills() {
         _ => panic!("Fill data expected."),
     }
     */
+
+    ws.unsubscribe_all().await.expect("Unsubscribe failed");
 }
