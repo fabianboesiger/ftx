@@ -1,3 +1,4 @@
+use crate::ws::Channel;
 use tokio_tungstenite::tungstenite;
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -6,6 +7,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub enum Error {
     Tungstenite(tungstenite::Error),
     Serde(serde_json::Error),
+    NotSubscribedToThisChannel(Channel),
     MissingSubscriptionConfirmation,
 }
 

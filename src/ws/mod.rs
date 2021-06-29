@@ -106,10 +106,18 @@ impl Ws {
 
     /// Unsubscribe from specified `Channel`s
     pub async fn unsubscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
-        // Remove specified channels from self.channels
-        self.channels.retain(|c| !channels.contains(c));
+        // Check that the specified channels match an existing one
+        for channel in channels.iter() {
+            if !self.channels.contains(&channel) {
+                return Err(Error::NotSubscribedToThisChannel(channel.clone()));
+            }
+        }
 
-        self.subscribe_or_unsubscribe(channels, false).await?;
+        self.subscribe_or_unsubscribe(channels.clone(), false)
+            .await?;
+
+        // Unsubscribe successful, remove specified channels from self.channels
+        self.channels.retain(|c| !channels.contains(c));
 
         Ok(())
     }
