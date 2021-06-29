@@ -92,7 +92,30 @@ impl Ws {
     }
 
     pub async fn subscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
-        for channel in channels {
+        self.subscribe_or_unsubscribe(channels, true).await?;
+
+        Ok(())
+    }
+
+    /// Unsubscribe from the specified `Channel`s
+    pub async fn unsubscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
+        self.subscribe_or_unsubscribe(channels, false).await?;
+
+        Ok(())
+    }
+
+    async fn subscribe_or_unsubscribe(
+        &mut self,
+        channels: Vec<Channel>,
+        subscribe: bool,
+    ) -> Result<()> {
+        let op = if subscribe {
+            "subscribe"
+        } else {
+            "unsubscribe"
+        };
+
+        'channels: for channel in channels {
             let (channel, symbol) = match channel {
                 Channel::Orderbook(symbol) => ("orderbook", symbol),
                 Channel::Trades(symbol) => ("trades", symbol),
@@ -103,7 +126,7 @@ impl Ws {
             self.stream
                 .send(Message::Text(
                     json!({
-                        "op": "subscribe",
+                        "op": op,
                         "channel": channel,
                         "market": symbol,
                     })
@@ -111,13 +134,32 @@ impl Ws {
                 ))
                 .await?;
 
-            match self.next_response().await? {
-                Response {
-                    r#type: Type::Subscribed,
-                    ..
-                } => {}
-                _ => return Err(Error::MissingSubscriptionConfirmation),
+            // Confirmation should arrive within the next 100 updates
+            for _ in 0..100 {
+                let response = self.next_response().await?;
+                match response {
+                    Response {
+                        r#type: Type::Subscribed,
+                        ..
+                    } if subscribe => {
+                        // Subscribe confirmed
+                        continue 'channels;
+                    }
+                    Response {
+                        r#type: Type::Unsubscribed,
+                        ..
+                    } if !subscribe => {
+                        // Unsubscribe confirmed
+                        continue 'channels;
+                    }
+                    _ => {
+                        // Otherwise, continue adding contents to buffer
+                        self.handle_response(response)?;
+                    }
+                }
             }
+
+            return Err(Error::MissingSubscriptionConfirmation);
         }
 
         Ok(())

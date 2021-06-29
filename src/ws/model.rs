@@ -37,11 +37,11 @@ pub struct Response {
 #[serde(rename_all = "camelCase")]
 pub enum Type {
     Subscribed,
+    Unsubscribed,
     Update,
     Error,
     Partial,
     Pong,
-    // Unsubscribed, // May need this in the future
     // Info,         // May need this in the future
 }
 

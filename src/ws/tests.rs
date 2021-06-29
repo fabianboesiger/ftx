@@ -38,6 +38,10 @@ async fn trades() {
         Some(Data::Trade(..)) => {}
         _ => panic!("Trade data expected."),
     }
+
+    ws.unsubscribe(vec![Channel::Trades("BTC-PERP".to_owned())])
+        .await
+        .expect("Unsubscribe failed.");
 }
 
 #[tokio::test]
@@ -103,6 +107,10 @@ async fn order_book_update() {
             _ => panic!("Order book update data expected."),
         }
     }
+
+    ws.unsubscribe(vec![Channel::Orderbook("BTC-PERP".to_owned())])
+        .await
+        .expect("Unsubscribe failed.");
 }
 
 #[tokio::test]
