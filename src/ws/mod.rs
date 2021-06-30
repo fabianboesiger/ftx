@@ -19,6 +19,7 @@ use tokio::time::Interval;
 use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, WebSocketStream};
 
 pub struct Ws {
+    channels: Vec<Channel>,
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
     buf: VecDeque<Data>,
     ping_timer: Interval,
@@ -60,6 +61,7 @@ impl Ws {
             .await?;
 
         Ok(Self {
+            channels: Vec::new(),
             stream,
             buf: VecDeque::new(),
             ping_timer: time::interval(Duration::from_secs(15)),
@@ -91,8 +93,56 @@ impl Ws {
         Ok(())
     }
 
+    /// Subscribe to specified `Channel`s
     pub async fn subscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
-        for channel in channels {
+        for channel in channels.iter() {
+            self.channels.push(channel.clone());
+        }
+
+        self.subscribe_or_unsubscribe(channels, true).await?;
+
+        Ok(())
+    }
+
+    /// Unsubscribe from specified `Channel`s
+    pub async fn unsubscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
+        // Check that the specified channels match an existing one
+        for channel in channels.iter() {
+            if !self.channels.contains(&channel) {
+                return Err(Error::NotSubscribedToThisChannel(channel.clone()));
+            }
+        }
+
+        self.subscribe_or_unsubscribe(channels.clone(), false)
+            .await?;
+
+        // Unsubscribe successful, remove specified channels from self.channels
+        self.channels.retain(|c| !channels.contains(c));
+
+        Ok(())
+    }
+
+    /// Unsubscribe from all currently subscribed `Channel`s
+    pub async fn unsubscribe_all(&mut self) -> Result<()> {
+        self.unsubscribe(self.channels.clone()).await?;
+
+        self.channels.clear();
+
+        Ok(())
+    }
+
+    async fn subscribe_or_unsubscribe(
+        &mut self,
+        channels: Vec<Channel>,
+        subscribe: bool,
+    ) -> Result<()> {
+        let op = if subscribe {
+            "subscribe"
+        } else {
+            "unsubscribe"
+        };
+
+        'channels: for channel in channels {
             let (channel, symbol) = match channel {
                 Channel::Orderbook(symbol) => ("orderbook", symbol),
                 Channel::Trades(symbol) => ("trades", symbol),
@@ -103,7 +153,7 @@ impl Ws {
             self.stream
                 .send(Message::Text(
                     json!({
-                        "op": "subscribe",
+                        "op": op,
                         "channel": channel,
                         "market": symbol,
                     })
@@ -111,13 +161,32 @@ impl Ws {
                 ))
                 .await?;
 
-            match self.next_response().await? {
-                Response {
-                    r#type: Type::Subscribed,
-                    ..
-                } => {}
-                _ => return Err(Error::MissingSubscriptionConfirmation),
+            // Confirmation should arrive within the next 100 updates
+            for _ in 0..100 {
+                let response = self.next_response().await?;
+                match response {
+                    Response {
+                        r#type: Type::Subscribed,
+                        ..
+                    } if subscribe => {
+                        // Subscribe confirmed
+                        continue 'channels;
+                    }
+                    Response {
+                        r#type: Type::Unsubscribed,
+                        ..
+                    } if !subscribe => {
+                        // Unsubscribe confirmed
+                        continue 'channels;
+                    }
+                    _ => {
+                        // Otherwise, continue adding contents to buffer
+                        self.handle_response(response);
+                    }
+                }
             }
+
+            return Err(Error::MissingSubscriptionConfirmation);
         }
 
         Ok(())
@@ -148,7 +217,7 @@ impl Ws {
     }
 
     /// Helper function that takes a response and adds the contents to the buffer
-    fn handle_response(&mut self, response: Response) -> Result<()> {
+    fn handle_response(&mut self, response: Response) {
         if let Some(data) = response.data {
             match data {
                 ResponseData::Trades(trades) => {
@@ -166,8 +235,6 @@ impl Ws {
                 }
             }
         }
-
-        Ok(())
     }
 
     pub async fn next(&mut self) -> Result<Option<Data>> {
@@ -181,7 +248,7 @@ impl Ws {
             let response = self.next_response().await?;
 
             // Handle the response, possibly adding to the buffer
-            self.handle_response(response)?;
+            self.handle_response(response);
         }
     }
 }
