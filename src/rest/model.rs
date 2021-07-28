@@ -330,9 +330,12 @@ pub enum OrderSide {
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderStatus {
-    New, // accepted but not processed yet
+    /// Rest: accepted but not processed yet; Ws: processed and confirmed active
+    New,
+    /// Applicable to Rest only
     Open,
-    Closed, // filled or cancelled
+    /// Rest: filled or cancelled; Ws: filled, rejected, or cancelled
+    Closed,
 }
 
 #[derive(Clone, Debug, Deserialize)]

@@ -148,6 +148,7 @@ impl Ws {
                 Channel::Trades(symbol) => ("trades", symbol),
                 Channel::Ticker(symbol) => ("ticker", symbol),
                 Channel::Fills => ("fills", "".to_string()),
+                Channel::Orders => ("orders", "".to_string()),
             };
 
             self.stream
@@ -235,6 +236,8 @@ impl Ws {
                 }
                 ResponseData::Ticker(ticker) => {
                     self.buf.push_back(Data::Ticker(ticker));
+                ResponseData::Order(order) => {
+                    self.buf.push_back(Data::Order(order));
                 }
             }
         }
