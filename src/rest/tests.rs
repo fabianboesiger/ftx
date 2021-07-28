@@ -284,20 +284,5 @@ pub async fn manipulate_orders() {
     assert_eq!(dec!(0), rejected_order.filled_size);
     assert_eq!(None, rejected_order.avg_fill_price);
 
-    // When submitting a post-only order that will be rejected, the REST response
-    // will report status as New - they are accepted but not processed.
-    // To get near-immediate feedback on the status of possibly-rejected orders,
-    // you must be subscribed to the orders channel over websockets.
-    //
-    // Note that when listening to orders over websockets, the websockets API
-    // will report only the status of the order after it has been processed:
-    // - If an order is rejected upon processing, the websockets API emits
-    //   status = Closed. Unlike the REST API, it will not return an order update
-    //   with status = New.
-    // - If a limit order is accepted and not immediately filled upon processing
-    //   the websockets API emits status = New, which confirms the order as
-    //   active.
-    // - If a limit or market order is accepted and filled immediately upon
-    //   processing, the websockets API emits status = Closed.
     assert_eq!(OrderStatus::New, rejected_order.status);
 }
