@@ -9,6 +9,7 @@ pub enum Error {
     Serde(serde_json::Error),
     NotSubscribedToThisChannel(Channel),
     MissingSubscriptionConfirmation,
+    SocketNotAuthenticated,
 }
 
 impl From<tungstenite::Error> for Error {
