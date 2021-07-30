@@ -51,6 +51,7 @@ pub enum Type {
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum ResponseData {
+    Ticker(Ticker),
     Trades(Vec<Trade>),
     OrderbookData(OrderbookData),
     Fill(Fill),
@@ -59,9 +60,23 @@ pub enum ResponseData {
 /// Represents the data we return to the user
 #[derive(Clone, Debug)]
 pub enum Data {
+    Ticker(Ticker),
     Trade(Trade),
     OrderbookData(OrderbookData),
     Fill(Fill),
+}
+
+#[serde_as]
+#[derive(Copy, Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Ticker {
+    pub bid: Decimal,
+    pub ask: Decimal,
+    pub bid_size: Decimal,
+    pub ask_size: Decimal,
+    pub last: Decimal,
+    #[serde_as(as = "TimestampSecondsWithFrac<f64>")]
+    pub time: DateTime<Utc>,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize)]
