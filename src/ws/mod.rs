@@ -236,6 +236,7 @@ impl Ws {
                 }
                 ResponseData::Ticker(ticker) => {
                     self.buf.push_back(Data::Ticker(ticker));
+                }
                 ResponseData::Order(order) => {
                     self.buf.push_back(Data::Order(order));
                 }
