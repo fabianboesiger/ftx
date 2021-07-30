@@ -233,6 +233,9 @@ impl Ws {
                 ResponseData::Fill(fill) => {
                     self.buf.push_back(Data::Fill(fill));
                 }
+                ResponseData::Ticker(ticker) => {
+                    self.buf.push_back(Data::Ticker(ticker));
+                }
             }
         }
     }
