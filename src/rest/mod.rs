@@ -3,7 +3,7 @@
 mod error;
 mod model;
 #[cfg(test)]
-pub mod tests;
+pub(crate) mod tests;
 
 pub use error::*;
 pub use model::*;
