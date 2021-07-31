@@ -1,4 +1,4 @@
-pub use crate::rest::{Coin, Id, MarketType, Side, Symbol};
+pub use crate::rest::{Coin, Id, MarketType, OrderInfo, Side, Symbol};
 use chrono::{DateTime, Utc};
 use crc32fast::Hasher;
 use rust_decimal::Decimal;
@@ -14,6 +14,7 @@ pub enum Channel {
     Trades(Symbol),
     Ticker(Symbol),
     Fills,
+    Orders,
 }
 
 /*
@@ -55,6 +56,7 @@ pub enum ResponseData {
     Trades(Vec<Trade>),
     OrderbookData(OrderbookData),
     Fill(Fill),
+    Order(OrderInfo),
 }
 
 /// Represents the data we return to the user
@@ -64,6 +66,7 @@ pub enum Data {
     Trade(Trade),
     OrderbookData(OrderbookData),
     Fill(Fill),
+    Order(OrderInfo),
 }
 
 #[serde_as]

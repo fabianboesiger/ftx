@@ -1,5 +1,5 @@
 use super::*;
-use crate::rest::Rest;
+use crate::rest::{OrderStatus, Rest};
 use dotenv::dotenv;
 use rust_decimal_macros::dec;
 use std::env::var;
@@ -271,6 +271,68 @@ async fn fills() {
         _ => panic!("Fill data expected."),
     }
     */
+
+    ws.unsubscribe_all().await.expect("Unsubscribe failed");
+}
+
+#[tokio::test]
+async fn orders() {
+    let mut ws = init_ws().await;
+
+    ws.subscribe(vec![Channel::Orders])
+        .await
+        .expect("Subscription failed.");
+
+    // Manipulate some orders:
+    // 1. Place order
+    // 2. Modify order
+    // 3. Cancel order
+    // 4. Submit invalid post-only order
+    crate::rest::tests::manipulate_orders().await;
+
+    // Initial order placement
+    let initial_order_placement = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", initial_order_placement);
+    assert_eq!(OrderStatus::New, initial_order_placement.status);
+
+    // Initial order cancelled during modification
+    let initial_order_cancellation = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", initial_order_cancellation);
+    assert_eq!(initial_order_placement.id, initial_order_cancellation.id);
+    assert_eq!(OrderStatus::Closed, initial_order_cancellation.status);
+
+    // Modified order placement
+    let modified_order_placement = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", modified_order_placement);
+    assert_ne!(initial_order_cancellation.id, modified_order_placement.id);
+    assert_eq!(OrderStatus::New, modified_order_placement.status);
+
+    // Modified order explicit cancellation
+    let modified_order_cancellation = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", modified_order_cancellation);
+    assert_eq!(modified_order_placement.id, modified_order_cancellation.id);
+    assert_eq!(OrderStatus::Closed, modified_order_cancellation.status);
+
+    // Rejected order placement
+    let rejected_order_placement = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", rejected_order_placement);
+    assert_ne!(modified_order_cancellation.id, rejected_order_placement.id);
+    assert_eq!(OrderStatus::Closed, rejected_order_placement.status);
 
     ws.unsubscribe_all().await.expect("Unsubscribe failed");
 }
