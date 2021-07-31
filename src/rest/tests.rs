@@ -217,7 +217,7 @@ pub async fn manipulate_orders() {
     let initial_order = api
         .place_order(
             market.as_str(),
-            OrderSide::Buy,
+            Side::Buy,
             Some(initial_bid_price),
             OrderType::Limit,
             initial_bid_size,
@@ -270,7 +270,7 @@ pub async fn manipulate_orders() {
     let rejected_order = api
         .place_order(
             market.as_str(),
-            OrderSide::Buy,
+            Side::Buy,
             Some(rejected_bid_price),
             OrderType::Limit,
             initial_bid_size,
