@@ -108,7 +108,7 @@ impl Ws {
     pub async fn unsubscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
         // Check that the specified channels match an existing one
         for channel in channels.iter() {
-            if !self.channels.contains(&channel) {
+            if !self.channels.contains(channel) {
                 return Err(Error::NotSubscribedToThisChannel(channel.clone()));
             }
         }

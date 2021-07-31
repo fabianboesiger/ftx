@@ -73,7 +73,7 @@ async fn get_subaccount_balances() {
         None => "Bot",
         Some(sub) => sub,
     };
-    rest.get_subaccount_balances(&subaccount).await.unwrap_err();
+    rest.get_subaccount_balances(subaccount).await.unwrap_err();
 }
 
 #[tokio::test]
