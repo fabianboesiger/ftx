@@ -110,7 +110,7 @@ pub struct Orderbook {
     pub bids: Vec<(Decimal, Decimal)>,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum Side {
     Buy,
@@ -320,13 +320,6 @@ pub enum OrderType {
     Limit,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub enum OrderSide {
-    Buy,
-    Sell,
-}
-
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 /// Represents the status of the order.
@@ -373,7 +366,7 @@ pub struct OrderInfo {
     pub market: String,
     pub future: Option<String>,
     pub r#type: OrderType,
-    pub side: OrderSide,
+    pub side: Side,
     pub price: Option<Decimal>, // null for new market orders
     pub size: Decimal,
     pub reduce_only: bool,

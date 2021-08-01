@@ -394,7 +394,7 @@ impl Rest {
     pub async fn place_order(
         &self,
         market: &str,
-        side: OrderSide,
+        side: Side,
         price: Option<Decimal>,
         r#type: OrderType,
         size: Decimal,

@@ -251,11 +251,11 @@ async fn fills() {
 
     // A live test that buys 0.0001 BTC-PERP ($4 if BTC is at $40k)
     /*
-    use crate::rest::{OrderSide, OrderType};
+    use crate::rest::{Side, OrderType};
     let api = init_api().await;
     api.place_order(
         "BTC-PERP",
-        OrderSide::Buy,
+        Side::Buy,
         None,
         OrderType::Market,
         dec!(0.0001),
