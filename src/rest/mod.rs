@@ -3,7 +3,7 @@
 mod error;
 mod model;
 #[cfg(test)]
-mod tests;
+pub(crate) mod tests;
 
 pub use error::*;
 pub use model::*;
@@ -394,7 +394,7 @@ impl Rest {
     pub async fn place_order(
         &self,
         market: &str,
-        side: OrderSide,
+        side: Side,
         price: Option<Decimal>,
         r#type: OrderType,
         size: Decimal,

@@ -8,7 +8,6 @@ mod tests;
 pub use error::*;
 pub use model::*;
 
-use crate::ws::Channel::Fills;
 use futures_util::{SinkExt, StreamExt};
 use hmac_sha256::HMAC;
 use serde_json::json;
@@ -106,8 +105,9 @@ impl Ws {
     /// For FILLS the socket needs to be authenticated
     pub async fn subscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
         for channel in channels.iter() {
-            // Subscribing to fills requires us to be authenticated via an API key
-            if channel == &Fills && !self.is_authenticated {
+            // Subscribing to fills or orders requires us to be authenticated via an API key
+            if (channel == &Channel::Fills || channel == &Channel::Orders) && !self.is_authenticated
+            {
                 return Err(Error::SocketNotAuthenticated);
             }
             self.channels.push(channel.clone());
@@ -162,6 +162,7 @@ impl Ws {
                 Channel::Trades(symbol) => ("trades", symbol),
                 Channel::Ticker(symbol) => ("ticker", symbol),
                 Channel::Fills => ("fills", "".to_string()),
+                Channel::Orders => ("orders", "".to_string()),
             };
 
             self.stream
@@ -246,6 +247,12 @@ impl Ws {
                 }
                 ResponseData::Fill(fill) => {
                     self.buf.push_back(Data::Fill(fill));
+                }
+                ResponseData::Ticker(ticker) => {
+                    self.buf.push_back(Data::Ticker(ticker));
+                }
+                ResponseData::Order(order) => {
+                    self.buf.push_back(Data::Order(order));
                 }
             }
         }

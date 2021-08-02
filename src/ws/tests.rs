@@ -1,5 +1,5 @@
 use super::*;
-use crate::rest::Rest;
+use crate::rest::{OrderStatus, Rest};
 use dotenv::dotenv;
 use rust_decimal_macros::dec;
 use std::env::var;
@@ -256,11 +256,11 @@ async fn fills() {
 
     // A live test that buys 0.0001 BTC-PERP ($4 if BTC is at $40k)
     /*
-    use crate::rest::{OrderSide, OrderType};
+    use crate::rest::{Side, OrderType};
     let api = init_api().await;
     api.place_order(
         "BTC-PERP",
-        OrderSide::Buy,
+        Side::Buy,
         None,
         OrderType::Market,
         dec!(0.0001),
@@ -281,13 +281,80 @@ async fn fills() {
 }
 
 #[tokio::test]
-async fn subscribe_to_fill_on_unauthenticated_channel() {
-    //     Trying to subscribe to the FILL channel requires authentification
+async fn subscribe_authenticated_updates_on_unauthenticated_channel() {
+    //     Trying to subscribe to the FILL or ORDER channels requires authentification
     //     and has to fail on an unauthenticated socket
     let mut ws = init_unauthenticated_ws().await;
-    let result = ws.subscribe(vec![Channel::Fills]).await;
+    let mut result = ws.subscribe(vec![Channel::Fills]).await;
     if let Err(Error::SocketNotAuthenticated) = result {
     } else {
         panic!("Should not be able to subscribe to FILL-updates on an unauthenticated websocket")
     }
+    result = ws.subscribe(vec![Channel::Orders]).await;
+    if let Err(Error::SocketNotAuthenticated) = result {
+    } else {
+        panic!("Should not be able to subscribe to ORDER-updates on an unauthenticated websocket")
+    }
+}
+
+#[tokio::test]
+async fn orders() {
+    let mut ws = init_authenticated_ws().await;
+
+    ws.subscribe(vec![Channel::Orders])
+        .await
+        .expect("Subscription failed.");
+
+    // Manipulate some orders:
+    // 1. Place order
+    // 2. Modify order
+    // 3. Cancel order
+    // 4. Submit invalid post-only order
+    crate::rest::tests::manipulate_orders().await;
+
+    // Initial order placement
+    let initial_order_placement = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", initial_order_placement);
+    assert_eq!(OrderStatus::New, initial_order_placement.status);
+
+    // Initial order cancelled during modification
+    let initial_order_cancellation = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", initial_order_cancellation);
+    assert_eq!(initial_order_placement.id, initial_order_cancellation.id);
+    assert_eq!(OrderStatus::Closed, initial_order_cancellation.status);
+
+    // Modified order placement
+    let modified_order_placement = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", modified_order_placement);
+    assert_ne!(initial_order_cancellation.id, modified_order_placement.id);
+    assert_eq!(OrderStatus::New, modified_order_placement.status);
+
+    // Modified order explicit cancellation
+    let modified_order_cancellation = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", modified_order_cancellation);
+    assert_eq!(modified_order_placement.id, modified_order_cancellation.id);
+    assert_eq!(OrderStatus::Closed, modified_order_cancellation.status);
+
+    // Rejected order placement
+    let rejected_order_placement = match ws.next().await.unwrap() {
+        Some(Data::Order(order)) => order,
+        _ => panic!("Order data expected."),
+    };
+    // println!("{:?}", rejected_order_placement);
+    assert_ne!(modified_order_cancellation.id, rejected_order_placement.id);
+    assert_eq!(OrderStatus::Closed, rejected_order_placement.status);
+
+    ws.unsubscribe_all().await.expect("Unsubscribe failed");
 }
