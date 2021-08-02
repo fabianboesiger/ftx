@@ -287,8 +287,7 @@ async fn subscribe_to_fill_on_unauthenticated_channel() {
     let mut ws = init_unauthenticated_ws().await;
     let result = ws.subscribe(vec![Channel::Fills]).await;
     if let Err(Error::SocketNotAuthenticated) = result {
-        return;
     } else {
-        assert!(false);
+        panic!("Should not be able to subscribe to FILL-updates on an unauthenticated websocket")
     }
 }
