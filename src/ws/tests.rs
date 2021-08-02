@@ -3,16 +3,21 @@ use crate::rest::{OrderStatus, Rest};
 use dotenv::dotenv;
 use rust_decimal_macros::dec;
 use std::env::var;
-
-async fn init_ws() -> Ws {
+async fn init_authenticated_ws() -> Ws {
     dotenv().ok();
     Ws::connect(
-        var("API_KEY").expect("API Key is not defined."),
-        var("API_SECRET").expect("API Secret is not defined."),
+        Some((
+            var("API_KEY").expect("API Key is not defined."),
+            var("API_SECRET").expect("API Secret is not defined."),
+        )),
         var("SUBACCOUNT").ok(),
     )
     .await
     .expect("Connection failed.")
+}
+async fn init_unauthenticated_ws() -> Ws {
+    dotenv().ok();
+    Ws::connect(None, None).await.expect("Connection failed.")
 }
 
 #[allow(dead_code)]
@@ -27,8 +32,8 @@ async fn init_api() -> Rest {
 }
 
 #[tokio::test]
-async fn subscribe_unsubscribe() {
-    let mut ws = init_ws().await;
+async fn subscribe_unsubscribe_trades() {
+    let mut ws = init_unauthenticated_ws().await;
 
     // Channels: BTC, ETH
     ws.subscribe(vec![
@@ -54,7 +59,7 @@ async fn subscribe_unsubscribe() {
 
 #[tokio::test]
 async fn trades() {
-    let mut ws = init_ws().await;
+    let mut ws = init_unauthenticated_ws().await;
 
     ws.subscribe(vec![Channel::Trades("BTC-PERP".to_owned())])
         .await
@@ -70,7 +75,7 @@ async fn trades() {
 
 #[tokio::test]
 async fn order_book_update() {
-    let mut ws = init_ws().await;
+    let mut ws = init_unauthenticated_ws().await;
 
     let symbol: Symbol = String::from("BTC-PERP");
     ws.subscribe(vec![Channel::Orderbook(symbol.to_owned())])
@@ -210,7 +215,7 @@ async fn order_book_checksum() {
     // Subscribe to each symbol and verify orderbook checksums for initial snapshot
     // and one orderbook update
     for symbol in symbols {
-        let mut ws = init_ws().await;
+        let mut ws = init_unauthenticated_ws().await;
 
         ws.subscribe(vec![Channel::Orderbook(symbol.to_string())])
             .await
@@ -243,7 +248,7 @@ async fn order_book_checksum() {
 
 #[tokio::test]
 async fn fills() {
-    let mut ws = init_ws().await;
+    let mut ws = init_authenticated_ws().await;
 
     ws.subscribe(vec![Channel::Fills])
         .await
@@ -276,8 +281,25 @@ async fn fills() {
 }
 
 #[tokio::test]
+async fn subscribe_authenticated_updates_on_unauthenticated_channel() {
+    //     Trying to subscribe to the FILL or ORDER channels requires authentification
+    //     and has to fail on an unauthenticated socket
+    let mut ws = init_unauthenticated_ws().await;
+    let mut result = ws.subscribe(vec![Channel::Fills]).await;
+    if let Err(Error::SocketNotAuthenticated) = result {
+    } else {
+        panic!("Should not be able to subscribe to FILL-updates on an unauthenticated websocket")
+    }
+    result = ws.subscribe(vec![Channel::Orders]).await;
+    if let Err(Error::SocketNotAuthenticated) = result {
+    } else {
+        panic!("Should not be able to subscribe to ORDER-updates on an unauthenticated websocket")
+    }
+}
+
+#[tokio::test]
 async fn orders() {
-    let mut ws = init_ws().await;
+    let mut ws = init_authenticated_ws().await;
 
     ws.subscribe(vec![Channel::Orders])
         .await

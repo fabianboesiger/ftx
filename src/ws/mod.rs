@@ -23,6 +23,8 @@ pub struct Ws {
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
     buf: VecDeque<Data>,
     ping_timer: Interval,
+    /// Whether the websocket was opened authenticated with API keys or not
+    is_authenticated: bool,
 }
 
 impl Ws {
@@ -31,53 +33,59 @@ impl Ws {
 
     async fn connect_with_endpoint(
         endpoint: &str,
-        key: String,
-        secret: String,
+        key_secret: Option<(String, String)>,
         subaccount: Option<String>,
     ) -> Result<Self> {
         let (mut stream, _) = connect_async(endpoint).await?;
+        let is_authenticated = key_secret.is_some();
+        if let Some((key, secret)) = key_secret {
+            let timestamp = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis();
+            let sign_payload = format!("{}websocket_login", timestamp);
+            let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
+            let sign = hex::encode(sign);
 
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis();
-        let sign_payload = format!("{}websocket_login", timestamp);
-        let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
-        let sign = hex::encode(sign);
-
-        stream
-            .send(Message::Text(
-                json!({
-                    "op": "login",
-                    "args": {
-                        "key": key,
-                        "sign": sign,
-                        "time": timestamp as u64,
-                        "subaccount": subaccount,
-                    }
-                })
-                .to_string(),
-            ))
-            .await?;
-
+            stream
+                .send(Message::Text(
+                    json!({
+                        "op": "login",
+                        "args": {
+                            "key": key,
+                            "sign": sign,
+                            "time": timestamp as u64,
+                            "subaccount": subaccount,
+                        }
+                    })
+                    .to_string(),
+                ))
+                .await?;
+        }
         Ok(Self {
             channels: Vec::new(),
             stream,
             buf: VecDeque::new(),
             ping_timer: time::interval(Duration::from_secs(15)),
+            is_authenticated,
         })
     }
-
-    pub async fn connect(key: String, secret: String, subaccount: Option<String>) -> Result<Self> {
-        Self::connect_with_endpoint(Self::ENDPOINT, key, secret, subaccount).await
-    }
-
-    pub async fn connect_us(
-        key: String,
-        secret: String,
+    pub async fn connect(
+        // Pair (API_KEY, SECRET_KEY) for authentification.
+        // The channels FILL, ORDER, and FTX Pay require authentification
+        key_secret: Option<(String, String)>,
         subaccount: Option<String>,
     ) -> Result<Self> {
-        Self::connect_with_endpoint(Self::ENDPOINT_US, key, secret, subaccount).await
+        Self::connect_with_endpoint(Self::ENDPOINT, key_secret, subaccount).await
+    }
+
+    // Pair (API_KEY, SECRET_KEY) for authentification.
+    // The channels FILL, ORDER, and FTX Pay require authentification
+    pub async fn connect_us(
+        key_secret: Option<(String, String)>,
+        subaccount: Option<String>,
+    ) -> Result<Self> {
+        Self::connect_with_endpoint(Self::ENDPOINT_US, key_secret, subaccount).await
     }
 
     async fn ping(&mut self) -> Result<()> {
@@ -94,8 +102,14 @@ impl Ws {
     }
 
     /// Subscribe to specified `Channel`s
+    /// For FILLS the socket needs to be authenticated
     pub async fn subscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
         for channel in channels.iter() {
+            // Subscribing to fills or orders requires us to be authenticated via an API key
+            if (channel == &Channel::Fills || channel == &Channel::Orders) && !self.is_authenticated
+            {
+                return Err(Error::SocketNotAuthenticated);
+            }
             self.channels.push(channel.clone());
         }
 
