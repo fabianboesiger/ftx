@@ -1,25 +1,23 @@
 use crate::ws::Channel;
+use thiserror::Error;
 use tokio_tungstenite::tungstenite;
 
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
-    Tungstenite(tungstenite::Error),
-    Serde(serde_json::Error),
+    #[error("Not subscribed to this channel {0:?}")]
     NotSubscribedToThisChannel(Channel),
+
+    #[error("Missing subscription confirmation")]
     MissingSubscriptionConfirmation,
+
+    #[error("Socket is not authenticated")]
     SocketNotAuthenticated,
-}
 
-impl From<tungstenite::Error> for Error {
-    fn from(err: tungstenite::Error) -> Error {
-        Error::Tungstenite(err)
-    }
-}
+    #[error(transparent)]
+    Tungstenite(#[from] tungstenite::Error),
 
-impl From<serde_json::Error> for Error {
-    fn from(err: serde_json::Error) -> Error {
-        Error::Serde(err)
-    }
+    #[error(transparent)]
+    Serde(#[from] serde_json::Error),
 }

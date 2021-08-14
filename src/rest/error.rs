@@ -1,14 +1,15 @@
+use thiserror::Error;
+
 pub type Result<T> = std::result::Result<T, Error>;
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum Error {
-    Reqwest(reqwest::Error),
+    #[error("Api error: {0}")]
     Api(String),
-    PlacingLimitOrderRequiresPrice,
-}
 
-impl From<reqwest::Error> for Error {
-    fn from(err: reqwest::Error) -> Error {
-        Error::Reqwest(err)
-    }
+    #[error("placing limit order requires price")]
+    PlacingLimitOrderRequiresPrice,
+
+    #[error(transparent)]
+    Reqwest(#[from] reqwest::Error),
 }
