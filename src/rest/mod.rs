@@ -16,7 +16,7 @@ use reqwest::{
 };
 use rust_decimal::prelude::*;
 use serde::de::DeserializeOwned;
-use serde_json::{json, Map, Value};
+use serde_json::{json, to_string, Map, Value};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct Rest {
@@ -453,6 +453,34 @@ impl Rest {
     pub async fn get_order_by_client_id(&self, client_id: &str) -> Result<OrderInfo> {
         self.get(&format!("/orders/by_client_id/{}", client_id), None)
             .await
+    }
+
+    pub async fn cancel_all_orders(
+        &self,
+        market: Option<&str>,
+        side: Option<Side>,
+        conditional_orders_only: Option<bool>,
+        limit_orders_only: Option<bool>,
+    ) -> Result<String> {
+        let mut payload = Map::new();
+        if let Some(market) = market {
+            payload.insert("market".to_string(), Value::String(market.to_string()));
+        }
+
+        if let Some(side) = side {
+            payload.insert("side".to_string(), Value::String(to_string(&side).unwrap()));
+        }
+
+        payload.insert(
+            "conditionalOrdersOnly".to_string(),
+            Value::Bool(conditional_orders_only.unwrap_or(false)),
+        );
+        payload.insert(
+            "limitOrdersOnly".to_string(),
+            Value::Bool(limit_orders_only.unwrap_or(false)),
+        );
+
+        self.delete("/orders", Some(Value::Object(payload))).await
     }
 
     pub async fn cancel_order(&self, order_id: Id) -> Result<String> {
