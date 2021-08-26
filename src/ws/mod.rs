@@ -8,10 +8,15 @@ mod tests;
 pub use error::*;
 pub use model::*;
 
-use futures_util::{SinkExt, StreamExt};
+use futures::{
+    ready,
+    task::{Context, Poll},
+    Future, SinkExt, Stream, StreamExt,
+};
 use hmac_sha256::HMAC;
 use serde_json::json;
 use std::collections::VecDeque;
+use std::pin::Pin;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::net::TcpStream;
 use tokio::time; // 1.3.0
@@ -257,19 +262,35 @@ impl Ws {
             }
         }
     }
+}
 
-    pub async fn next(&mut self) -> Result<Option<Data>> {
+impl Stream for Ws {
+    type Item = Result<Data>;
+
+    fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         loop {
-            // If buffer contains data, we can directly return it.
             if let Some(data) = self.buf.pop_front() {
-                return Ok(Some(data));
+                return Poll::Ready(Some(Ok(data)));
             }
-
-            // Fetch new response if buffer is empty.
-            let response = self.next_response().await?;
-
+            let response = {
+                // Fetch new response if buffer is empty.
+                // safety: this is ok because the future from self.next_response() will only live in this function.
+                // It won't be moved anymore.
+                let mut next_response = self.next_response();
+                let pinned = unsafe { Pin::new_unchecked(&mut next_response) };
+                match ready!(pinned.poll(cx)) {
+                    Ok(response) => response,
+                    Err(e) => {
+                        return Poll::Ready(Some(Err(e)));
+                    }
+                }
+            };
             // Handle the response, possibly adding to the buffer
             self.handle_response(response);
         }
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        (self.buf.len(), None)
     }
 }

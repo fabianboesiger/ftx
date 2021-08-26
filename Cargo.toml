@@ -14,7 +14,7 @@ version = "0.3.1"
 chrono = {version = "^0.4.19", features = ["serde"]}
 crc32fast = "^1.2.1"
 dotenv = "^0.15.0"
-futures-util = {version = "^0.3.14", optional = true}
+futures = {version = "0.3", optional = true}
 hex = "^0.4.3"
 hmac-sha256 = "^0.1.7"
 log = "^0.4.14"
@@ -34,4 +34,4 @@ tokio = {version = "^1.5.0", features = ["full"]}
 
 [features]
 default = ["ws"]
-ws = ["tokio-tungstenite", "tokio", "futures-util"]
+ws = ["tokio-tungstenite", "tokio", "futures"]
