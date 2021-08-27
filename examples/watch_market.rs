@@ -1,6 +1,7 @@
 use dotenv::dotenv;
 use ftx::ws::Result;
 use ftx::ws::{Channel, Data, Orderbook, Ws};
+use futures::stream::StreamExt;
 use std::env::var;
 use std::io;
 use std::io::Write;
@@ -29,7 +30,7 @@ async fn main() -> Result<()> {
         .await?;
 
     loop {
-        let data = websocket.next().await?.expect("No data received");
+        let data = websocket.next().await.expect("No data received")?;
 
         match data {
             Data::Trade(trade) => {
