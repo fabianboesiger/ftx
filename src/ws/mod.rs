@@ -26,7 +26,7 @@ use tokio_tungstenite::{connect_async, tungstenite::Message, MaybeTlsStream, Web
 pub struct Ws {
     channels: Vec<Channel>,
     stream: WebSocketStream<MaybeTlsStream<TcpStream>>,
-    buf: VecDeque<Data>,
+    buf: VecDeque<(Option<Symbol>, Data)>,
     ping_timer: Interval,
     /// Whether the websocket was opened authenticated with API keys or not
     is_authenticated: bool,
@@ -244,20 +244,22 @@ impl Ws {
                     // Trades channel returns an array of single trades.
                     // Buffer so that the user receives trades one at a time
                     for trade in trades {
-                        self.buf.push_back(Data::Trade(trade));
+                        self.buf
+                            .push_back((response.market.clone(), Data::Trade(trade)));
                     }
                 }
                 ResponseData::OrderbookData(orderbook) => {
-                    self.buf.push_back(Data::OrderbookData(orderbook));
+                    self.buf
+                        .push_back((response.market, Data::OrderbookData(orderbook)));
                 }
                 ResponseData::Fill(fill) => {
-                    self.buf.push_back(Data::Fill(fill));
+                    self.buf.push_back((response.market, Data::Fill(fill)));
                 }
                 ResponseData::Ticker(ticker) => {
-                    self.buf.push_back(Data::Ticker(ticker));
+                    self.buf.push_back((response.market, Data::Ticker(ticker)));
                 }
                 ResponseData::Order(order) => {
-                    self.buf.push_back(Data::Order(order));
+                    self.buf.push_back((response.market, Data::Order(order)));
                 }
             }
         }
@@ -265,7 +267,7 @@ impl Ws {
 }
 
 impl Stream for Ws {
-    type Item = Result<Data>;
+    type Item = Result<(Option<Symbol>, Data)>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         loop {
