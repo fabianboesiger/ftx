@@ -66,7 +66,7 @@ async fn trades() {
         .expect("Subscription failed.");
 
     match ws.next().await.unwrap() {
-        Ok(Data::Trade(..)) => {}
+        Ok((Some(_), Data::Trade(..))) => {}
         _ => panic!("Trade data expected."),
     }
 
@@ -86,7 +86,7 @@ async fn order_book_update() {
 
     // The initial snapshot of the order book
     match ws.next().await.unwrap() {
-        Ok(Data::OrderbookData(data)) if data.action == OrderbookAction::Partial => {
+        Ok((_, Data::OrderbookData(data))) if data.action == OrderbookAction::Partial => {
             orderbook.update(&data);
             assert!(orderbook.verify_checksum(data.checksum));
             // println!("{:#?}", orderbook);
@@ -97,7 +97,7 @@ async fn order_book_update() {
     // Update the order book 10 times
     for _i in 1..10 {
         match ws.next().await.unwrap() {
-            Ok(Data::OrderbookData(data)) if data.action == OrderbookAction::Update => {
+            Ok((_, Data::OrderbookData(data))) if data.action == OrderbookAction::Update => {
                 // Check that removed orders are in the orderbook
                 for bid in &data.bids {
                     if bid.1 == dec!(0) {
@@ -225,7 +225,7 @@ async fn order_book_checksum() {
 
         // Initial snapshot
         match ws.next().await.unwrap() {
-            Ok(Data::OrderbookData(data)) if data.action == OrderbookAction::Partial => {
+            Ok((_, Data::OrderbookData(data))) if data.action == OrderbookAction::Partial => {
                 orderbook.update(&data);
                 assert!(orderbook.verify_checksum(data.checksum));
                 // println!("{:#?}", orderbook);
@@ -235,7 +235,7 @@ async fn order_book_checksum() {
 
         // Orderbook update
         match ws.next().await.unwrap() {
-            Ok(Data::OrderbookData(data)) if data.action == OrderbookAction::Update => {
+            Ok((_, Data::OrderbookData(data))) if data.action == OrderbookAction::Update => {
                 orderbook.update(&data);
                 assert!(orderbook.verify_checksum(data.checksum));
             }
@@ -314,7 +314,7 @@ async fn orders() {
 
     // Initial order placement
     let initial_order_placement = match ws.next().await.unwrap() {
-        Ok(Data::Order(order)) => order,
+        Ok((_, Data::Order(order))) => order,
         _ => panic!("Order data expected."),
     };
     // println!("{:?}", initial_order_placement);
@@ -322,7 +322,7 @@ async fn orders() {
 
     // Initial order cancelled during modification
     let initial_order_cancellation = match ws.next().await.unwrap() {
-        Ok(Data::Order(order)) => order,
+        Ok((_, Data::Order(order))) => order,
         _ => panic!("Order data expected."),
     };
     // println!("{:?}", initial_order_cancellation);
@@ -331,7 +331,7 @@ async fn orders() {
 
     // Modified order placement
     let modified_order_placement = match ws.next().await.unwrap() {
-        Ok(Data::Order(order)) => order,
+        Ok((_, Data::Order(order))) => order,
         _ => panic!("Order data expected."),
     };
     // println!("{:?}", modified_order_placement);
@@ -340,7 +340,7 @@ async fn orders() {
 
     // Modified order explicit cancellation
     let modified_order_cancellation = match ws.next().await.unwrap() {
-        Ok(Data::Order(order)) => order,
+        Ok((_, Data::Order(order))) => order,
         _ => panic!("Order data expected."),
     };
     // println!("{:?}", modified_order_cancellation);
@@ -349,7 +349,7 @@ async fn orders() {
 
     // Rejected order placement
     let rejected_order_placement = match ws.next().await.unwrap() {
-        Ok(Data::Order(order)) => order,
+        Ok((_, Data::Order(order))) => order,
         _ => panic!("Order data expected."),
     };
     // println!("{:?}", rejected_order_placement);

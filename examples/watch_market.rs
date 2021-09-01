@@ -33,13 +33,13 @@ async fn main() -> Result<()> {
         let data = websocket.next().await.expect("No data received")?;
 
         match data {
-            Data::Trade(trade) => {
+            (_, Data::Trade(trade)) => {
                 println!(
                     "\n{:?} {} {} at {} - liquidation = {}",
                     trade.side, trade.size, market, trade.price, trade.liquidation
                 );
             }
-            Data::OrderbookData(orderbook_data) => {
+            (_, Data::OrderbookData(orderbook_data)) => {
                 orderbook.update(&orderbook_data);
                 print!("."); // To signify orderbook update
                 io::stdout().flush().unwrap(); // Emits the output immediately
