@@ -1,6 +1,6 @@
 # FTX API
 
-Unofficial API bindings for the FTX exchange.
+Unofficial Rust API bindings for the FTX exchange.
 
 [crates.io](https://crates.io/crates/ftx) | 
 [docs.rs](https://docs.rs/ftx/latest/ftx/index.html) | 
