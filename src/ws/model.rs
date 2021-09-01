@@ -43,7 +43,7 @@ pub enum Type {
     Error,
     Partial,
     Pong,
-    // Info,         // May need this in the future
+    Info, // May need this in the future
 }
 
 /// Represents the response received from FTX, and is used for
