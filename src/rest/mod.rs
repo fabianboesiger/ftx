@@ -16,7 +16,7 @@ use reqwest::{
 };
 use rust_decimal::prelude::*;
 use serde::de::DeserializeOwned;
-use serde_json::{json, to_string, Map, Value};
+use serde_json::{from_reader, json, to_string, Map, Value};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 pub struct Rest {
@@ -160,7 +160,7 @@ impl Rest {
         panic!("{:#?}", response);
         */
 
-        let response: Response<T> = self
+        let body = self
             .client
             .request(method, url)
             .query(&params)
@@ -168,12 +168,19 @@ impl Rest {
             .body(body)
             .send()
             .await?
-            .json()
+            .bytes()
             .await?;
 
-        match response {
-            Response::Result { result, .. } => Ok(result),
-            Response::Error { error, .. } => Err(Error::Api(error)),
+        match from_reader(&*body) {
+            Ok(SuccessResponse { result, .. }) => Ok(result),
+
+            Err(e) => {
+                if let Ok(ErrorResponse { error, .. }) = from_reader(&*body) {
+                    Err(Error::Api(error))
+                } else {
+                    Err(e.into())
+                }
+            }
         }
     }
 
