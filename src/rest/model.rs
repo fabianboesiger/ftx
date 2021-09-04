@@ -7,11 +7,15 @@ pub type Coin = String;
 pub type Symbol = String;
 
 #[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-#[serde(untagged)]
-pub enum Response<T> {
-    Result { success: bool, result: T },
-    Error { success: bool, error: String },
+pub struct SuccessResponse<T> {
+    pub success: bool,
+    pub result: T,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct ErrorResponse {
+    pub success: bool,
+    pub error: String,
 }
 
 // REST API -> Subaccounts
