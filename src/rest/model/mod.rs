@@ -1,10 +1,28 @@
-use chrono::{DateTime, Utc};
-use rust_decimal::prelude::*;
-use serde::{Deserialize, Serialize};
+mod common;
+mod orders;
+mod subaccounts;
 
-pub type Id = u64;
-pub type Coin = String;
-pub type Symbol = String;
+pub use common::*;
+pub use orders::*;
+pub use subaccounts::*;
+
+use chrono::{DateTime, Utc};
+use http::Method;
+use rust_decimal::prelude::*;
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+
+pub trait Request: Serialize {
+    const METHOD: Method;
+    const PATH: &'static str;
+    const HAS_PAYLOAD: bool = false;
+    const AUTH: bool = false;
+
+    type Response: DeserializeOwned;
+
+    fn no_payload(&self) -> bool {
+        !Self::HAS_PAYLOAD
+    }
+}
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct SuccessResponse<T> {
@@ -19,25 +37,6 @@ pub struct ErrorResponse {
 }
 
 // REST API -> Subaccounts
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Subaccount {
-    pub nickname: String,
-    pub deletable: bool,
-    pub editable: bool,
-    pub competition: bool,
-}
-
-pub type Subaccounts = Vec<Subaccount>;
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Create {
-    pub nickname: String,
-    pub deletable: bool,
-    pub editable: bool,
-}
 
 #[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -118,13 +117,6 @@ pub struct Orderbook {
     pub bids: Vec<(Decimal, Decimal)>,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub enum Side {
-    Buy,
-    Sell,
-}
-
 #[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Trade {
@@ -152,15 +144,6 @@ pub struct Price {
 pub type Prices = Vec<Price>;
 
 // REST API -> Futures
-
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub enum FutureType {
-    Future,
-    Perpetual,
-    Prediction,
-    Move,
-}
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -321,15 +304,6 @@ pub struct WalletBalance {
     pub usd_value: Option<Decimal>,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub enum DepositStatus {
-    Confirmed,
-    Unconfirmed,
-    Cancelled,
-    Complete,
-}
-
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WalletDeposit {
@@ -367,83 +341,4 @@ pub struct WalletWithdrawal {
     pub txid: Option<String>,
     pub tag: Option<String>,
     pub notes: Option<String>,
-}
-
-// REST API -> Orders
-// TODO
-
-#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub enum OrderType {
-    Market,
-    Limit,
-    Stop,
-    TrailingStop,
-    TakeProfit,
-}
-
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-/// Represents the status of the order.
-/// However, the REST and websockets APIs assign these values differently.
-///
-/// When submitting orders over REST, the API will immediately return whether
-/// the order is accepted into FTX's queue for processing, but not the results
-/// of the processing. If the order is accepted into the queue, the API will
-/// return an `OrderInfo` with `OrderStatus::New`, otherwise it will return an error.
-///
-/// If the order is rejected during processing (e.g. when submitting a post-only
-/// limit order with a price that would be executed as a taker order), the user
-/// will not know this unless they do one of the following:
-/// - Call the `get_order` REST API to see if the order status has been updated
-/// - Listen to orders over websockets to be notified of the update order status
-///   as soon as it is available.
-/// To get near-immediate feedback on the status of possibly-rejected orders,
-/// we recommend subscribing to the `Orders` channel over websockets.
-///
-/// When listening to orders over websockets, the websockets API will report
-/// only the status of the order when it has been processed:
-/// - If an order is rejected upon processing, the websockets API will emit an
-///   `OrderInfo` with `OrderStatus::Closed`. Unlike the REST API, it will not
-///   return an `OrderInfo` with `OrderStatus::New`.
-/// - If a limit order is accepted and not immediately filled upon processing,
-///   the websockets API will emit an `OrderInfo` with `OrderStatus::New`,
-///   confirming the order as active.
-/// - If a limit or market order is accepted and filled immediately upon
-///   processing, the websockets API emits an `OrderInfo` with
-///   `OrderStatus::Closed`.
-pub enum OrderStatus {
-    /// Rest: accepted but not processed yet; Ws: processed and confirmed active
-    New,
-    /// Applicable to Rest only
-    Open,
-    /// Rest: filled or cancelled; Ws: filled, rejected, or cancelled
-    Closed,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct OrderInfo {
-    pub id: Id,
-    pub market: String,
-    pub future: Option<String>,
-    pub r#type: OrderType,
-    pub side: Side,
-    pub price: Option<Decimal>, // null for new market orders
-    pub size: Decimal,
-    pub reduce_only: Option<bool>,
-    pub ioc: Option<bool>,
-    pub post_only: Option<bool>,
-    pub status: OrderStatus,
-    pub filled_size: Option<Decimal>,
-    pub remaining_size: Option<Decimal>,
-    pub avg_fill_price: Option<Decimal>,
-    pub liquidation: Option<bool>,
-    pub created_at: DateTime<Utc>,
-    pub client_id: Option<String>,
-    pub retry_until_filled: Option<bool>,
-    pub trigger_price: Option<Decimal>,
-    pub order_price: Option<Decimal>,
-    pub triggered_at: Option<String>,
-    pub error: Option<String>,
 }
