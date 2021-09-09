@@ -377,12 +377,15 @@ impl Rest {
 
     pub async fn get_order_history(
         &self,
-        market: &str,
+        market: Option<&str>,
         limit: Option<usize>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
     ) -> Result<Vec<OrderInfo>> {
-        let mut params = vec![format!("market={}", market)];
+        let mut params = vec![];
+        if let Some(market) = market {
+            params.push(format!("market={}", market));
+        }
         if let Some(limit) = limit {
             params.push(format!("limit={}", limit));
         }
@@ -393,8 +396,15 @@ impl Rest {
             params.push(format!("end_time={}", end_time));
         }
 
-        self.get(&format!("/orders/history?{}", params.join("&")), None)
-            .await
+        self.get(
+            &format!(
+                "/orders/history{}{}",
+                if params.is_empty() { "" } else { "?" },
+                params.join("&")
+            ),
+            None,
+        )
+        .await
     }
 
     #[allow(clippy::too_many_arguments)]
