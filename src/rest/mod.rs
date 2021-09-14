@@ -463,6 +463,23 @@ impl Rest {
         .await
     }
 
+    pub async fn modify_order_by_client_id(
+        &self,
+        client_id: &str,
+        price: Option<Decimal>,
+        size: Option<Decimal>,
+    ) -> Result<OrderInfo> {
+        self.post(
+            format!("/orders/by_client_id/{}/modify", client_id).as_str(),
+            Some(json!({
+                "price": price,
+                "size": size,
+                "clientId": client_id,
+            })),
+        )
+        .await
+    }
+
     pub async fn get_order(&self, order_id: Id) -> Result<OrderInfo> {
         self.get(&format!("/orders/{}", order_id), None).await
     }
