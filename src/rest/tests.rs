@@ -185,6 +185,11 @@ async fn account_deserialization() {
 }
 
 #[tokio::test]
+async fn get_coins() {
+    init_api().await.get_coins().await.unwrap();
+}
+
+#[tokio::test]
 async fn place_modify_cancel_orders() {
     manipulate_orders().await;
 }

@@ -319,6 +319,10 @@ impl Rest {
         self.get("/positions", None).await
     }
 
+    pub async fn get_coins(&self) -> Result<Vec<CoinInfo>> {
+        self.get("/wallet/coins", None).await
+    }
+
     pub async fn get_wallet_deposit_address(
         &self,
         coin: &str,

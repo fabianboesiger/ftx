@@ -272,6 +272,33 @@ pub struct Position {
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct CoinInfo {
+    id: Coin,     // "USDT"
+    name: String, // "USD Tether"
+    collateral: bool,
+    usd_fungible: bool,
+    is_etf: bool, // Not documented
+    is_token: bool,
+    hidden: bool, // Not documented
+    can_deposit: bool,
+    can_withdraw: bool,
+    can_convert: bool,
+    has_tag: bool,
+    collateral_weight: Decimal,
+    fiat: bool,
+    methods: Vec<String>,           // ["omni", "erc20", "trx", "sol", "heco"]
+    erc20_contract: Option<String>, // "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+    bep2_asset: Option<String>,     // "ETHBEAR-B2B"
+    trc20_contract: Option<String>, // "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+    spl_mint: Option<String>,       // "BQcdHdAQW1hczDbBi9hiegXAR7A98Q9jx3X3iBBBDiq4"
+    credit_to: Option<String>,      // "USDT"
+    spot_margin: bool,              // Not documented
+    tokenized_equity: Option<bool>, // Not documented
+    index_price: Decimal,           // Not documented; note that ~8% return 1e-8
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WalletDepositAddress {
     pub address: String,
     pub tag: Option<String>,
