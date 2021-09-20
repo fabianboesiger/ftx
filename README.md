@@ -36,7 +36,7 @@ Work in progress, contributions are welcome.
 	- [x] Get positions
 	- [ ] Change account leverage
 - [ ] Wallet
-	- [ ] Get coins
+	- [x] Get coins
 	- [x] Get balances
 	- [ ] Get balances of all accounts
 	- [x] Get deposit address
@@ -57,7 +57,7 @@ Work in progress, contributions are welcome.
 	- [x] Place order
 	- [ ] Place trigger order
 	- [x] Modify order
-	- [ ] Modify order by client ID
+	- [x] Modify order by client ID
 	- [ ] Modify trigger order
 	- [x] Get order status
 	- [x] Get order status by client ID
