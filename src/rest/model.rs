@@ -273,28 +273,28 @@ pub struct Position {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CoinInfo {
-    id: Coin,     // "USDT"
-    name: String, // "USD Tether"
-    collateral: bool,
-    usd_fungible: bool,
-    is_etf: bool, // Not documented
-    is_token: bool,
-    hidden: bool, // Not documented
-    can_deposit: bool,
-    can_withdraw: bool,
-    can_convert: bool,
-    has_tag: bool,
-    collateral_weight: Decimal,
-    fiat: bool,
-    methods: Vec<String>,           // ["omni", "erc20", "trx", "sol", "heco"]
-    erc20_contract: Option<String>, // "0xdAC17F958D2ee523a2206206994597C13D831ec7"
-    bep2_asset: Option<String>,     // "ETHBEAR-B2B"
-    trc20_contract: Option<String>, // "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
-    spl_mint: Option<String>,       // "BQcdHdAQW1hczDbBi9hiegXAR7A98Q9jx3X3iBBBDiq4"
-    credit_to: Option<String>,      // "USDT"
-    spot_margin: bool,              // Not documented
-    tokenized_equity: Option<bool>, // Not documented
-    index_price: Decimal,           // Not documented; note that ~8% return 1e-8
+    pub id: Coin,     // "USDT"
+    pub name: String, // "USD Tether"
+    pub collateral: bool,
+    pub usd_fungible: bool,
+    pub is_etf: bool, // Not documented
+    pub is_token: bool,
+    pub hidden: bool, // Not documented
+    pub can_deposit: bool,
+    pub can_withdraw: bool,
+    pub can_convert: bool,
+    pub has_tag: bool,
+    pub collateral_weight: Decimal,
+    pub fiat: bool,
+    pub methods: Vec<String>, // ["omni", "erc20", "trx", "sol", "heco"]
+    pub erc20_contract: Option<String>, // "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+    pub bep2_asset: Option<String>, // "ETHBEAR-B2B"
+    pub trc20_contract: Option<String>, // "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+    pub spl_mint: Option<String>, // "BQcdHdAQW1hczDbBi9hiegXAR7A98Q9jx3X3iBBBDiq4"
+    pub credit_to: Option<String>, // "USDT"
+    pub spot_margin: bool,    // Not documented
+    pub tokenized_equity: Option<bool>, // Not documented
+    pub index_price: Decimal, // Not documented; note that ~8% return 1e-8
 }
 
 #[derive(Clone, Debug, Deserialize)]
