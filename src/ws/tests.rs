@@ -2,33 +2,25 @@ use super::*;
 use crate::rest::{OrderStatus, Rest};
 use dotenv::dotenv;
 use rust_decimal_macros::dec;
-use std::env::var;
+
 async fn init_authenticated_ws() -> Ws {
     dotenv().ok();
-    Ws::connect(
-        Some((
-            var("API_KEY").expect("API Key is not defined."),
-            var("API_SECRET").expect("API Secret is not defined."),
-        )),
-        var("SUBACCOUNT").ok(),
-    )
-    .await
-    .expect("Connection failed.")
+    Ws::connect(Options::from_env())
+        .await
+        .expect("Connection failed.")
 }
 async fn init_unauthenticated_ws() -> Ws {
     dotenv().ok();
-    Ws::connect(None, None).await.expect("Connection failed.")
+    Ws::connect(Options::default())
+        .await
+        .expect("Connection failed.")
 }
 
 #[allow(dead_code)]
 async fn init_api() -> Rest {
     dotenv().ok();
 
-    Rest::new(
-        var("API_KEY").expect("API Key is not defined."),
-        var("API_SECRET").expect("API Secret is not defined."),
-        var("SUBACCOUNT").ok(),
-    )
+    Rest::new(Options::from_env())
 }
 
 #[tokio::test]

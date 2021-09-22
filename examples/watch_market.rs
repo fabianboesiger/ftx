@@ -1,8 +1,8 @@
 use dotenv::dotenv;
+use ftx::options::Options;
 use ftx::ws::Result;
 use ftx::ws::{Channel, Data, Orderbook, Ws};
 use futures::stream::StreamExt;
-use std::env::var;
 use std::io;
 use std::io::Write;
 
@@ -10,14 +10,7 @@ use std::io::Write;
 async fn main() -> Result<()> {
     dotenv().ok();
 
-    let mut websocket = Ws::connect(
-        Some((
-            var("API_KEY").expect("API Key is not defined."),
-            var("API_SECRET").expect("API Secret is not defined."),
-        )),
-        var("SUBACCOUNT").ok(),
-    )
-    .await?;
+    let mut websocket = Ws::connect(Options::from_env()).await?;
 
     let market = String::from("BTC-PERP");
     let mut orderbook = Orderbook::new(market.to_owned());
