@@ -8,6 +8,7 @@ mod tests;
 pub use error::*;
 pub use model::*;
 
+use crate::options::Options;
 use futures::{
     ready,
     task::{Context, Poll},
@@ -36,14 +37,9 @@ impl Ws {
     pub const ENDPOINT: &'static str = "wss://ftx.com/ws";
     pub const ENDPOINT_US: &'static str = "wss://ftx.us/ws";
 
-    async fn connect_with_endpoint(
-        endpoint: &str,
-        key_secret: Option<(String, String)>,
-        subaccount: Option<String>,
-    ) -> Result<Self> {
-        let (mut stream, _) = connect_async(endpoint).await?;
-        let is_authenticated = key_secret.is_some();
-        if let Some((key, secret)) = key_secret {
+    pub async fn connect(options: Options) -> Result<Self> {
+        let (mut stream, _) = connect_async(options.endpoint.ws()).await?;
+        let is_authenticated = if let (Some(key), Some(secret)) = (options.key, options.secret) {
             let timestamp = SystemTime::now()
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
@@ -60,13 +56,16 @@ impl Ws {
                             "key": key,
                             "sign": sign,
                             "time": timestamp as u64,
-                            "subaccount": subaccount,
+                            "subaccount": options.subaccount,
                         }
                     })
                     .to_string(),
                 ))
                 .await?;
-        }
+            true
+        } else {
+            false
+        };
         Ok(Self {
             channels: Vec::new(),
             stream,
@@ -74,23 +73,6 @@ impl Ws {
             ping_timer: time::interval(Duration::from_secs(15)),
             is_authenticated,
         })
-    }
-    pub async fn connect(
-        // Pair (API_KEY, SECRET_KEY) for authentification.
-        // The channels FILL, ORDER, and FTX Pay require authentification
-        key_secret: Option<(String, String)>,
-        subaccount: Option<String>,
-    ) -> Result<Self> {
-        Self::connect_with_endpoint(Self::ENDPOINT, key_secret, subaccount).await
-    }
-
-    // Pair (API_KEY, SECRET_KEY) for authentification.
-    // The channels FILL, ORDER, and FTX Pay require authentification
-    pub async fn connect_us(
-        key_secret: Option<(String, String)>,
-        subaccount: Option<String>,
-    ) -> Result<Self> {
-        Self::connect_with_endpoint(Self::ENDPOINT_US, key_secret, subaccount).await
     }
 
     async fn ping(&mut self) -> Result<()> {

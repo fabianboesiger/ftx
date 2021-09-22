@@ -6,18 +6,21 @@ use std::env::var;
 async fn init_authenticated_ws() -> Ws {
     dotenv().ok();
     Ws::connect(
-        Some((
-            var("API_KEY").expect("API Key is not defined."),
-            var("API_SECRET").expect("API Secret is not defined."),
-        )),
-        var("SUBACCOUNT").ok(),
+        Options::default()
+            .authenticate(
+                var("API_KEY").expect("API Key is not defined."),
+                var("API_SECRET").expect("API Secret is not defined."),
+            )
+            .subaccount_optional(var("SUBACCOUNT").ok()),
     )
     .await
     .expect("Connection failed.")
 }
 async fn init_unauthenticated_ws() -> Ws {
     dotenv().ok();
-    Ws::connect(None, None).await.expect("Connection failed.")
+    Ws::connect(Options::default())
+        .await
+        .expect("Connection failed.")
 }
 
 #[allow(dead_code)]

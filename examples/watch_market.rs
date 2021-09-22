@@ -1,4 +1,5 @@
 use dotenv::dotenv;
+use ftx::options::Options;
 use ftx::ws::Result;
 use ftx::ws::{Channel, Data, Orderbook, Ws};
 use futures::stream::StreamExt;
@@ -11,11 +12,12 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     let mut websocket = Ws::connect(
-        Some((
-            var("API_KEY").expect("API Key is not defined."),
-            var("API_SECRET").expect("API Secret is not defined."),
-        )),
-        var("SUBACCOUNT").ok(),
+        Options::default()
+            .authenticate(
+                var("API_KEY").expect("API Key is not defined."),
+                var("API_SECRET").expect("API Secret is not defined."),
+            )
+            .subaccount_optional(var("SUBACCOUNT").ok()),
     )
     .await?;
 
