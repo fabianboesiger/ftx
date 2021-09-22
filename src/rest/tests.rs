@@ -8,14 +8,7 @@ async fn init_api() -> Rest {
 
     let subaccount = var("SUBACCOUNT").ok();
 
-    let api = Rest::new(
-        Options::default()
-            .authenticate(
-                var("API_KEY").expect("API Key is not defined."),
-                var("API_SECRET").expect("API Secret is not defined."),
-            )
-            .subaccount_optional(var("SUBACCOUNT").ok()),
-    );
+    let api = Rest::new(Options::from_env());
 
     // Test create subaccount only if credentials are account-wide
     if subaccount.is_none() {

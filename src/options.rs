@@ -1,3 +1,5 @@
+use std::env::var;
+
 #[derive(Debug, Clone)]
 pub enum Endpoint {
     Com,
@@ -47,6 +49,24 @@ impl Options {
             endpoint: Endpoint::Us,
             ..Default::default()
         }
+    }
+
+    pub fn from_env() -> Self {
+        Options::default()
+            .authenticate(
+                var("API_KEY").expect("API Key is not defined."),
+                var("API_SECRET").expect("API Secret is not defined."),
+            )
+            .subaccount_optional(var("SUBACCOUNT").ok())
+    }
+
+    pub fn from_env_us() -> Self {
+        Options::us()
+            .authenticate(
+                var("API_KEY").expect("API Key is not defined."),
+                var("API_SECRET").expect("API Secret is not defined."),
+            )
+            .subaccount_optional(var("SUBACCOUNT").ok())
     }
 
     pub fn authenticate(mut self, key: String, secret: String) -> Self {
