@@ -15,7 +15,14 @@ impl Endpoint {
     pub fn rest(&self) -> &'static str {
         match self {
             Endpoint::Com => "https://ftx.com/api",
-            &Endpoint::Us => "https://ftx.us/api",
+            Endpoint::Us => "https://ftx.us/api",
+        }
+    }
+
+    pub fn header_prefix(&self) -> &'static str {
+        match self {
+            Endpoint::Com => "FTX",
+            Endpoint::Us => "FTXUS",
         }
     }
 }

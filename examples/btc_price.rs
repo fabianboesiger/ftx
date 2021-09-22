@@ -1,5 +1,8 @@
 use dotenv::dotenv;
-use ftx::rest::{Rest, Result};
+use ftx::{
+    options::Options,
+    rest::{Rest, Result},
+};
 use std::env::var;
 
 #[tokio::main]
@@ -7,9 +10,12 @@ async fn main() -> Result<()> {
     dotenv().ok();
 
     let api = Rest::new(
-        var("API_KEY").expect("API Key is not defined."),
-        var("API_SECRET").expect("API Secret is not defined."),
-        var("SUBACCOUNT").ok(),
+        Options::default()
+            .authenticate(
+                var("API_KEY").expect("API Key is not defined."),
+                var("API_SECRET").expect("API Secret is not defined."),
+            )
+            .subaccount_optional(var("SUBACCOUNT").ok()),
     );
 
     let price = api.get_market("BTC/USD").await?.price;

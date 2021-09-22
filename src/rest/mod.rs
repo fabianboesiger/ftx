@@ -19,35 +19,38 @@ use serde::de::DeserializeOwned;
 use serde_json::{from_reader, json, to_string, Map, Value};
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::options::{Endpoint, Options};
+
 pub struct Rest {
-    secret: String,
+    secret: Option<String>,
     client: Client,
     subaccount: Option<String>,
-    endpoint: &'static str,
-    header_prefix: &'static str,
+    endpoint: Endpoint,
 }
 
 impl Rest {
-    pub const ENDPOINT: &'static str = "https://ftx.com/api";
-    pub const ENDPOINT_US: &'static str = "https://ftx.us/api";
-
-    fn new_with_endpoint(
-        endpoint: &'static str,
-        header_prefix: &'static str,
-        key: String,
-        secret: String,
-        subaccount: Option<String>,
+    pub fn new(
+        Options {
+            endpoint,
+            key,
+            secret,
+            subaccount,
+        }: Options,
     ) -> Self {
         // Set default headers.
         let mut headers = HeaderMap::new();
-        headers.insert(
-            HeaderName::from_str(&format!("{}-KEY", header_prefix)).unwrap(),
-            HeaderValue::from_str(&key).unwrap(),
-        );
-        if let Some(subaccount) = subaccount.to_owned() {
+
+        if let Some(key) = &key {
             headers.insert(
-                HeaderName::from_str(&format!("{}-SUBACCOUNT", header_prefix)).unwrap(),
-                HeaderValue::from_str(&subaccount).unwrap(),
+                HeaderName::from_str(&format!("{}-KEY", endpoint.header_prefix())).unwrap(),
+                HeaderValue::from_str(key).unwrap(),
+            );
+        }
+
+        if let Some(subaccount) = &subaccount {
+            headers.insert(
+                HeaderName::from_str(&format!("{}-SUBACCOUNT", endpoint.header_prefix())).unwrap(),
+                HeaderValue::from_str(subaccount).unwrap(),
             );
         }
 
@@ -61,16 +64,7 @@ impl Rest {
             client,
             subaccount,
             endpoint,
-            header_prefix,
         }
-    }
-
-    pub fn new(key: String, secret: String, subaccount: Option<String>) -> Self {
-        Self::new_with_endpoint(Self::ENDPOINT, "FTX", key, secret, subaccount)
-    }
-
-    pub fn new_us(key: String, secret: String, subaccount: Option<String>) -> Self {
-        Self::new_with_endpoint(Self::ENDPOINT_US, "FTXUS", key, secret, subaccount)
     }
 
     async fn get<T: DeserializeOwned>(&self, path: &str, params: Option<Value>) -> Result<T> {
@@ -101,10 +95,7 @@ impl Rest {
         } else {
             String::new()
         };
-        let url = format!("{}{}", self.endpoint, path);
-        let sign_payload = format!("{}{}/api{}{}", timestamp, method, path, body);
-        let sign = HMAC::mac(sign_payload.as_bytes(), self.secret.as_bytes());
-        let sign = hex::encode(sign);
+        let url = format!("{}{}", self.endpoint.rest(), path);
         let params = params.map(|value| {
             if let Value::Object(map) = value {
                 map.into_iter()
@@ -126,16 +117,24 @@ impl Rest {
             HeaderValue::from_static("application/json"),
         );
         headers.insert(
-            HeaderName::from_str(&format!("{}-TS", self.header_prefix)).unwrap(),
+            HeaderName::from_str(&format!("{}-TS", self.endpoint.header_prefix())).unwrap(),
             HeaderValue::from_str(&format!("{}", timestamp)).unwrap(),
         );
-        headers.insert(
-            HeaderName::from_str(&format!("{}-SIGN", self.header_prefix)).unwrap(),
-            HeaderValue::from_str(&sign).unwrap(),
-        );
+
+        if let Some(secret) = &self.secret {
+            let sign_payload = format!("{}{}/api{}{}", timestamp, method, path, body);
+            let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
+            let sign = hex::encode(sign);
+            headers.insert(
+                HeaderName::from_str(&format!("{}-SIGN", self.endpoint.header_prefix())).unwrap(),
+                HeaderValue::from_str(&sign).unwrap(),
+            );
+        }
+
         if let Some(subaccount) = &self.subaccount {
             headers.insert(
-                HeaderName::from_str(&format!("{}-SUBACCOUNT", self.header_prefix)).unwrap(),
+                HeaderName::from_str(&format!("{}-SUBACCOUNT", self.endpoint.header_prefix()))
+                    .unwrap(),
                 HeaderValue::from_str(subaccount).unwrap(),
             );
         }
