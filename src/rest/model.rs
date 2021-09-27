@@ -90,7 +90,7 @@ pub struct Market {
     pub enabled: bool,
     pub ask: Decimal,
     pub bid: Decimal,
-    pub last: Decimal,
+    pub last: Option<Decimal>,
     pub post_only: bool,
     pub price_increment: Decimal,
     pub size_increment: Decimal,
