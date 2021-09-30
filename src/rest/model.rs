@@ -45,6 +45,10 @@ pub struct ChangeName;
 
 #[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub struct ChangeLeverage;
+
+#[derive(Copy, Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Delete;
 
 #[derive(Clone, Debug, Deserialize)]
