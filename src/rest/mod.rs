@@ -317,6 +317,19 @@ impl Rest {
     pub async fn get_positions(&self) -> Result<Positions> {
         self.get("/positions", None).await
     }
+    
+    pub async fn change_account_leverage(
+        &self,
+        leverage: i32,
+    ) -> Result<ChangeLeverage> {
+        self.post(
+            "/account/leverage",
+            Some(json!({
+                "leverage": leverage
+            })),
+        )
+        .await
+    }
 
     pub async fn get_coins(&self) -> Result<Vec<CoinInfo>> {
         self.get("/wallet/coins", None).await
