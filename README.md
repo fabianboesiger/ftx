@@ -92,7 +92,7 @@ Add the following line to your Cargo.toml file:
 ```
 ftx = "0.3.1"
 ```
-Or for the latest github (nightly) version:
+Or for the latest github version:
 ```
 ftx = { git = "https://github.com/fabianboesiger/ftx", branch = "main" }
 ```
