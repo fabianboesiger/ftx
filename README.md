@@ -34,7 +34,7 @@ Work in progress, contributions are welcome.
 - [ ] Account
 	- [x] Get account information
 	- [x] Get positions
-	- [ ] Change account leverage
+	- [x] Change account leverage
 - [ ] Wallet
 	- [x] Get coins
 	- [x] Get balances
