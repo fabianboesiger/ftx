@@ -141,6 +141,8 @@ impl Orderbook {
     pub fn update(&mut self, data: &OrderbookData) {
         match data.action {
             OrderbookAction::Partial => {
+                self.bids.clear();
+                self.asks.clear();
                 for bid in &data.bids {
                     self.bids.insert(bid.0, bid.1);
                 }

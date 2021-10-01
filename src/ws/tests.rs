@@ -110,7 +110,7 @@ async fn order_book_update() {
                 // Check that inserted orders have been updated correctly
                 for bid in &data.bids {
                     if bid.1 == dec!(0) {
-                        assert!(orderbook.bids.contains_key(&bid.0));
+                        assert!(!orderbook.bids.contains_key(&bid.0));
                     } else {
                         assert_eq!(orderbook.bids.get(&bid.0), Some(&bid.1));
                     }
