@@ -353,6 +353,9 @@ pub struct WalletDeposit {
 pub enum OrderType {
     Market,
     Limit,
+    Stop,
+    TrailingStop,
+    TakeProfit
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
@@ -404,7 +407,7 @@ pub struct OrderInfo {
     pub side: Side,
     pub price: Option<Decimal>, // null for new market orders
     pub size: Decimal,
-    pub reduce_only: bool,
+    pub reduce_only: Option<bool>,
     pub ioc: bool,
     pub post_only: bool,
     pub status: OrderStatus,
@@ -414,4 +417,9 @@ pub struct OrderInfo {
     pub liquidation: Option<bool>,
     pub created_at: DateTime<Utc>,
     pub client_id: Option<String>,
+    pub order_type: String,
+    pub retry_until_filled: Option<bool>,
+    pub trigger_price: Option<Decimal>,
+    pub order_price: Option<Decimal>,
+    pub trail_value: Option<Decimal>,
 }
