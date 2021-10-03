@@ -355,7 +355,7 @@ pub enum OrderType {
     Limit,
     Stop,
     TrailingStop,
-    TakeProfit
+    TakeProfit,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
