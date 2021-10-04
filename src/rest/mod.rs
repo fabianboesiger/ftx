@@ -1,7 +1,7 @@
 //! This module is used to interact with the REST API.
 
 mod error;
-mod model;
+pub mod model;
 #[cfg(test)]
 pub(crate) mod tests;
 
@@ -460,9 +460,9 @@ impl Rest {
         side: Side,
         size: Decimal,
         r#type: OrderType,
+        trigger_price: Decimal,
         reduce_only: Option<bool>,
         retry_until_filled: Option<bool>,
-        trigger_price: Option<Decimal>,
         order_price: Option<Decimal>,
         trail_value: Option<Decimal>,
     ) -> Result<OrderInfo> {

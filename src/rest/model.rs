@@ -408,11 +408,11 @@ pub struct OrderInfo {
     pub price: Option<Decimal>, // null for new market orders
     pub size: Decimal,
     pub reduce_only: Option<bool>,
-    pub ioc: bool,
-    pub post_only: bool,
+    pub ioc: Option<bool>,
+    pub post_only: Option<bool>,
     pub status: OrderStatus,
-    pub filled_size: Decimal,
-    pub remaining_size: Decimal,
+    pub filled_size: Option<Decimal>,
+    pub remaining_size: Option<Decimal>,
     pub avg_fill_price: Option<Decimal>,
     pub liquidation: Option<bool>,
     pub created_at: DateTime<Utc>,
@@ -421,5 +421,6 @@ pub struct OrderInfo {
     pub retry_until_filled: Option<bool>,
     pub trigger_price: Option<Decimal>,
     pub order_price: Option<Decimal>,
-    pub trail_value: Option<Decimal>,
+    pub triggered_at: Option<String>,
+    pub error: Option<String>,
 }
