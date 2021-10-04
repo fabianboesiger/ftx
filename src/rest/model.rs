@@ -345,6 +345,30 @@ pub struct WalletDeposit {
     pub notes: Option<String>,
 }
 
+#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum WithdrawStatus {
+    Requested,
+    Processing,
+    Complete,
+    Cancelled,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WalletWithdrawal {
+    pub id: Id,
+    pub coin: String,
+    pub size: Decimal,
+    pub time: String,
+    pub address: String,
+    pub status: WithdrawStatus,
+    pub fee: Option<Decimal>, // fee, not included in size
+    pub txid: Option<String>,
+    pub tag: Option<String>,
+    pub notes: Option<String>,
+}
+
 // REST API -> Orders
 // TODO
 

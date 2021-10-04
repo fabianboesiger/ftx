@@ -379,6 +379,34 @@ impl Rest {
         .await
     }
 
+    pub async fn get_wallet_withdrawals(
+        &self,
+        limit: Option<usize>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Result<Vec<WalletWithdrawal>> {
+        let mut params = vec![];
+        if let Some(limit) = limit {
+            params.push(format!("limit={}", limit));
+        }
+        if let Some(start_time) = start_time {
+            params.push(format!("start_time={}", start_time.timestamp()));
+        }
+        if let Some(end_time) = end_time {
+            params.push(format!("end_time={}", end_time.timestamp()));
+        }
+
+        self.get(
+            &format!(
+                "/wallet/withdrawals{}{}",
+                if params.is_empty() { "" } else { "?" },
+                params.join("&")
+            ),
+            None,
+        )
+        .await
+    }
+
     pub async fn get_open_orders(&self, market: &str) -> Result<Vec<OrderInfo>> {
         self.get(&format!("/orders?market={}", market), None).await
     }
