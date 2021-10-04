@@ -1,7 +1,7 @@
 //! This module is used to interact with the REST API.
 
 mod error;
-pub mod model;
+mod model;
 #[cfg(test)]
 pub(crate) mod tests;
 
