@@ -417,7 +417,6 @@ pub struct OrderInfo {
     pub liquidation: Option<bool>,
     pub created_at: DateTime<Utc>,
     pub client_id: Option<String>,
-    pub order_type: String,
     pub retry_until_filled: Option<bool>,
     pub trigger_price: Option<Decimal>,
     pub order_price: Option<Decimal>,
