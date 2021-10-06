@@ -453,6 +453,36 @@ impl Rest {
         .await
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub async fn place_trigger_order(
+        &self,
+        market: &str,
+        side: Side,
+        size: Decimal,
+        r#type: OrderType,
+        trigger_price: Decimal,
+        reduce_only: Option<bool>,
+        retry_until_filled: Option<bool>,
+        order_price: Option<Decimal>,
+        trail_value: Option<Decimal>,
+    ) -> Result<OrderInfo> {
+        self.post(
+            "/conditional_orders",
+            Some(json!({
+                "market": market,
+                "side": side,
+                "size": size,
+                "type": r#type,
+                "reduceOnly": reduce_only.unwrap_or(false),
+                "retryUntilFilled": retry_until_filled.unwrap_or(true),
+                "triggerPrice": trigger_price,
+                "orderPrice": order_price,
+                "trailValue": trail_value,
+            })),
+        )
+        .await
+    }
+
     pub async fn modify_order(
         &self,
         order_id: Id,

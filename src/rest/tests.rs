@@ -262,7 +262,7 @@ pub async fn manipulate_orders() {
     let cancelled_order = api.get_order(modified_order.id).await.unwrap();
     // println!("Cancelled order: {:?}", cancelled_order);
     assert_eq!(modified_order.id, cancelled_order.id);
-    assert_eq!(dec!(0), cancelled_order.filled_size);
+    assert_eq!(dec!(0), cancelled_order.filled_size.unwrap());
     assert_eq!(None, cancelled_order.avg_fill_price);
     assert_eq!(OrderStatus::Closed, cancelled_order.status);
 
@@ -282,7 +282,7 @@ pub async fn manipulate_orders() {
         )
         .await
         .unwrap();
-    assert_eq!(dec!(0), rejected_order.filled_size);
+    assert_eq!(dec!(0), rejected_order.filled_size.unwrap());
     assert_eq!(None, rejected_order.avg_fill_price);
 
     assert_eq!(OrderStatus::New, rejected_order.status);
