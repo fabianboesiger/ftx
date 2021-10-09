@@ -8,6 +8,7 @@ pub(crate) mod tests;
 pub use error::*;
 pub use model::*;
 
+use chrono::{DateTime, Utc};
 use hmac_sha256::HMAC;
 use reqwest::{
     header::{HeaderMap, HeaderName, HeaderValue},
@@ -158,38 +159,32 @@ impl Rest {
         }
     }
 
-    pub async fn get_subaccounts(&self) -> Result<Vec<Subaccount>> {
-        self.request(GetSubAccountsRequest {}).await
+    pub async fn get_subaccounts(&self) -> Result<<GetSubAccountsRequest as Request>::Response> {
+        self.request(GetSubAccountsRequest).await
     }
 
-    pub async fn create_subaccount(&self, nickname: &str) -> Result<CreateSubAccountResponse> {
+    pub async fn create_subaccount(
+        &self,
+        nickname: &str,
+    ) -> Result<<CreateSubAccountRequest as Request>::Response> {
         self.request(CreateSubAccountRequest::new(nickname)).await
     }
 
-    // pub async fn change_subaccount_name(
-    //     &self,
-    //     nickname: &str,
-    //     new_nickname: &str,
-    // ) -> Result<ChangeName> {
-    //     self.post(
-    //         "/subaccounts/update_name",
-    //         Some(json!({
-    //             "nickname": nickname,
-    //             "newNickname": new_nickname,
-    //         })),
-    //     )
-    //     .await
-    // }
+    pub async fn change_subaccount_name(
+        &self,
+        nickname: &str,
+        new_nickname: &str,
+    ) -> Result<<ChangeSubaccountNameRequest as Request>::Response> {
+        self.request(ChangeSubaccountNameRequest::new(nickname, new_nickname))
+            .await
+    }
 
-    // pub async fn delete_subaccount(&self, nickname: &str) -> Result<Delete> {
-    //     self.delete(
-    //         "/subaccounts",
-    //         Some(json!({
-    //             "nickname": nickname,
-    //         })),
-    //     )
-    //     .await
-    // }
+    pub async fn delete_subaccount(
+        &self,
+        nickname: &str,
+    ) -> Result<<DeleteSubaccountRequest as Request>::Response> {
+        self.request(DeleteSubaccountRequest::new(nickname)).await
+    }
 
     // pub async fn get_subaccount_balances(&self, nickname: &str) -> Result<Balances> {
     //     self.get(&format!("/subaccounts/{}/balances", nickname), None)
@@ -283,10 +278,6 @@ impl Rest {
     //     self.get("/account", None).await
     // }
 
-    // pub async fn get_positions(&self) -> Result<Positions> {
-    //     self.get("/positions", None).await
-    // }
-
     pub async fn change_account_leverage(&self, leverage: i32) -> Result<ChangeLeverage> {
         self.post("/account/leverage", Some(json!({ "leverage": leverage })))
             .await
@@ -296,57 +287,39 @@ impl Rest {
         self.get("/wallet/coins", None).await
     }
 
-    // pub async fn get_wallet_deposit_address(
-    //     &self,
-    //     coin: &str,
-    //     method: Option<&str>,
-    // ) -> Result<WalletDepositAddress> {
-    //     self.get(
-    //         &format!(
-    //             "/wallet/deposit_address/{}{}",
-    //             coin,
-    //             if let Some(method) = method {
-    //                 format!("?method={}", method)
-    //             } else {
-    //                 "".to_string()
-    //             }
-    //         ),
-    //         None,
-    //     )
-    //     .await
-    // }
+    pub async fn get_positions(&self) -> Result<<GetPositionsRequest as Request>::Response> {
+        self.request(GetPositionsRequest).await
+    }
 
-    // pub async fn get_wallet_balances(&self) -> Result<Vec<WalletBalance>> {
-    //     self.get("/wallet/balances", None).await
-    // }
+    pub async fn get_wallet_deposit_address(
+        &self,
+        coin: &str,
+        method: Option<&str>,
+    ) -> Result<<GetWalletDepositAddressRequest as Request>::Response> {
+        self.request(GetWalletDepositAddressRequest {
+            coin: coin.into(),
+            method: method.map(Into::into),
+        })
+        .await
+    }
 
-    // pub async fn get_wallet_deposits(
-    //     &self,
-    //     limit: Option<usize>,
-    //     start_time: Option<DateTime<Utc>>,
-    //     end_time: Option<DateTime<Utc>>,
-    // ) -> Result<Vec<WalletDeposit>> {
-    //     let mut params = vec![];
-    //     if let Some(limit) = limit {
-    //         params.push(format!("limit={}", limit));
-    //     }
-    //     if let Some(start_time) = start_time {
-    //         params.push(format!("start_time={}", start_time));
-    //     }
-    //     if let Some(end_time) = end_time {
-    //         params.push(format!("end_time={}", end_time));
-    //     }
+    pub async fn get_wallet_balances(&self) -> Result<Vec<WalletBalance>> {
+        self.request(GetWalletBalancesRequest).await
+    }
 
-    //     self.get(
-    //         &format!(
-    //             "/wallet/deposits{}{}",
-    //             if params.is_empty() { "" } else { "?" },
-    //             params.join("&")
-    //         ),
-    //         None,
-    //     )
-    //     .await
-    // }
+    pub async fn get_wallet_deposits(
+        &self,
+        limit: Option<usize>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Result<<GetWalletDepositsRequest as Request>::Response> {
+        self.request(GetWalletDepositsRequest {
+            limit,
+            start_time,
+            end_time,
+        })
+        .await
+    }
 
     pub async fn get_wallet_withdrawals(
         &self,
@@ -376,32 +349,30 @@ impl Rest {
         .await
     }
 
-    pub async fn get_open_orders(&self, market: &str) -> Result<Vec<OrderInfo>> {
+    pub async fn get_open_orders(
+        &self,
+        market: &str,
+    ) -> Result<<GetOpenOrdersRequest as Request>::Response> {
         self.request(GetOpenOrdersRequest::with_market(market))
             .await
     }
 
-    // pub async fn get_order_history(
-    //     &self,
-    //     market: &str,
-    //     limit: Option<usize>,
-    //     start_time: Option<DateTime<Utc>>,
-    //     end_time: Option<DateTime<Utc>>,
-    // ) -> Result<Vec<OrderInfo>> {
-    //     let mut params = vec![format!("market={}", market)];
-    //     if let Some(limit) = limit {
-    //         params.push(format!("limit={}", limit));
-    //     }
-    //     if let Some(start_time) = start_time {
-    //         params.push(format!("start_time={}", start_time));
-    //     }
-    //     if let Some(end_time) = end_time {
-    //         params.push(format!("end_time={}", end_time));
-    //     }
-
-    //     self.get(&format!("/orders/history?{}", params.join("&")), None)
-    //         .await
-    // }
+    pub async fn get_order_history(
+        &self,
+        market: &str,
+        limit: Option<usize>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Result<<GetOrderHistoryRequest as Request>::Response> {
+        self.request(GetOrderHistoryRequest {
+            market: Some(market.into()),
+            limit,
+            start_time,
+            end_time,
+            ..Default::default()
+        })
+        .await
+    }
 
     pub async fn place_order(
         &self,
@@ -414,7 +385,7 @@ impl Rest {
         ioc: Option<bool>,
         post_only: Option<bool>,
         client_id: Option<&str>,
-    ) -> Result<OrderInfo> {
+    ) -> Result<<PlaceOrderRequest as Request>::Response> {
         let req = PlaceOrderRequest {
             market: market.to_string(),
             side,
@@ -485,67 +456,62 @@ impl Rest {
         .await
     }
 
-    // pub async fn modify_order(
-    //     &self,
-    //     order_id: Id,
-    //     price: Option<Decimal>,
-    //     size: Option<Decimal>,
-    //     client_id: Option<&str>,
-    // ) -> Result<OrderInfo> {
-    //     self.post(
-    //         format!("/orders/{}/modify", order_id).as_str(),
-    //         Some(json!({
-    //             "price": price,
-    //             "size": size,
-    //             "clientId": client_id,
-    //         })),
-    //     )
-    //     .await
-    // }
+    pub async fn modify_order(
+        &self,
+        order_id: Id,
+        price: Option<Decimal>,
+        size: Option<Decimal>,
+        client_id: Option<&str>,
+    ) -> Result<<ModifyOrderRequest as Request>::Response> {
+        self.request(ModifyOrderRequest {
+            id: order_id,
+            price,
+            size,
+            client_id: client_id.map(Into::into),
+        })
+        .await
+    }
 
-    // pub async fn get_order(&self, order_id: Id) -> Result<OrderInfo> {
-    //     self.get(&format!("/orders/{}", order_id), None).await
-    // }
+    pub async fn get_order(&self, order_id: Id) -> Result<<GetOrderRequest as Request>::Response> {
+        self.request(GetOrderRequest::new(order_id)).await
+    }
 
-    // pub async fn get_order_by_client_id(&self, client_id: &str) -> Result<OrderInfo> {
-    //     self.get(&format!("/orders/by_client_id/{}", client_id), None)
-    //         .await
-    // }
+    pub async fn get_order_by_client_id(
+        &self,
+        client_id: &str,
+    ) -> Result<<GetOrderByClientIdRequest as Request>::Response> {
+        self.request(GetOrderByClientIdRequest::new(client_id))
+            .await
+    }
 
-    // pub async fn cancel_all_orders(
-    //     &self,
-    //     market: Option<&str>,
-    //     side: Option<Side>,
-    //     conditional_orders_only: Option<bool>,
-    //     limit_orders_only: Option<bool>,
-    // ) -> Result<String> {
-    //     let mut payload = Map::new();
-    //     if let Some(market) = market {
-    //         payload.insert("market".to_string(), Value::String(market.to_string()));
-    //     }
+    pub async fn cancel_all_orders(
+        &self,
+        market: Option<&str>,
+        side: Option<Side>,
+        conditional_orders_only: Option<bool>,
+        limit_orders_only: Option<bool>,
+    ) -> Result<<CancelAllOrderRequest as Request>::Response> {
+        self.request(CancelAllOrderRequest {
+            market: market.map(Into::into),
+            side,
+            conditional_orders_only,
+            limit_orders_only,
+        })
+        .await
+    }
 
-    //     if let Some(side) = side {
-    //         payload.insert("side".to_string(), Value::String(to_string(&side).unwrap()));
-    //     }
+    pub async fn cancel_order(
+        &self,
+        order_id: Id,
+    ) -> Result<<CancelOrderRequest as Request>::Response> {
+        self.request(CancelOrderRequest::new(order_id)).await
+    }
 
-    //     payload.insert(
-    //         "conditionalOrdersOnly".to_string(),
-    //         Value::Bool(conditional_orders_only.unwrap_or(false)),
-    //     );
-    //     payload.insert(
-    //         "limitOrdersOnly".to_string(),
-    //         Value::Bool(limit_orders_only.unwrap_or(false)),
-    //     );
-
-    //     self.delete("/orders", Some(Value::Object(payload))).await
-    // }
-
-    // pub async fn cancel_order(&self, order_id: Id) -> Result<String> {
-    //     self.delete(&format!("/orders/{}", order_id), None).await
-    // }
-
-    // pub async fn cancel_order_by_client_id(&self, client_id: &str) -> Result<String> {
-    //     self.delete(&dbg!(format!("/orders/by_client_id/{}", client_id)), None)
-    //         .await
-    // }
+    pub async fn cancel_order_by_client_id(
+        &self,
+        client_id: &str,
+    ) -> Result<<CancelOrderByClientIdRequest as Request>::Response> {
+        self.request(CancelOrderByClientIdRequest::new(client_id))
+            .await
+    }
 }

@@ -1,10 +1,14 @@
 mod common;
 mod orders;
+mod positions;
 mod subaccounts;
+mod wallet;
 
 pub use common::*;
 pub use orders::*;
+pub use positions::*;
 pub use subaccounts::*;
+pub use wallet::*;
 
 use chrono::{DateTime, Utc};
 use http::Method;
@@ -22,6 +26,10 @@ pub trait Request: Serialize {
     fn no_payload(&self) -> bool {
         !Self::HAS_PAYLOAD
     }
+
+    fn path(&self) -> String {
+        Self::PATH.into()
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -37,14 +45,6 @@ pub struct ErrorResponse {
 }
 
 // REST API -> Subaccounts
-
-#[derive(Copy, Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ChangeName;
-
-#[derive(Copy, Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ChangeLeverage;
 
 #[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -229,33 +229,6 @@ pub struct Account {
     pub spot_lending_enabled: bool,
     pub spot_margin_enabled: bool,
 }
-
-/// Returned by GET /positions.
-/// See https://docs.ftx.com/#get-positions.
-pub type Positions = Vec<Position>;
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Position {
-    pub cost: Decimal,
-    pub entry_price: Option<Decimal>,
-    pub estimated_liquidation_price: Option<Decimal>,
-    pub future: String,
-    pub initial_margin_requirement: Decimal,
-    pub long_order_size: Decimal,
-    pub maintenance_margin_requirement: Decimal,
-    pub net_size: Decimal,
-    pub open_size: Decimal,
-    pub realized_pnl: Decimal,
-    pub short_order_size: Decimal,
-    pub side: Side,
-    pub size: Decimal,
-    pub unrealized_pnl: Decimal,
-    pub collateral_used: Decimal,
-}
-
-// REST API -> Wallet
-// TODO
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
