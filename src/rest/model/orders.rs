@@ -15,16 +15,21 @@ pub struct OrderInfo {
     pub side: Side,
     pub price: Option<Decimal>, // null for new market orders
     pub size: Decimal,
-    pub reduce_only: bool,
-    pub ioc: bool,
-    pub post_only: bool,
+    pub reduce_only: Option<bool>,
+    pub ioc: Option<bool>,
+    pub post_only: Option<bool>,
     pub status: OrderStatus,
-    pub filled_size: Decimal,
-    pub remaining_size: Decimal,
+    pub filled_size: Option<Decimal>,
+    pub remaining_size: Option<Decimal>,
     pub avg_fill_price: Option<Decimal>,
     pub liquidation: Option<bool>,
     pub created_at: DateTime<Utc>,
     pub client_id: Option<String>,
+    pub retry_until_filled: Option<bool>,
+    pub trigger_price: Option<Decimal>,
+    pub order_price: Option<Decimal>,
+    pub triggered_at: Option<String>,
+    pub error: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
@@ -268,9 +273,15 @@ pub struct GetOrderHistoryRequest {
     pub side: Option<Side>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<usize>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub start_time: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub end_time: Option<DateTime<Utc>>,
 }
 

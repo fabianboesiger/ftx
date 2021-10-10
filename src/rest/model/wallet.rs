@@ -43,8 +43,17 @@ pub struct WalletDeposit {
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct GetWalletDepositsRequest {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<usize>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub start_time: Option<DateTime<Utc>>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub end_time: Option<DateTime<Utc>>,
 }
 
@@ -170,9 +179,15 @@ pub struct WalletWithdrawal {
 pub struct GetWalletWithdrawalsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<usize>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub start_time: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub end_time: Option<DateTime<Utc>>,
 }
 

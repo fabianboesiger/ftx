@@ -17,7 +17,7 @@ pub struct Market {
     pub enabled: bool,
     pub ask: Decimal,
     pub bid: Decimal,
-    pub last: Decimal,
+    pub last: Option<Decimal>,
     pub post_only: bool,
     pub price_increment: Decimal,
     pub size_increment: Decimal,
@@ -135,9 +135,15 @@ pub struct GetTradesRequest {
     pub market_name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub start_time: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub end_time: Option<DateTime<Utc>>,
 }
 
@@ -184,9 +190,15 @@ pub struct GetHistoricalPricesRequest {
     pub resolution: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub start_time: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
     pub end_time: Option<DateTime<Utc>>,
 }
 

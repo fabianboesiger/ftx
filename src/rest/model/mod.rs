@@ -19,7 +19,8 @@ pub use self::wallet::*;
 use chrono::{DateTime, Utc};
 use http::Method;
 use rust_decimal::prelude::*;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::Serializer;
+use serde::{de::DeserializeOwned, ser::Error, Deserialize, Serialize};
 
 pub trait Request: Serialize {
     const METHOD: Method;
@@ -73,3 +74,17 @@ pub struct FundingRate {
 }
 
 pub type FundingRates = Vec<FundingRate>;
+
+pub fn serialize_as_timestamp<S>(
+    dt: &Option<DateTime<Utc>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    if let Some(dt) = dt {
+        serializer.serialize_i64(dt.timestamp())
+    } else {
+        Err(S::Error::custom("Empty option"))
+    }
+}
