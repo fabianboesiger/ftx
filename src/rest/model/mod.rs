@@ -1,14 +1,20 @@
+mod account;
 mod common;
+mod futures;
+mod markets;
 mod orders;
 mod positions;
 mod subaccounts;
 mod wallet;
 
-pub use common::*;
-pub use orders::*;
-pub use positions::*;
-pub use subaccounts::*;
-pub use wallet::*;
+pub use self::account::*;
+pub use self::common::*;
+pub use self::futures::*;
+pub use self::markets::*;
+pub use self::orders::*;
+pub use self::positions::*;
+pub use self::subaccounts::*;
+pub use self::wallet::*;
 
 use chrono::{DateTime, Utc};
 use http::Method;
@@ -44,139 +50,7 @@ pub struct ErrorResponse {
     pub error: String,
 }
 
-// REST API -> Subaccounts
-
-#[derive(Copy, Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Delete;
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Balance {
-    pub coin: Coin,
-    pub free: Decimal,
-    pub total: Decimal,
-    pub spot_borrow: Decimal,
-    pub available_without_borrow: Decimal,
-}
-
-pub type Balances = Vec<Balance>;
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Transfer {
-    pub id: Id,
-    pub coin: Coin,
-    pub size: Decimal,
-    pub time: DateTime<Utc>,
-    pub notes: String,
-}
-
 // REST API -> Markets
-
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub enum MarketType {
-    Future,
-    Spot,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Market {
-    #[serde(rename = "type")]
-    pub market_type: MarketType,
-    pub name: Symbol,
-    pub underlying: Option<Coin>,
-    pub base_currency: Option<Coin>,
-    pub quote_currency: Option<Coin>,
-    pub enabled: bool,
-    pub ask: Decimal,
-    pub bid: Decimal,
-    pub last: Option<Decimal>,
-    pub post_only: bool,
-    pub price_increment: Decimal,
-    pub size_increment: Decimal,
-    pub restricted: bool,
-    pub min_provide_size: Decimal,
-    pub price: Decimal,
-    pub high_leverage_fee_exempt: bool,
-    pub change1h: Decimal,
-    pub change24h: Decimal,
-    pub change_bod: Decimal,
-    pub quote_volume24h: Decimal,
-    pub volume_usd24h: Decimal,
-}
-
-pub type Markets = Vec<Market>;
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Orderbook {
-    pub asks: Vec<(Decimal, Decimal)>,
-    pub bids: Vec<(Decimal, Decimal)>,
-}
-
-#[derive(Copy, Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Trade {
-    pub id: Id,
-    pub liquidation: bool,
-    pub price: Decimal,
-    pub side: Side,
-    pub size: Decimal,
-    pub time: DateTime<Utc>,
-}
-
-pub type Trades = Vec<Trade>;
-
-#[derive(Copy, Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Price {
-    pub close: Decimal,
-    pub high: Decimal,
-    pub low: Decimal,
-    pub open: Decimal,
-    pub volume: Decimal,
-    pub start_time: DateTime<Utc>,
-}
-
-pub type Prices = Vec<Price>;
-
-// REST API -> Futures
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Future {
-    pub ask: Option<Decimal>,
-    pub bid: Option<Decimal>,
-    pub change1h: Option<Decimal>,
-    pub change24h: Option<Decimal>,
-    pub change_bod: Option<Decimal>,
-    pub volume_usd24h: Option<Decimal>,
-    pub volume: Option<Decimal>,
-    pub description: String,
-    pub enabled: bool,
-    pub expired: bool,
-    pub expiry: Option<DateTime<Utc>>,
-    pub index: Option<Decimal>,
-    pub imf_factor: Decimal,
-    pub last: Option<Decimal>,
-    pub lower_bound: Decimal,
-    pub mark: Option<Decimal>,
-    pub name: Symbol,
-    pub perpetual: bool,
-    pub position_limit_weight: Decimal,
-    pub post_only: bool,
-    pub price_increment: Decimal,
-    pub size_increment: Decimal,
-    pub underlying: Symbol,
-    pub upper_bound: Decimal,
-    #[serde(rename = "type")]
-    pub market_type: FutureType,
-}
-
-pub type Futures = Vec<Future>;
 
 #[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -201,34 +75,6 @@ pub struct FundingRate {
 pub type FundingRates = Vec<FundingRate>;
 
 // REST API -> Account
-
-/// Returned by GET /account.
-/// See https://docs.ftx.com/#get-account-information.
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Account {
-    pub backstop_provider: bool,
-    pub charge_interest_on_negative_usd: bool,
-    pub collateral: Decimal,
-    pub free_collateral: Decimal,
-    pub initial_margin_requirement: Decimal,
-    pub liquidating: bool,
-    pub maintenance_margin_requirement: Decimal,
-    pub maker_fee: Decimal,
-    pub margin_fraction: Option<Decimal>,
-    pub open_margin_fraction: Option<Decimal>,
-    pub position_limit: Option<Decimal>,
-    pub position_limit_used: Option<Decimal>,
-    pub taker_fee: Decimal,
-    pub total_account_value: Decimal,
-    pub total_position_size: Decimal,
-    pub use_ftt_collateral: bool,
-    pub username: String,
-    pub leverage: Decimal,
-    pub positions: Vec<Position>,
-    pub spot_lending_enabled: bool,
-    pub spot_margin_enabled: bool,
-}
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]

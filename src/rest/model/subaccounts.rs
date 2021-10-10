@@ -1,6 +1,13 @@
-use super::Request;
+use super::{
+    common::{Coin, Id},
+    Request,
+};
+use chrono::{DateTime, Utc};
 use http::Method;
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use std::convert::TryFrom;
+use std::fmt::Debug;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -105,4 +112,89 @@ impl Request for DeleteSubaccountRequest {
     const AUTH: bool = true;
 
     type Response = DeleteSubaccountResponse;
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Balance {
+    pub coin: Coin,
+    pub free: Decimal,
+    pub total: Decimal,
+    pub spot_borrow: Decimal,
+    pub available_without_borrow: Decimal,
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct GetSubaccountBalancesRequest {
+    #[serde(skip_serializing)]
+    pub nickname: String,
+}
+
+impl GetSubaccountBalancesRequest {
+    pub fn new(nickname: &str) -> Self {
+        Self {
+            nickname: nickname.into(),
+        }
+    }
+}
+
+pub type GetSubaccountBalancesResponse = Vec<Balance>;
+
+impl Request for GetSubaccountBalancesRequest {
+    const METHOD: Method = Method::GET;
+    const PATH: &'static str = "/subaccounts/{}/balances";
+    const HAS_PAYLOAD: bool = false;
+    const AUTH: bool = true;
+
+    type Response = GetSubaccountBalancesResponse;
+
+    fn path(&self) -> String {
+        format!("/subaccounts/{}/balances", self.nickname)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Transfer {
+    pub id: Id,
+    pub coin: Coin,
+    pub size: Decimal,
+    pub time: DateTime<Utc>,
+    pub notes: String,
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct TransferBetweenSubaccountsRequest {
+    pub coin: String,
+    pub size: Decimal,
+    pub source: String,
+    pub destination: String,
+}
+
+impl TransferBetweenSubaccountsRequest {
+    pub fn new<S>(coin: &str, size: S, source: &str, destination: &str) -> Self
+    where
+        Decimal: TryFrom<S>,
+        <Decimal as TryFrom<S>>::Error: Debug,
+    {
+        Self {
+            coin: coin.into(),
+            size: Decimal::try_from(size).unwrap(),
+            source: source.into(),
+            destination: destination.into(),
+        }
+    }
+}
+
+pub type TransferBetweenSubaccountsResponse = Transfer;
+
+impl Request for TransferBetweenSubaccountsRequest {
+    const METHOD: Method = Method::POST;
+    const PATH: &'static str = "/subaccounts/transfer";
+    const HAS_PAYLOAD: bool = true;
+    const AUTH: bool = true;
+
+    type Response = TransferBetweenSubaccountsResponse;
 }

@@ -1,3 +1,4 @@
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 pub type Id = u64;
@@ -88,4 +89,34 @@ pub enum DepositStatus {
     Unconfirmed,
     Cancelled,
     Complete,
+}
+
+#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum MarketType {
+    Future,
+    Spot,
+}
+
+/// Returned by GET /positions.
+/// See https://docs.ftx.com/#get-positions.
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Position {
+    pub cost: Decimal,
+    pub entry_price: Option<Decimal>,
+    pub estimated_liquidation_price: Option<Decimal>,
+    pub future: String,
+    pub initial_margin_requirement: Decimal,
+    pub long_order_size: Decimal,
+    pub maintenance_margin_requirement: Decimal,
+    pub net_size: Decimal,
+    pub open_size: Decimal,
+    pub realized_pnl: Decimal,
+    pub short_order_size: Decimal,
+    pub side: Side,
+    pub size: Decimal,
+    pub unrealized_pnl: Decimal,
+    pub collateral_used: Decimal,
 }

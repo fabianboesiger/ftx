@@ -186,97 +186,101 @@ impl Rest {
         self.request(DeleteSubaccountRequest::new(nickname)).await
     }
 
-    // pub async fn get_subaccount_balances(&self, nickname: &str) -> Result<Balances> {
-    //     self.get(&format!("/subaccounts/{}/balances", nickname), None)
-    //         .await
-    // }
+    pub async fn get_subaccount_balances(
+        &self,
+        nickname: &str,
+    ) -> Result<<GetSubaccountBalancesRequest as Request>::Response> {
+        self.request(GetSubaccountBalancesRequest::new(nickname))
+            .await
+    }
 
-    // pub async fn transfer_between_subaccounts(
-    //     &self,
-    //     coin: &str,
-    //     size: Decimal,
-    //     source: &str,
-    //     destination: &str,
-    // ) -> Result<Transfer> {
-    //     self.post(
-    //         "/subaccounts/transfer",
-    //         Some(json!({
-    //             "coin": coin,
-    //             "size": size,
-    //             "source": source,
-    //             "destination": destination,
-    //         })),
-    //     )
-    //     .await
-    // }
+    pub async fn transfer_between_subaccounts(
+        &self,
+        coin: &str,
+        size: Decimal,
+        source: &str,
+        destination: &str,
+    ) -> Result<<TransferBetweenSubaccountsRequest as Request>::Response> {
+        self.request(TransferBetweenSubaccountsRequest::new(
+            coin,
+            size,
+            source,
+            destination,
+        ))
+        .await
+    }
 
-    // pub async fn get_markets(&self) -> Result<Markets> {
-    //     self.get("/markets", None).await
-    // }
+    pub async fn get_markets(&self) -> Result<<GetMarketsRequest as Request>::Response> {
+        self.request(GetMarketsRequest).await
+    }
 
-    // pub async fn get_market(&self, market_name: &str) -> Result<Market> {
-    //     self.get(&format!("/markets/{}", market_name), None).await
-    // }
+    pub async fn get_market(
+        &self,
+        market_name: &str,
+    ) -> Result<<GetMarketRequest as Request>::Response> {
+        self.request(GetMarketRequest::new(market_name)).await
+    }
 
-    // pub async fn get_orderbook(&self, market_name: &str, depth: Option<u32>) -> Result<Orderbook> {
-    //     self.get(
-    //         &format!("/markets/{}/orderbook", market_name),
-    //         Some(json!({
-    //             "depth": depth,
-    //         })),
-    //     )
-    //     .await
-    // }
+    pub async fn get_orderbook(
+        &self,
+        market_name: &str,
+        depth: Option<u32>,
+    ) -> Result<<GetOrderBookRequest as Request>::Response> {
+        self.request(GetOrderBookRequest {
+            market_name: market_name.into(),
+            depth,
+        })
+        .await
+    }
 
-    // pub async fn get_trades(
-    //     &self,
-    //     market_name: &str,
-    //     limit: Option<u32>,
-    //     start_time: Option<DateTime<Utc>>,
-    //     end_time: Option<DateTime<Utc>>,
-    // ) -> Result<Trades> {
-    //     self.get(
-    //         &format!("/markets/{}/trades", market_name),
-    //         Some(json!({
-    //             "limit": limit,
-    //             "start_time": start_time.map(|t| t.timestamp()),
-    //             "end_time": end_time.map(|t| t.timestamp()),
-    //         })),
-    //     )
-    //     .await
-    // }
+    pub async fn get_trades(
+        &self,
+        market_name: &str,
+        limit: Option<u32>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Result<<GetTradesRequest as Request>::Response> {
+        self.request(GetTradesRequest {
+            market_name: market_name.into(),
+            limit,
+            start_time,
+            end_time,
+        })
+        .await
+    }
 
-    // pub async fn get_historical_prices(
-    //     &self,
-    //     market_name: &str,
-    //     resolution: u32,
-    //     limit: Option<u32>,
-    //     start_time: Option<DateTime<Utc>>,
-    //     end_time: Option<DateTime<Utc>>,
-    // ) -> Result<Prices> {
-    //     self.get(
-    //         &format!("/markets/{}/candles", market_name),
-    //         Some(json!({
-    //             "resolution": resolution,
-    //             "limit": limit,
-    //             "start_time": start_time.map(|t| t.timestamp()),
-    //             "end_time": end_time.map(|t| t.timestamp()),
-    //         })),
-    //     )
-    //     .await
-    // }
+    pub async fn get_historical_prices(
+        &self,
+        market_name: &str,
+        resolution: u32,
+        limit: Option<u32>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Result<<GetHistoricalPricesRequest as Request>::Response> {
+        self.request(GetHistoricalPricesRequest {
+            market_name: market_name.into(),
+            resolution,
+            limit,
+            start_time,
+            end_time,
+        })
+        .await
+    }
 
-    // pub async fn get_futures(&self) -> Result<Futures> {
-    //     self.get("/futures", None).await
-    // }
+    pub async fn get_futures(&self) -> Result<<GetFuturesRequest as Request>::Response> {
+        self.request(GetFuturesRequest).await
+    }
 
-    // pub async fn get_future(&self, future_name: &str) -> Result<Future> {
-    //     self.get(&format!("/futures/{}", future_name), None).await
-    // }
+    pub async fn get_future(
+        &self,
+        future_name: &str,
+    ) -> Result<<GetFutureRequest as Request>::Response> {
+        self.request(GetFutureRequest::new(future_name)).await
+    }
 
-    // pub async fn get_account(&self) -> Result<Account> {
-    //     self.get("/account", None).await
-    // }
+    pub async fn get_account(&self) -> Result<<GetAccountRequest as Request>::Response> {
+        self.request(GetAccountRequest).await
+    }
 
     pub async fn change_account_leverage(&self, leverage: i32) -> Result<ChangeLeverage> {
         self.post("/account/leverage", Some(json!({ "leverage": leverage })))
