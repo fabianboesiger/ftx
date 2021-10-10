@@ -42,7 +42,6 @@ pub type GetMarketsResponse = Vec<Market>;
 impl Request for GetMarketsRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetMarketsResponse;
@@ -68,7 +67,6 @@ pub type GetMarketResponse = Market;
 impl Request for GetMarketRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetMarketResponse;
@@ -101,6 +99,13 @@ impl GetOrderBookRequest {
             ..Default::default()
         }
     }
+
+    pub fn with_depth(market_name: &str, depth: u32) -> Self {
+        Self {
+            market_name: market_name.into(),
+            depth: Some(depth),
+        }
+    }
 }
 
 pub type GetOrderBookResponse = Orderbook;
@@ -108,7 +113,6 @@ pub type GetOrderBookResponse = Orderbook;
 impl Request for GetOrderBookRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/orderbook";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = GetOrderBookResponse;
@@ -162,7 +166,6 @@ pub type GetTradesResponse = Vec<Trade>;
 impl Request for GetTradesRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/trades";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = GetTradesResponse;
@@ -218,7 +221,6 @@ pub type GetHistoricalPricesResponse = Vec<Price>;
 impl Request for GetHistoricalPricesRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/candles";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = GetHistoricalPricesResponse;

@@ -27,7 +27,6 @@ pub type GetSubAccountsResponse = Vec<Subaccount>;
 impl Request for GetSubAccountsRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/subaccounts";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetSubAccountsResponse;
@@ -57,7 +56,6 @@ pub struct CreateSubAccountResponse {
 impl Request for CreateSubAccountRequest {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = CreateSubAccountResponse;
@@ -84,7 +82,6 @@ pub type ChangeSubaccountNameResponse = ();
 impl Request for ChangeSubaccountNameRequest {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts/update_name";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = ChangeSubaccountNameResponse;
@@ -109,7 +106,6 @@ pub type DeleteSubaccountResponse = ();
 impl Request for DeleteSubaccountRequest {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/subaccounts";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = DeleteSubaccountResponse;
@@ -145,7 +141,6 @@ pub type GetSubaccountBalancesResponse = Vec<Balance>;
 impl Request for GetSubaccountBalancesRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/subaccounts/{}/balances";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetSubaccountBalancesResponse;
@@ -194,7 +189,6 @@ pub type TransferBetweenSubaccountsResponse = Transfer;
 impl Request for TransferBetweenSubaccountsRequest {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts/transfer";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = TransferBetweenSubaccountsResponse;

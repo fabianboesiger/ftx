@@ -12,7 +12,7 @@ async fn init_api() -> Rest {
 
     // Test create subaccount only if credentials are account-wide
     if subaccount.is_none() {
-        read_only(api.create_subaccount("Bot").await);
+        read_only(api.request(CreateSubAccountRequest::new("Bot")).await);
     }
 
     api
@@ -30,7 +30,7 @@ async fn get_subaccounts() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
         // Test only if credentials are account-wide
-        rest.get_subaccounts().await.unwrap();
+        rest.request(GetSubAccountsRequest).await.unwrap();
     }
 }
 
@@ -39,7 +39,7 @@ async fn create_subaccount() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
         // Test only if credentials are account-wide
-        read_only(rest.create_subaccount("Bot").await);
+        read_only(rest.request(CreateSubAccountRequest::new("Bot")).await);
     }
 }
 
@@ -48,7 +48,10 @@ async fn change_subaccount_name() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
         // Test only if credentials are account-wide
-        read_only(rest.change_subaccount_name("Bot", "Bot").await);
+        read_only(
+            rest.request(ChangeSubaccountNameRequest::new("Bot", "Bot"))
+                .await,
+        );
     }
 }
 
@@ -57,7 +60,7 @@ async fn delete_subaccount() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
         // Test only if credentials are account-wide
-        read_only(rest.delete_subaccount("Bot").await);
+        read_only(rest.request(DeleteSubaccountRequest::new("Bot")).await);
     }
 }
 
@@ -69,7 +72,9 @@ async fn get_subaccount_balances() {
         None => "Bot",
         Some(sub) => sub,
     };
-    rest.get_subaccount_balances(subaccount).await.unwrap_err();
+    rest.request(GetSubaccountBalancesRequest::new(subaccount))
+        .await
+        .unwrap_err();
 }
 
 #[tokio::test]
@@ -77,32 +82,41 @@ async fn transfer_between_subaccounts() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
         // Test only if credentials are account-wide
-        rest.transfer_between_subaccounts("BTC", Decimal::zero(), "Source", "Destination")
-            .await
-            .unwrap_err();
+        rest.request(TransferBetweenSubaccountsRequest::new(
+            "BTC",
+            Decimal::zero(),
+            "Source",
+            "Destination",
+        ))
+        .await
+        .unwrap_err();
     }
 }
 
 #[tokio::test]
 async fn get_markets() {
-    init_api().await.get_markets().await.unwrap();
+    init_api().await.request(GetMarketsRequest).await.unwrap();
 }
 
 #[tokio::test]
 async fn get_market() {
-    init_api().await.get_market("BTC/USD").await.unwrap();
+    init_api()
+        .await
+        .request(GetMarketRequest::new("BTC/USD"))
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
 async fn get_orderbook() {
     init_api()
         .await
-        .get_orderbook("BTC/USD", None)
+        .request(GetOrderBookRequest::new("BTC/USD"))
         .await
         .unwrap();
     init_api()
         .await
-        .get_orderbook("BTC/USD", Some(50))
+        .request(GetOrderBookRequest::with_depth("BTC/USD", 50))
         .await
         .unwrap();
 }
@@ -111,7 +125,7 @@ async fn get_orderbook() {
 async fn get_trades() {
     init_api()
         .await
-        .get_trades("BTC/USD", None, None, None)
+        .request(GetTradesRequest::new("BTC/USD"))
         .await
         .unwrap();
 }
@@ -120,19 +134,27 @@ async fn get_trades() {
 async fn get_historical_prices() {
     init_api()
         .await
-        .get_historical_prices("BTC/USD", 300, None, None, None)
+        .request(GetHistoricalPricesRequest {
+            market_name: "BTC/USD".into(),
+            resolution: 300,
+            ..Default::default()
+        })
         .await
         .unwrap();
 }
 
 #[tokio::test]
 async fn get_futures() {
-    init_api().await.get_futures().await.unwrap();
+    init_api().await.request(GetFuturesRequest).await.unwrap();
 }
 
 #[tokio::test]
 async fn get_future() {
-    init_api().await.get_future("BTC-PERP").await.unwrap();
+    init_api()
+        .await
+        .request(GetFutureRequest::new("BTC-PERP"))
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
@@ -182,7 +204,7 @@ async fn account_deserialization() {
 
 #[tokio::test]
 async fn get_coins() {
-    init_api().await.get_coins().await.unwrap();
+    init_api().await.request(GetCoinsRequest).await.unwrap();
 }
 
 #[tokio::test]
@@ -216,17 +238,15 @@ pub async fn manipulate_orders() {
 
     // Test place order
     let initial_order = api
-        .place_order(
-            market.as_str(),
-            Side::Buy,
-            Some(initial_bid_price),
-            OrderType::Limit,
-            initial_bid_size,
-            None,
-            None,
-            Some(true),
-            None,
-        )
+        .request(PlaceOrderRequest {
+            market: market.clone(),
+            side: Side::Buy,
+            price: Some(initial_bid_price),
+            r#type: OrderType::Limit,
+            size: initial_bid_size,
+            post_only: true,
+            ..Default::default()
+        })
         .await
         .unwrap();
     // println!("Initial order: {:?}", initial_order);
@@ -235,12 +255,12 @@ pub async fn manipulate_orders() {
 
     // Test modify order
     let modified_order = api
-        .modify_order(
-            initial_order.id,
-            Some(modified_bid_price),
-            Some(modified_bid_size),
-            None,
-        )
+        .request(ModifyOrderRequest {
+            id: initial_order.id,
+            price: Some(modified_bid_price),
+            size: Some(modified_bid_size),
+            ..Default::default()
+        })
         .await
         .unwrap();
     // println!("Modified order: {:?}", modified_order);
@@ -251,7 +271,10 @@ pub async fn manipulate_orders() {
     assert_eq!(modified_bid_size, modified_order.size);
 
     // Test cancel order
-    let cancelled_response = api.cancel_order(modified_order.id).await.unwrap();
+    let cancelled_response = api
+        .request(CancelOrderRequest::new(modified_order.id))
+        .await
+        .unwrap();
     // println!("Cancelled response: {:?}", cancelled_response);
     assert_eq!(
         "Order queued for cancellation".to_string(),
@@ -259,7 +282,10 @@ pub async fn manipulate_orders() {
     );
 
     // Check that order was actually cancelled
-    let cancelled_order = api.get_order(modified_order.id).await.unwrap();
+    let cancelled_order = api
+        .request(GetOrderRequest::new(modified_order.id))
+        .await
+        .unwrap();
     // println!("Cancelled order: {:?}", cancelled_order);
     assert_eq!(modified_order.id, cancelled_order.id);
     assert_eq!(dec!(0), cancelled_order.filled_size.unwrap());
@@ -269,17 +295,15 @@ pub async fn manipulate_orders() {
     // Place a post-only order that will be rejected
     let rejected_bid_price = dec!(1.1) * price; // Bid at 110% of current price
     let rejected_order = api
-        .place_order(
-            market.as_str(),
-            Side::Buy,
-            Some(rejected_bid_price),
-            OrderType::Limit,
-            initial_bid_size,
-            None,
-            None,
-            Some(true),
-            None,
-        )
+        .request(PlaceOrderRequest {
+            market,
+            side: Side::Buy,
+            price: Some(rejected_bid_price),
+            r#type: OrderType::Limit,
+            size: initial_bid_size,
+            post_only: true,
+            ..Default::default()
+        })
         .await
         .unwrap();
     assert_eq!(dec!(0), rejected_order.filled_size.unwrap());

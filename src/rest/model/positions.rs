@@ -12,7 +12,6 @@ pub type GetPositionsResponse = Vec<Position>;
 impl Request for GetPositionsRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/positions";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetPositionsResponse;

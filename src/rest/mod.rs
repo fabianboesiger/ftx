@@ -16,8 +16,14 @@ use reqwest::{
     Client, ClientBuilder, Method,
 };
 use rust_decimal::prelude::*;
-use serde_json::{from_reader, to_string, to_value, Value};
+use serde_json::{from_reader, to_string, to_value};
 use std::time::{SystemTime, UNIX_EPOCH};
+
+macro_rules! deprecate_msg {
+    () => {
+        "This function is deprecated. Please use Rest::request instead."
+    };
+}
 
 pub struct Rest {
     secret: Option<String>,
@@ -76,17 +82,9 @@ impl Rest {
             .unwrap()
             .as_millis();
 
-        let (params, body) = match (R::METHOD, R::HAS_PAYLOAD) {
-            (Method::GET, true) => {
-                let map = if let Value::Object(map) = to_value(&req)? {
-                    map
-                } else {
-                    unreachable!()
-                };
-                (Some(map), String::new())
-            }
-            (_, true) => (None, to_string(&req)?),
-            (_, false) => (None, String::new()),
+        let (params, body) = match R::METHOD {
+            Method::GET => (to_value(&req)?.as_object().cloned(), String::new()),
+            _ => (None, to_string(&req)?),
         };
 
         log::trace!("timestamp: {}", timestamp);
@@ -173,10 +171,12 @@ impl Rest {
         }
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_subaccounts(&self) -> Result<<GetSubAccountsRequest as Request>::Response> {
         self.request(GetSubAccountsRequest).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn create_subaccount(
         &self,
         nickname: &str,
@@ -184,6 +184,7 @@ impl Rest {
         self.request(CreateSubAccountRequest::new(nickname)).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn change_subaccount_name(
         &self,
         nickname: &str,
@@ -193,6 +194,7 @@ impl Rest {
             .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn delete_subaccount(
         &self,
         nickname: &str,
@@ -200,6 +202,7 @@ impl Rest {
         self.request(DeleteSubaccountRequest::new(nickname)).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_subaccount_balances(
         &self,
         nickname: &str,
@@ -208,6 +211,7 @@ impl Rest {
             .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn transfer_between_subaccounts(
         &self,
         coin: &str,
@@ -224,6 +228,7 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_markets(&self) -> Result<<GetMarketsRequest as Request>::Response> {
         self.request(GetMarketsRequest).await
     }
@@ -235,6 +240,7 @@ impl Rest {
         self.request(GetMarketRequest::new(market_name)).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_orderbook(
         &self,
         market_name: &str,
@@ -247,6 +253,7 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_trades(
         &self,
         market_name: &str,
@@ -263,6 +270,7 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_historical_prices(
         &self,
         market_name: &str,
@@ -281,10 +289,12 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_futures(&self) -> Result<<GetFuturesRequest as Request>::Response> {
         self.request(GetFuturesRequest).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_future(
         &self,
         future_name: &str,
@@ -292,10 +302,12 @@ impl Rest {
         self.request(GetFutureRequest::new(future_name)).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_account(&self) -> Result<<GetAccountRequest as Request>::Response> {
         self.request(GetAccountRequest).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn change_account_leverage(
         &self,
         leverage: u32,
@@ -304,14 +316,17 @@ impl Rest {
             .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_coins(&self) -> Result<<GetCoinsRequest as Request>::Response> {
         self.request(GetCoinsRequest).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_positions(&self) -> Result<<GetPositionsRequest as Request>::Response> {
         self.request(GetPositionsRequest).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_wallet_deposit_address(
         &self,
         coin: &str,
@@ -324,12 +339,14 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_wallet_balances(
         &self,
     ) -> Result<<GetWalletBalancesRequest as Request>::Response> {
         self.request(GetWalletBalancesRequest).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_wallet_deposits(
         &self,
         limit: Option<usize>,
@@ -344,6 +361,7 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_wallet_withdrawals(
         &self,
         limit: Option<usize>,
@@ -358,6 +376,7 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_open_orders(
         &self,
         market: &str,
@@ -366,6 +385,7 @@ impl Rest {
             .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_order_history(
         &self,
         market: &str,
@@ -384,6 +404,7 @@ impl Rest {
     }
 
     #[allow(clippy::too_many_arguments)]
+    #[deprecated=deprecate_msg!()]
     pub async fn place_order(
         &self,
         market: &str,
@@ -420,6 +441,7 @@ impl Rest {
     }
 
     #[allow(clippy::too_many_arguments)]
+    #[deprecated=deprecate_msg!()]
     pub async fn place_trigger_order(
         &self,
         market: &str,
@@ -446,6 +468,7 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn modify_order_by_client_id(
         &self,
         client_id: &str,
@@ -460,6 +483,7 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn modify_order(
         &self,
         order_id: Id,
@@ -476,10 +500,12 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_order(&self, order_id: Id) -> Result<<GetOrderRequest as Request>::Response> {
         self.request(GetOrderRequest::new(order_id)).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_order_by_client_id(
         &self,
         client_id: &str,
@@ -488,6 +514,7 @@ impl Rest {
             .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn cancel_all_orders(
         &self,
         market: Option<&str>,
@@ -504,6 +531,7 @@ impl Rest {
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn cancel_order(
         &self,
         order_id: Id,
@@ -511,6 +539,7 @@ impl Rest {
         self.request(CancelOrderRequest::new(order_id)).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn cancel_order_by_client_id(
         &self,
         client_id: &str,

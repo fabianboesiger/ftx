@@ -62,7 +62,6 @@ pub type GetWalletDepositsResponse = Vec<WalletDeposit>;
 impl Request for GetWalletDepositsRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/deposits";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = GetWalletDepositsResponse;
@@ -77,7 +76,6 @@ pub type GetWalletBalancesResponse = Vec<WalletBalance>;
 impl Request for GetWalletBalancesRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/balances";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetWalletBalancesResponse;
@@ -111,7 +109,6 @@ pub type GetWalletDepositAddressResponse = WalletDepositAddress;
 impl Request for GetWalletDepositAddressRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/deposit_address";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = GetWalletDepositAddressResponse;
@@ -153,7 +150,6 @@ pub type GetCoinsResponse = Vec<CoinInfo>;
 impl Request for GetCoinsRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/coins";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetCoinsResponse;
@@ -196,7 +192,6 @@ pub type GetWalletWithdrawalsResponse = Vec<WalletWithdrawal>;
 impl Request for GetWalletWithdrawalsRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/withdrawals";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetWalletWithdrawalsResponse;

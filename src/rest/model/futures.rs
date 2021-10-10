@@ -46,7 +46,6 @@ pub type GetFuturesResponse = Vec<Future>;
 impl Request for GetFuturesRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/futures";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetFuturesResponse;
@@ -72,7 +71,6 @@ pub type GetFutureResponse = Future;
 impl Request for GetFutureRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/futures/{}";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetFutureResponse;

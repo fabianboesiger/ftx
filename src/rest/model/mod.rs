@@ -26,14 +26,9 @@ use std::borrow::Cow;
 pub trait Request: Serialize {
     const METHOD: Method;
     const PATH: &'static str;
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = false;
 
     type Response: DeserializeOwned;
-
-    fn no_payload(&self) -> bool {
-        !Self::HAS_PAYLOAD
-    }
 
     fn path(&self) -> Cow<'_, str> {
         Cow::Borrowed(Self::PATH)

@@ -56,7 +56,6 @@ pub type GetOpenOrdersResponse = Vec<OrderInfo>;
 impl Request for GetOpenOrdersRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/orders";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = GetOpenOrdersResponse;
@@ -84,7 +83,6 @@ pub type PlaceOrderResponse = OrderInfo;
 impl Request for PlaceOrderRequest {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/orders";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = PlaceOrderResponse;
@@ -108,7 +106,6 @@ pub type ModifyOrderResponse = OrderInfo;
 impl Request for ModifyOrderRequest {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/orders/{}/modify";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = ModifyOrderResponse;
@@ -135,7 +132,6 @@ pub type GetOrderResponse = OrderInfo;
 impl Request for GetOrderRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/orders/{}";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetOrderResponse;
@@ -162,7 +158,6 @@ pub type CancelOrderResponse = String;
 impl Request for CancelOrderRequest {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/orders/{}";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = CancelOrderResponse;
@@ -199,7 +194,6 @@ pub type CancelAllOrderResponse = String;
 impl Request for CancelAllOrderRequest {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/orders";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = CancelAllOrderResponse;
@@ -225,7 +219,6 @@ pub type CancelOrderByClientIdResponse = String;
 impl Request for CancelOrderByClientIdRequest {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/orders/by_client_id/{}";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = CancelOrderByClientIdResponse;
@@ -255,7 +248,6 @@ pub type GetOrderByClientIdResponse = String;
 impl Request for GetOrderByClientIdRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/orders/by_client_id/{}";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetOrderByClientIdResponse;
@@ -291,7 +283,6 @@ pub type GetOrderHistoryResponse = Vec<OrderInfo>;
 impl Request for GetOrderHistoryRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/orders/history";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = GetOrderHistoryResponse;
@@ -320,7 +311,6 @@ pub type PlaceTriggerOrderResponse = OrderInfo;
 impl Request for PlaceTriggerOrderRequest {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/conditional_orders";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = PlaceTriggerOrderResponse;
@@ -342,7 +332,6 @@ pub type ModifyOrderByClientIdResponse = OrderInfo;
 impl Request for ModifyOrderByClientIdRequest {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/orders/by_client_id/{}/modify";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = ModifyOrderByClientIdResponse;

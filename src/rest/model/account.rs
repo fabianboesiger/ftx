@@ -40,7 +40,6 @@ pub type GetAccountResponse = Account;
 impl Request for GetAccountRequest {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/account";
-    const HAS_PAYLOAD: bool = false;
     const AUTH: bool = true;
 
     type Response = GetAccountResponse;
@@ -62,7 +61,6 @@ pub type ChangeAccountLeverageResponse = ();
 impl Request for ChangeAccountLeverageRequest {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/account/leverage";
-    const HAS_PAYLOAD: bool = true;
     const AUTH: bool = true;
 
     type Response = ChangeAccountLeverageResponse;
