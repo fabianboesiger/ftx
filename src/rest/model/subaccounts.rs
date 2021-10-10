@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 use http::Method;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 use std::convert::TryFrom;
 use std::fmt::Debug;
 
@@ -149,8 +150,8 @@ impl Request for GetSubaccountBalancesRequest {
 
     type Response = GetSubaccountBalancesResponse;
 
-    fn path(&self) -> String {
-        format!("/subaccounts/{}/balances", self.nickname)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/subaccounts/{}/balances", self.nickname))
     }
 }
 

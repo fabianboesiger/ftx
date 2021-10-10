@@ -21,6 +21,7 @@ use http::Method;
 use rust_decimal::prelude::*;
 use serde::Serializer;
 use serde::{de::DeserializeOwned, ser::Error, Deserialize, Serialize};
+use std::borrow::Cow;
 
 pub trait Request: Serialize {
     const METHOD: Method;
@@ -34,8 +35,8 @@ pub trait Request: Serialize {
         !Self::HAS_PAYLOAD
     }
 
-    fn path(&self) -> String {
-        Self::PATH.into()
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Borrowed(Self::PATH)
     }
 }
 

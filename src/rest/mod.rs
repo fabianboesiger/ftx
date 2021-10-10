@@ -69,7 +69,8 @@ impl Rest {
     where
         R: Request,
     {
-        let url = format!("{}{}", self.endpoint.rest(), req.path());
+        let path = req.path();
+        let url = format!("{}{}", self.endpoint.rest(), path);
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
@@ -90,7 +91,7 @@ impl Rest {
 
         log::trace!("timestamp: {}", timestamp);
         log::trace!("method: {}", R::METHOD);
-        log::trace!("path: {}", R::PATH);
+        log::trace!("path: {}", path);
         log::trace!("body: {}", body);
 
         let mut headers = HeaderMap::new();

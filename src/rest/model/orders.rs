@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use http::Method;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -112,8 +113,8 @@ impl Request for ModifyOrderRequest {
 
     type Response = ModifyOrderResponse;
 
-    fn path(&self) -> String {
-        format!("/orders/{}/modify", self.id)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/orders/{}/modify", self.id))
     }
 }
 
@@ -139,8 +140,8 @@ impl Request for GetOrderRequest {
 
     type Response = GetOrderResponse;
 
-    fn path(&self) -> String {
-        format!("/orders/{}", self.id)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/orders/{}", self.id))
     }
 }
 
@@ -166,8 +167,8 @@ impl Request for CancelOrderRequest {
 
     type Response = CancelOrderResponse;
 
-    fn path(&self) -> String {
-        format!("/orders/{}", self.id)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/orders/{}", self.id))
     }
 }
 
@@ -229,8 +230,8 @@ impl Request for CancelOrderByClientIdRequest {
 
     type Response = CancelOrderByClientIdResponse;
 
-    fn path(&self) -> String {
-        format!("/orders/by_client_id/{}", self.client_id)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/orders/by_client_id/{}", self.client_id))
     }
 }
 
@@ -259,8 +260,8 @@ impl Request for GetOrderByClientIdRequest {
 
     type Response = GetOrderByClientIdResponse;
 
-    fn path(&self) -> String {
-        format!("/orders/by_client_id/{}", self.client_id)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/orders/by_client_id/{}", self.client_id))
     }
 }
 
@@ -346,7 +347,7 @@ impl Request for ModifyOrderByClientIdRequest {
 
     type Response = ModifyOrderByClientIdResponse;
 
-    fn path(&self) -> String {
-        format!("/orders/by_client_id/{}/modify", self.client_id)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/orders/by_client_id/{}/modify", self.client_id))
     }
 }

@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use http::Method;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -76,7 +77,7 @@ impl Request for GetFutureRequest {
 
     type Response = GetFutureResponse;
 
-    fn path(&self) -> String {
-        format!("/futures/{}", self.future_name)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/futures/{}", self.future_name))
     }
 }

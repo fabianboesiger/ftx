@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use http::Method;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -72,8 +73,8 @@ impl Request for GetMarketRequest {
 
     type Response = GetMarketResponse;
 
-    fn path(&self) -> String {
-        format!("/markets/{}", self.market_name)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/markets/{}", self.market_name))
     }
 }
 
@@ -112,8 +113,8 @@ impl Request for GetOrderBookRequest {
 
     type Response = GetOrderBookResponse;
 
-    fn path(&self) -> String {
-        format!("/markets/{}/orderbook", self.market_name)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/markets/{}/orderbook", self.market_name))
     }
 }
 
@@ -166,8 +167,8 @@ impl Request for GetTradesRequest {
 
     type Response = GetTradesResponse;
 
-    fn path(&self) -> String {
-        format!("/markets/{}/trades", self.market_name)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/markets/{}/trades", self.market_name))
     }
 }
 
@@ -222,7 +223,7 @@ impl Request for GetHistoricalPricesRequest {
 
     type Response = GetHistoricalPricesResponse;
 
-    fn path(&self) -> String {
-        format!("/markets/{}/candles", self.market_name)
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/markets/{}/candles", self.market_name))
     }
 }
