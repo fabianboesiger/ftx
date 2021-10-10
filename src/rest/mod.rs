@@ -101,7 +101,7 @@ impl Rest {
             let secret = match self.secret {
                 Some(ref secret) => &**secret,
                 None => {
-                    return Err(Error::NoSecretConfigured.into());
+                    return Err(Error::NoSecretConfigured);
                 }
             };
 
