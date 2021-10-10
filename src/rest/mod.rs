@@ -8,6 +8,7 @@ pub(crate) mod tests;
 pub use error::*;
 pub use model::*;
 
+use crate::options::{Endpoint, Options};
 use chrono::{DateTime, Utc};
 use hmac_sha256::HMAC;
 use reqwest::{
@@ -15,10 +16,8 @@ use reqwest::{
     Client, ClientBuilder, Method,
 };
 use rust_decimal::prelude::*;
-use serde_json::{from_reader, to_string};
+use serde_json::{from_reader, to_string, to_value, Value};
 use std::time::{SystemTime, UNIX_EPOCH};
-
-use crate::options::{Endpoint, Options};
 
 pub struct Rest {
     secret: Option<String>,
@@ -77,9 +76,16 @@ impl Rest {
             .as_millis();
 
         let (params, body) = match (R::METHOD, R::HAS_PAYLOAD) {
-            (Method::GET, true) => (to_string(&req)?, String::new()),
-            (_, true) => (String::new(), to_string(&req)?),
-            (_, false) => (String::new(), String::new()),
+            (Method::GET, true) => {
+                let map = if let Value::Object(map) = to_value(&req)? {
+                    map
+                } else {
+                    unreachable!()
+                };
+                (Some(map), String::new())
+            }
+            (_, true) => (None, to_string(&req)?),
+            (_, false) => (None, String::new()),
         };
 
         log::trace!("timestamp: {}", timestamp);
@@ -145,9 +151,9 @@ impl Rest {
         let body = self
             .client
             .request(R::METHOD, url)
-            .query(&params)
             .headers(headers)
             .body(body)
+            .query(&params)
             .send()
             .await?
             .bytes()

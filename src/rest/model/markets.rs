@@ -212,7 +212,7 @@ impl GetHistoricalPricesRequest {
     }
 }
 
-pub type GetHistoricalPricesResponse = Vec<Trade>;
+pub type GetHistoricalPricesResponse = Vec<Price>;
 
 impl Request for GetHistoricalPricesRequest {
     const METHOD: Method = Method::GET;
