@@ -45,3 +45,25 @@ impl Request for GetAccountRequest {
 
     type Response = GetAccountResponse;
 }
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct ChangeAccountLeverageRequest {
+    pub leverage: u32,
+}
+
+impl ChangeAccountLeverageRequest {
+    pub fn new(leverage: u32) -> Self {
+        Self { leverage }
+    }
+}
+
+pub type ChangeAccountLeverageResponse = ();
+
+impl Request for ChangeAccountLeverageRequest {
+    const METHOD: Method = Method::POST;
+    const PATH: &'static str = "/account/leverage";
+    const HAS_PAYLOAD: bool = true;
+    const AUTH: bool = true;
+
+    type Response = ChangeAccountLeverageResponse;
+}

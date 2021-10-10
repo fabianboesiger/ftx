@@ -284,3 +284,58 @@ impl Request for GetOrderHistoryRequest {
 
     type Response = GetOrderHistoryResponse;
 }
+
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PlaceTriggerOrderRequest {
+    pub market: String,
+    pub side: Side,
+    pub size: Decimal,
+    pub r#type: OrderType,
+    pub trigger_price: Decimal,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reduce_only: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub retry_until_filled: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub order_price: Option<Decimal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trail_value: Option<Decimal>,
+}
+
+pub type PlaceTriggerOrderResponse = OrderInfo;
+
+impl Request for PlaceTriggerOrderRequest {
+    const METHOD: Method = Method::POST;
+    const PATH: &'static str = "/conditional_orders";
+    const HAS_PAYLOAD: bool = true;
+    const AUTH: bool = true;
+
+    type Response = PlaceTriggerOrderResponse;
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ModifyOrderByClientIdRequest {
+    #[serde(skip_serializing)]
+    pub client_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub price: Option<Decimal>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub size: Option<Decimal>,
+}
+
+pub type ModifyOrderByClientIdResponse = OrderInfo;
+
+impl Request for ModifyOrderByClientIdRequest {
+    const METHOD: Method = Method::POST;
+    const PATH: &'static str = "/orders/by_client_id/{}/modify";
+    const HAS_PAYLOAD: bool = true;
+    const AUTH: bool = true;
+
+    type Response = ModifyOrderByClientIdResponse;
+
+    fn path(&self) -> String {
+        format!("/orders/by_client_id/{}/modify", self.client_id)
+    }
+}

@@ -10,6 +10,9 @@ pub enum Error {
     #[error("placing limit order requires price")]
     PlacingLimitOrderRequiresPrice,
 
+    #[error("endpoint requires auth but no secret configured")]
+    NoSecretConfigured,
+
     #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
 

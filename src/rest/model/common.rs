@@ -120,3 +120,12 @@ pub struct Position {
     pub unrealized_pnl: Decimal,
     pub collateral_used: Decimal,
 }
+
+#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub enum WithdrawStatus {
+    Requested,
+    Processing,
+    Complete,
+    Cancelled,
+}

@@ -98,11 +98,18 @@ impl Rest {
         );
 
         if R::AUTH {
+            let secret = match self.secret {
+                Some(ref secret) => &**secret,
+                None => {
+                    return Err(Error::NoSecretConfigured.into());
+                }
+            };
+
             let sign_payload = format!("{}{}/api{}{}", timestamp, R::METHOD, req.path(), body);
-            let sign = HMAC::mac(sign_payload.as_bytes(), self.secret.as_bytes());
+            let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
             let sign = hex::encode(sign);
             headers.insert(
-                HeaderName::from_str(&format!("{}-SIGN", self.header_prefix)).unwrap(),
+                HeaderName::from_str(&format!("{}-SIGN", self.endpoint.header_prefix())).unwrap(),
                 HeaderValue::from_str(&sign).unwrap(),
             );
         }
@@ -282,13 +289,16 @@ impl Rest {
         self.request(GetAccountRequest).await
     }
 
-    pub async fn change_account_leverage(&self, leverage: i32) -> Result<ChangeLeverage> {
-        self.post("/account/leverage", Some(json!({ "leverage": leverage })))
+    pub async fn change_account_leverage(
+        &self,
+        leverage: u32,
+    ) -> Result<<ChangeAccountLeverageRequest as Request>::Response> {
+        self.request(ChangeAccountLeverageRequest::new(leverage))
             .await
     }
 
-    pub async fn get_coins(&self) -> Result<Vec<CoinInfo>> {
-        self.get("/wallet/coins", None).await
+    pub async fn get_coins(&self) -> Result<<GetCoinsRequest as Request>::Response> {
+        self.request(GetCoinsRequest).await
     }
 
     pub async fn get_positions(&self) -> Result<<GetPositionsRequest as Request>::Response> {
@@ -307,7 +317,9 @@ impl Rest {
         .await
     }
 
-    pub async fn get_wallet_balances(&self) -> Result<Vec<WalletBalance>> {
+    pub async fn get_wallet_balances(
+        &self,
+    ) -> Result<<GetWalletBalancesRequest as Request>::Response> {
         self.request(GetWalletBalancesRequest).await
     }
 
@@ -330,26 +342,12 @@ impl Rest {
         limit: Option<usize>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<Vec<WalletWithdrawal>> {
-        let mut params = vec![];
-        if let Some(limit) = limit {
-            params.push(format!("limit={}", limit));
-        }
-        if let Some(start_time) = start_time {
-            params.push(format!("start_time={}", start_time.timestamp()));
-        }
-        if let Some(end_time) = end_time {
-            params.push(format!("end_time={}", end_time.timestamp()));
-        }
-
-        self.get(
-            &format!(
-                "/wallet/withdrawals{}{}",
-                if params.is_empty() { "" } else { "?" },
-                params.join("&")
-            ),
-            None,
-        )
+    ) -> Result<<GetWalletWithdrawalsRequest as Request>::Response> {
+        self.request(GetWalletWithdrawalsRequest {
+            limit,
+            start_time,
+            end_time,
+        })
         .await
     }
 
@@ -378,6 +376,7 @@ impl Rest {
         .await
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn place_order(
         &self,
         market: &str,
@@ -426,20 +425,17 @@ impl Rest {
         order_price: Option<Decimal>,
         trail_value: Option<Decimal>,
     ) -> Result<OrderInfo> {
-        self.post(
-            "/conditional_orders",
-            Some(json!({
-                "market": market,
-                "side": side,
-                "size": size,
-                "type": r#type,
-                "reduceOnly": reduce_only.unwrap_or(false),
-                "retryUntilFilled": retry_until_filled.unwrap_or(true),
-                "triggerPrice": trigger_price,
-                "orderPrice": order_price,
-                "trailValue": trail_value,
-            })),
-        )
+        self.request(PlaceTriggerOrderRequest {
+            market: market.into(),
+            side,
+            size,
+            r#type,
+            trigger_price,
+            reduce_only,
+            retry_until_filled,
+            order_price,
+            trail_value,
+        })
         .await
     }
 
@@ -449,14 +445,11 @@ impl Rest {
         price: Option<Decimal>,
         size: Option<Decimal>,
     ) -> Result<OrderInfo> {
-        self.post(
-            format!("/orders/by_client_id/{}/modify", client_id).as_str(),
-            Some(json!({
-                "price": price,
-                "size": size,
-                "clientId": client_id,
-            })),
-        )
+        self.request(ModifyOrderByClientIdRequest {
+            client_id: client_id.into(),
+            price,
+            size,
+        })
         .await
     }
 
