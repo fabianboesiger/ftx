@@ -142,7 +142,7 @@ pub struct GetCoins;
 impl Request for GetCoins {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/coins";
-    const AUTH: bool = true;
+    const AUTH: bool = false;
 
     type Response = Vec<CoinInfo>;
 }
