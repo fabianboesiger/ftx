@@ -172,16 +172,16 @@ impl Rest {
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_subaccounts(&self) -> Result<<GetSubAccountsRequest as Request>::Response> {
-        self.request(GetSubAccountsRequest).await
+    pub async fn get_subaccounts(&self) -> Result<<GetSubAccounts as Request>::Response> {
+        self.request(GetSubAccounts).await
     }
 
     #[deprecated=deprecate_msg!()]
     pub async fn create_subaccount(
         &self,
         nickname: &str,
-    ) -> Result<<CreateSubAccountRequest as Request>::Response> {
-        self.request(CreateSubAccountRequest::new(nickname)).await
+    ) -> Result<<CreateSubAccount as Request>::Response> {
+        self.request(CreateSubAccount::new(nickname)).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -189,8 +189,8 @@ impl Rest {
         &self,
         nickname: &str,
         new_nickname: &str,
-    ) -> Result<<ChangeSubaccountNameRequest as Request>::Response> {
-        self.request(ChangeSubaccountNameRequest::new(nickname, new_nickname))
+    ) -> Result<<ChangeSubaccountName as Request>::Response> {
+        self.request(ChangeSubaccountName::new(nickname, new_nickname))
             .await
     }
 
@@ -198,17 +198,16 @@ impl Rest {
     pub async fn delete_subaccount(
         &self,
         nickname: &str,
-    ) -> Result<<DeleteSubaccountRequest as Request>::Response> {
-        self.request(DeleteSubaccountRequest::new(nickname)).await
+    ) -> Result<<DeleteSubaccount as Request>::Response> {
+        self.request(DeleteSubaccount::new(nickname)).await
     }
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_subaccount_balances(
         &self,
         nickname: &str,
-    ) -> Result<<GetSubaccountBalancesRequest as Request>::Response> {
-        self.request(GetSubaccountBalancesRequest::new(nickname))
-            .await
+    ) -> Result<<GetSubaccountBalances as Request>::Response> {
+        self.request(GetSubaccountBalances::new(nickname)).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -218,8 +217,8 @@ impl Rest {
         size: Decimal,
         source: &str,
         destination: &str,
-    ) -> Result<<TransferBetweenSubaccountsRequest as Request>::Response> {
-        self.request(TransferBetweenSubaccountsRequest::new(
+    ) -> Result<<TransferBetweenSubaccounts as Request>::Response> {
+        self.request(TransferBetweenSubaccounts::new(
             coin,
             size,
             source,
@@ -229,15 +228,12 @@ impl Rest {
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_markets(&self) -> Result<<GetMarketsRequest as Request>::Response> {
-        self.request(GetMarketsRequest).await
+    pub async fn get_markets(&self) -> Result<<GetMarkets as Request>::Response> {
+        self.request(GetMarkets).await
     }
 
-    pub async fn get_market(
-        &self,
-        market_name: &str,
-    ) -> Result<<GetMarketRequest as Request>::Response> {
-        self.request(GetMarketRequest::new(market_name)).await
+    pub async fn get_market(&self, market_name: &str) -> Result<<GetMarket as Request>::Response> {
+        self.request(GetMarket::new(market_name)).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -245,8 +241,8 @@ impl Rest {
         &self,
         market_name: &str,
         depth: Option<u32>,
-    ) -> Result<<GetOrderBookRequest as Request>::Response> {
-        self.request(GetOrderBookRequest {
+    ) -> Result<<GetOrderBook as Request>::Response> {
+        self.request(GetOrderBook {
             market_name: market_name.into(),
             depth,
         })
@@ -260,8 +256,8 @@ impl Rest {
         limit: Option<u32>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<<GetTradesRequest as Request>::Response> {
-        self.request(GetTradesRequest {
+    ) -> Result<<GetTrades as Request>::Response> {
+        self.request(GetTrades {
             market_name: market_name.into(),
             limit,
             start_time,
@@ -278,8 +274,8 @@ impl Rest {
         limit: Option<u32>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<<GetHistoricalPricesRequest as Request>::Response> {
-        self.request(GetHistoricalPricesRequest {
+    ) -> Result<<GetHistoricalPrices as Request>::Response> {
+        self.request(GetHistoricalPrices {
             market_name: market_name.into(),
             resolution,
             limit,
@@ -290,40 +286,36 @@ impl Rest {
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_futures(&self) -> Result<<GetFuturesRequest as Request>::Response> {
-        self.request(GetFuturesRequest).await
+    pub async fn get_futures(&self) -> Result<<GetFutures as Request>::Response> {
+        self.request(GetFutures).await
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_future(
-        &self,
-        future_name: &str,
-    ) -> Result<<GetFutureRequest as Request>::Response> {
-        self.request(GetFutureRequest::new(future_name)).await
+    pub async fn get_future(&self, future_name: &str) -> Result<<GetFuture as Request>::Response> {
+        self.request(GetFuture::new(future_name)).await
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_account(&self) -> Result<<GetAccountRequest as Request>::Response> {
-        self.request(GetAccountRequest).await
+    pub async fn get_account(&self) -> Result<<GetAccount as Request>::Response> {
+        self.request(GetAccount).await
     }
 
     #[deprecated=deprecate_msg!()]
     pub async fn change_account_leverage(
         &self,
         leverage: u32,
-    ) -> Result<<ChangeAccountLeverageRequest as Request>::Response> {
-        self.request(ChangeAccountLeverageRequest::new(leverage))
-            .await
+    ) -> Result<<ChangeAccountLeverage as Request>::Response> {
+        self.request(ChangeAccountLeverage::new(leverage)).await
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_coins(&self) -> Result<<GetCoinsRequest as Request>::Response> {
-        self.request(GetCoinsRequest).await
+    pub async fn get_coins(&self) -> Result<<GetCoins as Request>::Response> {
+        self.request(GetCoins).await
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_positions(&self) -> Result<<GetPositionsRequest as Request>::Response> {
-        self.request(GetPositionsRequest).await
+    pub async fn get_positions(&self) -> Result<<GetPositions as Request>::Response> {
+        self.request(GetPositions).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -331,8 +323,8 @@ impl Rest {
         &self,
         coin: &str,
         method: Option<&str>,
-    ) -> Result<<GetWalletDepositAddressRequest as Request>::Response> {
-        self.request(GetWalletDepositAddressRequest {
+    ) -> Result<<GetWalletDepositAddress as Request>::Response> {
+        self.request(GetWalletDepositAddress {
             coin: coin.into(),
             method: method.map(Into::into),
         })
@@ -340,10 +332,8 @@ impl Rest {
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_wallet_balances(
-        &self,
-    ) -> Result<<GetWalletBalancesRequest as Request>::Response> {
-        self.request(GetWalletBalancesRequest).await
+    pub async fn get_wallet_balances(&self) -> Result<<GetWalletBalances as Request>::Response> {
+        self.request(GetWalletBalances).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -352,8 +342,8 @@ impl Rest {
         limit: Option<usize>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<<GetWalletDepositsRequest as Request>::Response> {
-        self.request(GetWalletDepositsRequest {
+    ) -> Result<<GetWalletDeposits as Request>::Response> {
+        self.request(GetWalletDeposits {
             limit,
             start_time,
             end_time,
@@ -367,8 +357,8 @@ impl Rest {
         limit: Option<usize>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<<GetWalletWithdrawalsRequest as Request>::Response> {
-        self.request(GetWalletWithdrawalsRequest {
+    ) -> Result<<GetWalletWithdrawals as Request>::Response> {
+        self.request(GetWalletWithdrawals {
             limit,
             start_time,
             end_time,
@@ -380,9 +370,8 @@ impl Rest {
     pub async fn get_open_orders(
         &self,
         market: &str,
-    ) -> Result<<GetOpenOrdersRequest as Request>::Response> {
-        self.request(GetOpenOrdersRequest::with_market(market))
-            .await
+    ) -> Result<<GetOpenOrders as Request>::Response> {
+        self.request(GetOpenOrders::with_market(market)).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -392,8 +381,8 @@ impl Rest {
         limit: Option<usize>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<<GetOrderHistoryRequest as Request>::Response> {
-        self.request(GetOrderHistoryRequest {
+    ) -> Result<<GetOrderHistory as Request>::Response> {
+        self.request(GetOrderHistory {
             market: Some(market.into()),
             limit,
             start_time,
@@ -416,8 +405,8 @@ impl Rest {
         ioc: Option<bool>,
         post_only: Option<bool>,
         client_id: Option<&str>,
-    ) -> Result<<PlaceOrderRequest as Request>::Response> {
-        let req = PlaceOrderRequest {
+    ) -> Result<<PlaceOrder as Request>::Response> {
+        let req = PlaceOrder {
             market: market.to_string(),
             side,
             price,
@@ -454,7 +443,7 @@ impl Rest {
         order_price: Option<Decimal>,
         trail_value: Option<Decimal>,
     ) -> Result<OrderInfo> {
-        self.request(PlaceTriggerOrderRequest {
+        self.request(PlaceTriggerOrder {
             market: market.into(),
             side,
             size,
@@ -475,7 +464,7 @@ impl Rest {
         price: Option<Decimal>,
         size: Option<Decimal>,
     ) -> Result<OrderInfo> {
-        self.request(ModifyOrderByClientIdRequest {
+        self.request(ModifyOrderByClientId {
             client_id: client_id.into(),
             price,
             size,
@@ -490,8 +479,8 @@ impl Rest {
         price: Option<Decimal>,
         size: Option<Decimal>,
         client_id: Option<&str>,
-    ) -> Result<<ModifyOrderRequest as Request>::Response> {
-        self.request(ModifyOrderRequest {
+    ) -> Result<<ModifyOrder as Request>::Response> {
+        self.request(ModifyOrder {
             id: order_id,
             price,
             size,
@@ -501,17 +490,16 @@ impl Rest {
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_order(&self, order_id: Id) -> Result<<GetOrderRequest as Request>::Response> {
-        self.request(GetOrderRequest::new(order_id)).await
+    pub async fn get_order(&self, order_id: Id) -> Result<<GetOrder as Request>::Response> {
+        self.request(GetOrder::new(order_id)).await
     }
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_order_by_client_id(
         &self,
         client_id: &str,
-    ) -> Result<<GetOrderByClientIdRequest as Request>::Response> {
-        self.request(GetOrderByClientIdRequest::new(client_id))
-            .await
+    ) -> Result<<GetOrderByClientId as Request>::Response> {
+        self.request(GetOrderByClientId::new(client_id)).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -521,8 +509,8 @@ impl Rest {
         side: Option<Side>,
         conditional_orders_only: Option<bool>,
         limit_orders_only: Option<bool>,
-    ) -> Result<<CancelAllOrderRequest as Request>::Response> {
-        self.request(CancelAllOrderRequest {
+    ) -> Result<<CancelAllOrder as Request>::Response> {
+        self.request(CancelAllOrder {
             market: market.map(Into::into),
             side,
             conditional_orders_only,
@@ -532,19 +520,15 @@ impl Rest {
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn cancel_order(
-        &self,
-        order_id: Id,
-    ) -> Result<<CancelOrderRequest as Request>::Response> {
-        self.request(CancelOrderRequest::new(order_id)).await
+    pub async fn cancel_order(&self, order_id: Id) -> Result<<CancelOrder as Request>::Response> {
+        self.request(CancelOrder::new(order_id)).await
     }
 
     #[deprecated=deprecate_msg!()]
     pub async fn cancel_order_by_client_id(
         &self,
         client_id: &str,
-    ) -> Result<<CancelOrderByClientIdRequest as Request>::Response> {
-        self.request(CancelOrderByClientIdRequest::new(client_id))
-            .await
+    ) -> Result<<CancelOrderByClientId as Request>::Response> {
+        self.request(CancelOrderByClientId::new(client_id)).await
     }
 }

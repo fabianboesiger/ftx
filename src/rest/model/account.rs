@@ -33,35 +33,31 @@ pub struct Account {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetAccountRequest;
+pub struct GetAccount;
 
-pub type GetAccountResponse = Account;
-
-impl Request for GetAccountRequest {
+impl Request for GetAccount {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/account";
     const AUTH: bool = true;
 
-    type Response = GetAccountResponse;
+    type Response = Account;
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct ChangeAccountLeverageRequest {
+pub struct ChangeAccountLeverage {
     pub leverage: u32,
 }
 
-impl ChangeAccountLeverageRequest {
+impl ChangeAccountLeverage {
     pub fn new(leverage: u32) -> Self {
         Self { leverage }
     }
 }
 
-pub type ChangeAccountLeverageResponse = ();
-
-impl Request for ChangeAccountLeverageRequest {
+impl Request for ChangeAccountLeverage {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/account/leverage";
     const AUTH: bool = true;
 
-    type Response = ChangeAccountLeverageResponse;
+    type Response = ();
 }

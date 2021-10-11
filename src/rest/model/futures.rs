@@ -39,26 +39,24 @@ pub struct Future {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetFuturesRequest;
+pub struct GetFutures;
 
-pub type GetFuturesResponse = Vec<Future>;
-
-impl Request for GetFuturesRequest {
+impl Request for GetFutures {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/futures";
     const AUTH: bool = true;
 
-    type Response = GetFuturesResponse;
+    type Response = Vec<Future>;
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetFutureRequest {
+pub struct GetFuture {
     #[serde(skip_serializing)]
     pub future_name: String,
 }
 
-impl GetFutureRequest {
+impl GetFuture {
     pub fn new(future_name: &str) -> Self {
         Self {
             future_name: future_name.into(),
@@ -66,14 +64,12 @@ impl GetFutureRequest {
     }
 }
 
-pub type GetFutureResponse = Future;
-
-impl Request for GetFutureRequest {
+impl Request for GetFuture {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/futures/{}";
     const AUTH: bool = true;
 
-    type Response = GetFutureResponse;
+    type Response = Future;
 
     fn path(&self) -> Cow<'_, str> {
         Cow::Owned(format!("/futures/{}", self.future_name))

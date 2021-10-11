@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 use ftx::{
     options::Options,
-    rest::{GetAccountRequest, GetPositionsRequest, Rest},
+    rest::{GetAccount, GetPositions, Rest},
 };
 
 #[tokio::main]
@@ -9,7 +9,7 @@ async fn main() {
     dotenv().ok();
     let api = Rest::new(Options::from_env());
     println!("Account:");
-    println!("{:#?}", api.request(GetAccountRequest).await.unwrap());
+    println!("{:#?}", api.request(GetAccount).await.unwrap());
     println!("Positions:");
-    println!("{:#?}", api.request(GetPositionsRequest).await.unwrap());
+    println!("{:#?}", api.request(GetPositions).await.unwrap());
 }

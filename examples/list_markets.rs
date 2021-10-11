@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 use ftx::{
     options::Options,
-    rest::{GetMarketsRequest, Rest, Result},
+    rest::{GetMarkets, Rest, Result},
 };
 
 #[tokio::main]
@@ -10,7 +10,7 @@ async fn main() -> Result<()> {
 
     let api = Rest::new(Options::from_env());
 
-    for market in api.request(GetMarketsRequest).await? {
+    for market in api.request(GetMarkets).await? {
         println!(
             "Market {} had ${} volume in the last 24 hours.",
             market.name, market.volume_usd24h

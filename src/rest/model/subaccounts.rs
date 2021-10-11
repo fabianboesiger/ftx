@@ -20,24 +20,22 @@ pub struct Subaccount {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetSubAccountsRequest;
+pub struct GetSubAccounts;
 
-pub type GetSubAccountsResponse = Vec<Subaccount>;
-
-impl Request for GetSubAccountsRequest {
+impl Request for GetSubAccounts {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/subaccounts";
     const AUTH: bool = true;
 
-    type Response = GetSubAccountsResponse;
+    type Response = Vec<Subaccount>;
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct CreateSubAccountRequest {
+pub struct CreateSubAccount {
     pub nickname: String,
 }
 
-impl CreateSubAccountRequest {
+impl CreateSubAccount {
     pub fn new(nickname: &str) -> Self {
         Self {
             nickname: nickname.to_string(),
@@ -47,28 +45,28 @@ impl CreateSubAccountRequest {
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateSubAccountResponse {
+pub struct Create {
     pub nickname: String,
     pub deletable: bool,
     pub editable: bool,
 }
 
-impl Request for CreateSubAccountRequest {
+impl Request for CreateSubAccount {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts";
     const AUTH: bool = true;
 
-    type Response = CreateSubAccountResponse;
+    type Response = Create;
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct ChangeSubaccountNameRequest {
+pub struct ChangeSubaccountName {
     pub nickname: String,
     pub new_nickname: String,
 }
 
-impl ChangeSubaccountNameRequest {
+impl ChangeSubaccountName {
     pub fn new(nickname: &str, new_nickname: &str) -> Self {
         Self {
             nickname: nickname.into(),
@@ -77,23 +75,21 @@ impl ChangeSubaccountNameRequest {
     }
 }
 
-pub type ChangeSubaccountNameResponse = ();
-
-impl Request for ChangeSubaccountNameRequest {
+impl Request for ChangeSubaccountName {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts/update_name";
     const AUTH: bool = true;
 
-    type Response = ChangeSubaccountNameResponse;
+    type Response = ();
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct DeleteSubaccountRequest {
+pub struct DeleteSubaccount {
     pub nickname: String,
 }
 
-impl DeleteSubaccountRequest {
+impl DeleteSubaccount {
     pub fn new(nickname: &str) -> Self {
         Self {
             nickname: nickname.into(),
@@ -101,14 +97,12 @@ impl DeleteSubaccountRequest {
     }
 }
 
-pub type DeleteSubaccountResponse = ();
-
-impl Request for DeleteSubaccountRequest {
+impl Request for DeleteSubaccount {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/subaccounts";
     const AUTH: bool = true;
 
-    type Response = DeleteSubaccountResponse;
+    type Response = ();
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -123,12 +117,12 @@ pub struct Balance {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetSubaccountBalancesRequest {
+pub struct GetSubaccountBalances {
     #[serde(skip_serializing)]
     pub nickname: String,
 }
 
-impl GetSubaccountBalancesRequest {
+impl GetSubaccountBalances {
     pub fn new(nickname: &str) -> Self {
         Self {
             nickname: nickname.into(),
@@ -136,14 +130,12 @@ impl GetSubaccountBalancesRequest {
     }
 }
 
-pub type GetSubaccountBalancesResponse = Vec<Balance>;
-
-impl Request for GetSubaccountBalancesRequest {
+impl Request for GetSubaccountBalances {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/subaccounts/{}/balances";
     const AUTH: bool = true;
 
-    type Response = GetSubaccountBalancesResponse;
+    type Response = Vec<Balance>;
 
     fn path(&self) -> Cow<'_, str> {
         Cow::Owned(format!("/subaccounts/{}/balances", self.nickname))
@@ -162,14 +154,14 @@ pub struct Transfer {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct TransferBetweenSubaccountsRequest {
+pub struct TransferBetweenSubaccounts {
     pub coin: String,
     pub size: Decimal,
     pub source: String,
     pub destination: String,
 }
 
-impl TransferBetweenSubaccountsRequest {
+impl TransferBetweenSubaccounts {
     pub fn new<S>(coin: &str, size: S, source: &str, destination: &str) -> Self
     where
         Decimal: TryFrom<S>,
@@ -184,12 +176,10 @@ impl TransferBetweenSubaccountsRequest {
     }
 }
 
-pub type TransferBetweenSubaccountsResponse = Transfer;
-
-impl Request for TransferBetweenSubaccountsRequest {
+impl Request for TransferBetweenSubaccounts {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts/transfer";
     const AUTH: bool = true;
 
-    type Response = TransferBetweenSubaccountsResponse;
+    type Response = Transfer;
 }

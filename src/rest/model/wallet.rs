@@ -42,7 +42,7 @@ pub struct WalletDeposit {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetWalletDepositsRequest {
+pub struct GetWalletDeposits {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<usize>,
     #[serde(
@@ -57,38 +57,34 @@ pub struct GetWalletDepositsRequest {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-pub type GetWalletDepositsResponse = Vec<WalletDeposit>;
-
-impl Request for GetWalletDepositsRequest {
+impl Request for GetWalletDeposits {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/deposits";
     const AUTH: bool = true;
 
-    type Response = GetWalletDepositsResponse;
+    type Response = Vec<WalletDeposit>;
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetWalletBalancesRequest;
+pub struct GetWalletBalances;
 
-pub type GetWalletBalancesResponse = Vec<WalletBalance>;
-
-impl Request for GetWalletBalancesRequest {
+impl Request for GetWalletBalances {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/balances";
     const AUTH: bool = true;
 
-    type Response = GetWalletBalancesResponse;
+    type Response = Vec<WalletBalance>;
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetWalletDepositAddressRequest {
+pub struct GetWalletDepositAddress {
     pub coin: String,
     pub method: Option<String>,
 }
 
-impl GetWalletDepositAddressRequest {
+impl GetWalletDepositAddress {
     pub fn new(coin: &str) -> Self {
         Self {
             coin: coin.into(),
@@ -104,14 +100,12 @@ impl GetWalletDepositAddressRequest {
     }
 }
 
-pub type GetWalletDepositAddressResponse = WalletDepositAddress;
-
-impl Request for GetWalletDepositAddressRequest {
+impl Request for GetWalletDepositAddress {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/deposit_address";
     const AUTH: bool = true;
 
-    type Response = GetWalletDepositAddressResponse;
+    type Response = WalletDepositAddress;
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -143,16 +137,14 @@ pub struct CoinInfo {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetCoinsRequest;
+pub struct GetCoins;
 
-pub type GetCoinsResponse = Vec<CoinInfo>;
-
-impl Request for GetCoinsRequest {
+impl Request for GetCoins {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/coins";
     const AUTH: bool = true;
 
-    type Response = GetCoinsResponse;
+    type Response = Vec<CoinInfo>;
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -172,7 +164,7 @@ pub struct WalletWithdrawal {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetWalletWithdrawalsRequest {
+pub struct GetWalletWithdrawals {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<usize>,
     #[serde(
@@ -187,12 +179,10 @@ pub struct GetWalletWithdrawalsRequest {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-pub type GetWalletWithdrawalsResponse = Vec<WalletWithdrawal>;
-
-impl Request for GetWalletWithdrawalsRequest {
+impl Request for GetWalletWithdrawals {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/withdrawals";
     const AUTH: bool = true;
 
-    type Response = GetWalletWithdrawalsResponse;
+    type Response = Vec<WalletWithdrawal>;
 }

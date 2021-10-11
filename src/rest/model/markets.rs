@@ -35,26 +35,24 @@ pub struct Market {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetMarketsRequest;
+pub struct GetMarkets;
 
-pub type GetMarketsResponse = Vec<Market>;
-
-impl Request for GetMarketsRequest {
+impl Request for GetMarkets {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets";
     const AUTH: bool = true;
 
-    type Response = GetMarketsResponse;
+    type Response = Vec<Market>;
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetMarketRequest {
+pub struct GetMarket {
     #[serde(skip_serializing)]
     pub market_name: String,
 }
 
-impl GetMarketRequest {
+impl GetMarket {
     pub fn new(market_name: &str) -> Self {
         Self {
             market_name: market_name.into(),
@@ -62,14 +60,12 @@ impl GetMarketRequest {
     }
 }
 
-pub type GetMarketResponse = Market;
-
-impl Request for GetMarketRequest {
+impl Request for GetMarket {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}";
     const AUTH: bool = true;
 
-    type Response = GetMarketResponse;
+    type Response = Market;
 
     fn path(&self) -> Cow<'_, str> {
         Cow::Owned(format!("/markets/{}", self.market_name))
@@ -85,14 +81,14 @@ pub struct Orderbook {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetOrderBookRequest {
+pub struct GetOrderBook {
     #[serde(skip_serializing)]
     pub market_name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub depth: Option<u32>,
 }
 
-impl GetOrderBookRequest {
+impl GetOrderBook {
     pub fn new(market_name: &str) -> Self {
         Self {
             market_name: market_name.into(),
@@ -108,14 +104,12 @@ impl GetOrderBookRequest {
     }
 }
 
-pub type GetOrderBookResponse = Orderbook;
-
-impl Request for GetOrderBookRequest {
+impl Request for GetOrderBook {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/orderbook";
     const AUTH: bool = true;
 
-    type Response = GetOrderBookResponse;
+    type Response = Orderbook;
 
     fn path(&self) -> Cow<'_, str> {
         Cow::Owned(format!("/markets/{}/orderbook", self.market_name))
@@ -135,7 +129,7 @@ pub struct Trade {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetTradesRequest {
+pub struct GetTrades {
     #[serde(skip_serializing)]
     pub market_name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -152,7 +146,7 @@ pub struct GetTradesRequest {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-impl GetTradesRequest {
+impl GetTrades {
     pub fn new(market_name: &str) -> Self {
         Self {
             market_name: market_name.into(),
@@ -161,14 +155,12 @@ impl GetTradesRequest {
     }
 }
 
-pub type GetTradesResponse = Vec<Trade>;
-
-impl Request for GetTradesRequest {
+impl Request for GetTrades {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/trades";
     const AUTH: bool = true;
 
-    type Response = GetTradesResponse;
+    type Response = Vec<Trade>;
 
     fn path(&self) -> Cow<'_, str> {
         Cow::Owned(format!("/markets/{}/trades", self.market_name))
@@ -188,7 +180,7 @@ pub struct Price {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetHistoricalPricesRequest {
+pub struct GetHistoricalPrices {
     #[serde(skip_serializing)]
     pub market_name: String,
     pub resolution: u32,
@@ -206,7 +198,7 @@ pub struct GetHistoricalPricesRequest {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-impl GetHistoricalPricesRequest {
+impl GetHistoricalPrices {
     pub fn new(market_name: &str, resolution: u32) -> Self {
         Self {
             market_name: market_name.into(),
@@ -216,14 +208,12 @@ impl GetHistoricalPricesRequest {
     }
 }
 
-pub type GetHistoricalPricesResponse = Vec<Price>;
-
-impl Request for GetHistoricalPricesRequest {
+impl Request for GetHistoricalPrices {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/candles";
     const AUTH: bool = true;
 
-    type Response = GetHistoricalPricesResponse;
+    type Response = Vec<Price>;
 
     fn path(&self) -> Cow<'_, str> {
         Cow::Owned(format!("/markets/{}/candles", self.market_name))

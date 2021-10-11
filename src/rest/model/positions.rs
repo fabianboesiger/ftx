@@ -5,14 +5,12 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetPositionsRequest;
+pub struct GetPositions;
 
-pub type GetPositionsResponse = Vec<Position>;
-
-impl Request for GetPositionsRequest {
+impl Request for GetPositions {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/positions";
     const AUTH: bool = true;
 
-    type Response = GetPositionsResponse;
+    type Response = Vec<Position>;
 }
