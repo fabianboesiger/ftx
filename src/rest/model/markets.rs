@@ -40,7 +40,7 @@ pub struct GetMarkets;
 impl Request for GetMarkets {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets";
-    const AUTH: bool = true;
+    const AUTH: bool = false;
 
     type Response = Vec<Market>;
 }
@@ -63,7 +63,7 @@ impl GetMarket {
 impl Request for GetMarket {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}";
-    const AUTH: bool = true;
+    const AUTH: bool = false;
 
     type Response = Market;
 
@@ -107,7 +107,7 @@ impl GetOrderBook {
 impl Request for GetOrderBook {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/orderbook";
-    const AUTH: bool = true;
+    const AUTH: bool = false;
 
     type Response = Orderbook;
 
@@ -158,7 +158,7 @@ impl GetTrades {
 impl Request for GetTrades {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/trades";
-    const AUTH: bool = true;
+    const AUTH: bool = false;
 
     type Response = Vec<Trade>;
 
@@ -211,7 +211,7 @@ impl GetHistoricalPrices {
 impl Request for GetHistoricalPrices {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/candles";
-    const AUTH: bool = true;
+    const AUTH: bool = false;
 
     type Response = Vec<Price>;
 

@@ -44,7 +44,7 @@ pub struct GetFutures;
 impl Request for GetFutures {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/futures";
-    const AUTH: bool = true;
+    const AUTH: bool = false;
 
     type Response = Vec<Future>;
 }
@@ -67,7 +67,7 @@ impl GetFuture {
 impl Request for GetFuture {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/futures/{}";
-    const AUTH: bool = true;
+    const AUTH: bool = false;
 
     type Response = Future;
 
