@@ -1,7 +1,7 @@
 use dotenv::dotenv;
 use ftx::{
     options::Options,
-    rest::{Rest, Result},
+    rest::{GetMarket, Rest, Result},
 };
 
 #[tokio::main]
@@ -10,7 +10,7 @@ async fn main() -> Result<()> {
 
     let api = Rest::new(Options::from_env());
 
-    let price = api.get_market("BTC/USD").await?.price;
+    let price = api.request(GetMarket::new("BTC/USD")).await?.price;
     println!("1 BTC is worth {} USD.", price);
 
     Ok(())

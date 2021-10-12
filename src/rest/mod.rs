@@ -8,6 +8,7 @@ pub(crate) mod tests;
 pub use error::*;
 pub use model::*;
 
+use crate::options::{Endpoint, Options};
 use chrono::{DateTime, Utc};
 use hmac_sha256::HMAC;
 use reqwest::{
@@ -15,11 +16,14 @@ use reqwest::{
     Client, ClientBuilder, Method,
 };
 use rust_decimal::prelude::*;
-use serde::de::DeserializeOwned;
-use serde_json::{from_reader, json, to_string, Map, Value};
+use serde_json::{from_reader, to_string, to_value};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::options::{Endpoint, Options};
+macro_rules! deprecate_msg {
+    () => {
+        "This function is deprecated. Please use Rest::request instead."
+    };
+}
 
 pub struct Rest {
     secret: Option<String>,
@@ -67,47 +71,24 @@ impl Rest {
         }
     }
 
-    async fn get<T: DeserializeOwned>(&self, path: &str, params: Option<Value>) -> Result<T> {
-        self.request(Method::GET, path, params, None).await
-    }
-
-    async fn post<T: DeserializeOwned>(&self, path: &str, body: Option<Value>) -> Result<T> {
-        self.request(Method::POST, path, None, body).await
-    }
-
-    async fn delete<T: DeserializeOwned>(&self, path: &str, body: Option<Value>) -> Result<T> {
-        self.request(Method::DELETE, path, None, body).await
-    }
-
-    async fn request<T: DeserializeOwned>(
-        &self,
-        method: Method,
-        path: &str,
-        params: Option<Value>,
-        body: Option<Value>,
-    ) -> Result<T> {
+    pub async fn request<R>(&self, req: R) -> Result<R::Response>
+    where
+        R: Request,
+    {
+        let path = req.path();
+        let url = format!("{}{}", self.endpoint.rest(), path);
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_millis();
-        let body = if let Some(body) = body {
-            format!("{}", body)
-        } else {
-            String::new()
+
+        let (params, body) = match R::METHOD {
+            Method::GET => (to_value(&req)?.as_object().cloned(), String::new()),
+            _ => (None, to_string(&req)?),
         };
-        let url = format!("{}{}", self.endpoint.rest(), path);
-        let params = params.map(|value| {
-            if let Value::Object(map) = value {
-                map.into_iter()
-                    .filter(|(_, v)| v != &Value::Null)
-                    .collect::<Map<String, Value>>()
-            } else {
-                panic!("Invalid params.");
-            }
-        });
 
         log::trace!("timestamp: {}", timestamp);
-        log::trace!("method: {}", method);
+        log::trace!("method: {}", R::METHOD);
         log::trace!("path: {}", path);
         log::trace!("body: {}", body);
 
@@ -121,8 +102,15 @@ impl Rest {
             HeaderValue::from_str(&format!("{}", timestamp)).unwrap(),
         );
 
-        if let Some(secret) = &self.secret {
-            let sign_payload = format!("{}{}/api{}{}", timestamp, method, path, body);
+        if R::AUTH {
+            let secret = match self.secret {
+                Some(ref secret) => &**secret,
+                None => {
+                    return Err(Error::NoSecretConfigured);
+                }
+            };
+
+            let sign_payload = format!("{}{}/api{}{}", timestamp, R::METHOD, req.path(), body);
             let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
             let sign = hex::encode(sign);
             headers.insert(
@@ -161,10 +149,10 @@ impl Rest {
 
         let body = self
             .client
-            .request(method, url)
-            .query(&params)
+            .request(R::METHOD, url)
             .headers(headers)
             .body(body)
+            .query(&params)
             .send()
             .await?
             .bytes()
@@ -183,105 +171,102 @@ impl Rest {
         }
     }
 
-    pub async fn get_subaccounts(&self) -> Result<Subaccounts> {
-        self.get("/subaccounts", None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_subaccounts(&self) -> Result<<GetSubAccounts as Request>::Response> {
+        self.request(GetSubAccounts).await
     }
 
-    pub async fn create_subaccount(&self, nickname: &str) -> Result<Create> {
-        self.post(
-            "/subaccounts",
-            Some(json!({
-                "nickname": nickname,
-            })),
-        )
-        .await
+    #[deprecated=deprecate_msg!()]
+    pub async fn create_subaccount(
+        &self,
+        nickname: &str,
+    ) -> Result<<CreateSubAccount as Request>::Response> {
+        self.request(CreateSubAccount::new(nickname)).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn change_subaccount_name(
         &self,
         nickname: &str,
         new_nickname: &str,
-    ) -> Result<ChangeName> {
-        self.post(
-            "/subaccounts/update_name",
-            Some(json!({
-                "nickname": nickname,
-                "newNickname": new_nickname,
-            })),
-        )
-        .await
-    }
-
-    pub async fn delete_subaccount(&self, nickname: &str) -> Result<Delete> {
-        self.delete(
-            "/subaccounts",
-            Some(json!({
-                "nickname": nickname,
-            })),
-        )
-        .await
-    }
-
-    pub async fn get_subaccount_balances(&self, nickname: &str) -> Result<Balances> {
-        self.get(&format!("/subaccounts/{}/balances", nickname), None)
+    ) -> Result<<ChangeSubaccountName as Request>::Response> {
+        self.request(ChangeSubaccountName::new(nickname, new_nickname))
             .await
     }
 
+    #[deprecated=deprecate_msg!()]
+    pub async fn delete_subaccount(
+        &self,
+        nickname: &str,
+    ) -> Result<<DeleteSubaccount as Request>::Response> {
+        self.request(DeleteSubaccount::new(nickname)).await
+    }
+
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_subaccount_balances(
+        &self,
+        nickname: &str,
+    ) -> Result<<GetSubaccountBalances as Request>::Response> {
+        self.request(GetSubaccountBalances::new(nickname)).await
+    }
+
+    #[deprecated=deprecate_msg!()]
     pub async fn transfer_between_subaccounts(
         &self,
         coin: &str,
         size: Decimal,
         source: &str,
         destination: &str,
-    ) -> Result<Transfer> {
-        self.post(
-            "/subaccounts/transfer",
-            Some(json!({
-                "coin": coin,
-                "size": size,
-                "source": source,
-                "destination": destination,
-            })),
-        )
+    ) -> Result<<TransferBetweenSubaccounts as Request>::Response> {
+        self.request(TransferBetweenSubaccounts::new(
+            coin,
+            size,
+            source,
+            destination,
+        ))
         .await
     }
 
-    pub async fn get_markets(&self) -> Result<Markets> {
-        self.get("/markets", None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_markets(&self) -> Result<<GetMarkets as Request>::Response> {
+        self.request(GetMarkets).await
     }
 
-    pub async fn get_market(&self, market_name: &str) -> Result<Market> {
-        self.get(&format!("/markets/{}", market_name), None).await
+    pub async fn get_market(&self, market_name: &str) -> Result<<GetMarket as Request>::Response> {
+        self.request(GetMarket::new(market_name)).await
     }
 
-    pub async fn get_orderbook(&self, market_name: &str, depth: Option<u32>) -> Result<Orderbook> {
-        self.get(
-            &format!("/markets/{}/orderbook", market_name),
-            Some(json!({
-                "depth": depth,
-            })),
-        )
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_orderbook(
+        &self,
+        market_name: &str,
+        depth: Option<u32>,
+    ) -> Result<<GetOrderBook as Request>::Response> {
+        self.request(GetOrderBook {
+            market_name: market_name.into(),
+            depth,
+        })
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_trades(
         &self,
         market_name: &str,
         limit: Option<u32>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<Trades> {
-        self.get(
-            &format!("/markets/{}/trades", market_name),
-            Some(json!({
-                "limit": limit,
-                "start_time": start_time.map(|t| t.timestamp()),
-                "end_time": end_time.map(|t| t.timestamp()),
-            })),
-        )
+    ) -> Result<<GetTrades as Request>::Response> {
+        self.request(GetTrades {
+            market_name: market_name.into(),
+            limit,
+            start_time,
+            end_time,
+        })
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_historical_prices(
         &self,
         market_name: &str,
@@ -289,161 +274,126 @@ impl Rest {
         limit: Option<u32>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<Prices> {
-        self.get(
-            &format!("/markets/{}/candles", market_name),
-            Some(json!({
-                "resolution": resolution,
-                "limit": limit,
-                "start_time": start_time.map(|t| t.timestamp()),
-                "end_time": end_time.map(|t| t.timestamp()),
-            })),
-        )
+    ) -> Result<<GetHistoricalPrices as Request>::Response> {
+        self.request(GetHistoricalPrices {
+            market_name: market_name.into(),
+            resolution,
+            limit,
+            start_time,
+            end_time,
+        })
         .await
     }
 
-    pub async fn get_futures(&self) -> Result<Futures> {
-        self.get("/futures", None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_futures(&self) -> Result<<GetFutures as Request>::Response> {
+        self.request(GetFutures).await
     }
 
-    pub async fn get_future(&self, future_name: &str) -> Result<Future> {
-        self.get(&format!("/futures/{}", future_name), None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_future(&self, future_name: &str) -> Result<<GetFuture as Request>::Response> {
+        self.request(GetFuture::new(future_name)).await
     }
 
-    pub async fn get_account(&self) -> Result<Account> {
-        self.get("/account", None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_account(&self) -> Result<<GetAccount as Request>::Response> {
+        self.request(GetAccount).await
     }
 
-    pub async fn get_positions(&self) -> Result<Positions> {
-        self.get("/positions", None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn change_account_leverage(
+        &self,
+        leverage: u32,
+    ) -> Result<<ChangeAccountLeverage as Request>::Response> {
+        self.request(ChangeAccountLeverage::new(leverage)).await
     }
 
-    pub async fn change_account_leverage(&self, leverage: i32) -> Result<ChangeLeverage> {
-        self.post("/account/leverage", Some(json!({ "leverage": leverage })))
-            .await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_coins(&self) -> Result<<GetCoins as Request>::Response> {
+        self.request(GetCoins).await
     }
 
-    pub async fn get_coins(&self) -> Result<Vec<CoinInfo>> {
-        self.get("/wallet/coins", None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_positions(&self) -> Result<<GetPositions as Request>::Response> {
+        self.request(GetPositions).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_wallet_deposit_address(
         &self,
         coin: &str,
         method: Option<&str>,
-    ) -> Result<WalletDepositAddress> {
-        self.get(
-            &format!(
-                "/wallet/deposit_address/{}{}",
-                coin,
-                if let Some(method) = method {
-                    format!("?method={}", method)
-                } else {
-                    "".to_string()
-                }
-            ),
-            None,
-        )
+    ) -> Result<<GetWalletDepositAddress as Request>::Response> {
+        self.request(GetWalletDepositAddress {
+            coin: coin.into(),
+            method: method.map(Into::into),
+        })
         .await
     }
 
-    pub async fn get_wallet_balances(&self) -> Result<Vec<WalletBalance>> {
-        self.get("/wallet/balances", None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_wallet_balances(&self) -> Result<<GetWalletBalances as Request>::Response> {
+        self.request(GetWalletBalances).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_wallet_deposits(
         &self,
         limit: Option<usize>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<Vec<WalletDeposit>> {
-        let mut params = vec![];
-        if let Some(limit) = limit {
-            params.push(format!("limit={}", limit));
-        }
-        if let Some(start_time) = start_time {
-            params.push(format!("start_time={}", start_time.timestamp()));
-        }
-        if let Some(end_time) = end_time {
-            params.push(format!("end_time={}", end_time.timestamp()));
-        }
-
-        self.get(
-            &format!(
-                "/wallet/deposits{}{}",
-                if params.is_empty() { "" } else { "?" },
-                params.join("&")
-            ),
-            None,
-        )
+    ) -> Result<<GetWalletDeposits as Request>::Response> {
+        self.request(GetWalletDeposits {
+            limit,
+            start_time,
+            end_time,
+        })
         .await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_wallet_withdrawals(
         &self,
         limit: Option<usize>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<Vec<WalletWithdrawal>> {
-        let mut params = vec![];
-        if let Some(limit) = limit {
-            params.push(format!("limit={}", limit));
-        }
-        if let Some(start_time) = start_time {
-            params.push(format!("start_time={}", start_time.timestamp()));
-        }
-        if let Some(end_time) = end_time {
-            params.push(format!("end_time={}", end_time.timestamp()));
-        }
-
-        self.get(
-            &format!(
-                "/wallet/withdrawals{}{}",
-                if params.is_empty() { "" } else { "?" },
-                params.join("&")
-            ),
-            None,
-        )
+    ) -> Result<<GetWalletWithdrawals as Request>::Response> {
+        self.request(GetWalletWithdrawals {
+            limit,
+            start_time,
+            end_time,
+        })
         .await
     }
 
-    pub async fn get_open_orders(&self, market: &str) -> Result<Vec<OrderInfo>> {
-        self.get(&format!("/orders?market={}", market), None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_open_orders(
+        &self,
+        market: &str,
+    ) -> Result<<GetOpenOrders as Request>::Response> {
+        self.request(GetOpenOrders::with_market(market)).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_order_history(
         &self,
-        market: Option<&str>,
+        market: &str,
         limit: Option<usize>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
-    ) -> Result<Vec<OrderInfo>> {
-        let mut params = vec![];
-        if let Some(market) = market {
-            params.push(format!("market={}", market));
-        }
-        if let Some(limit) = limit {
-            params.push(format!("limit={}", limit));
-        }
-        if let Some(start_time) = start_time {
-            params.push(format!("start_time={}", start_time.timestamp()));
-        }
-        if let Some(end_time) = end_time {
-            params.push(format!("end_time={}", end_time.timestamp()));
-        }
-
-        self.get(
-            &format!(
-                "/orders/history{}{}",
-                if params.is_empty() { "" } else { "?" },
-                params.join("&")
-            ),
-            None,
-        )
+    ) -> Result<<GetOrderHistory as Request>::Response> {
+        self.request(GetOrderHistory {
+            market: Some(market.into()),
+            limit,
+            start_time,
+            end_time,
+            ..Default::default()
+        })
         .await
     }
 
     #[allow(clippy::too_many_arguments)]
+    #[deprecated=deprecate_msg!()]
     pub async fn place_order(
         &self,
         market: &str,
@@ -455,7 +405,20 @@ impl Rest {
         ioc: Option<bool>,
         post_only: Option<bool>,
         client_id: Option<&str>,
-    ) -> Result<OrderInfo> {
+    ) -> Result<<PlaceOrder as Request>::Response> {
+        let req = PlaceOrder {
+            market: market.to_string(),
+            side,
+            price,
+            r#type,
+            size,
+            reduce_only: reduce_only.unwrap_or_default(),
+            ioc: ioc.unwrap_or_default(),
+            post_only: post_only.unwrap_or_default(),
+            client_id: client_id.map(ToString::to_string),
+            reject_on_price_band: false,
+        };
+
         // Limit orders should have price specified
         if let OrderType::Limit = r#type {
             if price.is_none() {
@@ -463,25 +426,11 @@ impl Rest {
             }
         }
 
-        self.post(
-            "/orders",
-            Some(json!({
-                "market": market,
-                "side": side,
-                // As per docs, send null for market orders
-                "price": if let OrderType::Limit = r#type { price } else { None },
-                "type": r#type,
-                "size": size,
-                "reduceOnly": reduce_only.unwrap_or(false),
-                "ioc": ioc.unwrap_or(false),
-                "postOnly": post_only.unwrap_or(false),
-                "clientId": client_id,
-            })),
-        )
-        .await
+        self.request(req).await
     }
 
     #[allow(clippy::too_many_arguments)]
+    #[deprecated=deprecate_msg!()]
     pub async fn place_trigger_order(
         &self,
         market: &str,
@@ -494,101 +443,92 @@ impl Rest {
         order_price: Option<Decimal>,
         trail_value: Option<Decimal>,
     ) -> Result<OrderInfo> {
-        self.post(
-            "/conditional_orders",
-            Some(json!({
-                "market": market,
-                "side": side,
-                "size": size,
-                "type": r#type,
-                "reduceOnly": reduce_only.unwrap_or(false),
-                "retryUntilFilled": retry_until_filled.unwrap_or(true),
-                "triggerPrice": trigger_price,
-                "orderPrice": order_price,
-                "trailValue": trail_value,
-            })),
-        )
+        self.request(PlaceTriggerOrder {
+            market: market.into(),
+            side,
+            size,
+            r#type,
+            trigger_price,
+            reduce_only,
+            retry_until_filled,
+            order_price,
+            trail_value,
+        })
         .await
     }
 
-    pub async fn modify_order(
-        &self,
-        order_id: Id,
-        price: Option<Decimal>,
-        size: Option<Decimal>,
-        client_id: Option<&str>,
-    ) -> Result<OrderInfo> {
-        self.post(
-            format!("/orders/{}/modify", order_id).as_str(),
-            Some(json!({
-                "price": price,
-                "size": size,
-                "clientId": client_id,
-            })),
-        )
-        .await
-    }
-
+    #[deprecated=deprecate_msg!()]
     pub async fn modify_order_by_client_id(
         &self,
         client_id: &str,
         price: Option<Decimal>,
         size: Option<Decimal>,
     ) -> Result<OrderInfo> {
-        self.post(
-            format!("/orders/by_client_id/{}/modify", client_id).as_str(),
-            Some(json!({
-                "price": price,
-                "size": size,
-                "clientId": client_id,
-            })),
-        )
+        self.request(ModifyOrderByClientId {
+            client_id: client_id.into(),
+            price,
+            size,
+        })
         .await
     }
 
-    pub async fn get_order(&self, order_id: Id) -> Result<OrderInfo> {
-        self.get(&format!("/orders/{}", order_id), None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn modify_order(
+        &self,
+        order_id: Id,
+        price: Option<Decimal>,
+        size: Option<Decimal>,
+        client_id: Option<&str>,
+    ) -> Result<<ModifyOrder as Request>::Response> {
+        self.request(ModifyOrder {
+            id: order_id,
+            price,
+            size,
+            client_id: client_id.map(Into::into),
+        })
+        .await
     }
 
-    pub async fn get_order_by_client_id(&self, client_id: &str) -> Result<OrderInfo> {
-        self.get(&format!("/orders/by_client_id/{}", client_id), None)
-            .await
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_order(&self, order_id: Id) -> Result<<GetOrder as Request>::Response> {
+        self.request(GetOrder::new(order_id)).await
     }
 
+    #[deprecated=deprecate_msg!()]
+    pub async fn get_order_by_client_id(
+        &self,
+        client_id: &str,
+    ) -> Result<<GetOrderByClientId as Request>::Response> {
+        self.request(GetOrderByClientId::new(client_id)).await
+    }
+
+    #[deprecated=deprecate_msg!()]
     pub async fn cancel_all_orders(
         &self,
         market: Option<&str>,
         side: Option<Side>,
         conditional_orders_only: Option<bool>,
         limit_orders_only: Option<bool>,
-    ) -> Result<String> {
-        let mut payload = Map::new();
-        if let Some(market) = market {
-            payload.insert("market".to_string(), Value::String(market.to_string()));
-        }
-
-        if let Some(side) = side {
-            payload.insert("side".to_string(), Value::String(to_string(&side).unwrap()));
-        }
-
-        payload.insert(
-            "conditionalOrdersOnly".to_string(),
-            Value::Bool(conditional_orders_only.unwrap_or(false)),
-        );
-        payload.insert(
-            "limitOrdersOnly".to_string(),
-            Value::Bool(limit_orders_only.unwrap_or(false)),
-        );
-
-        self.delete("/orders", Some(Value::Object(payload))).await
+    ) -> Result<<CancelAllOrder as Request>::Response> {
+        self.request(CancelAllOrder {
+            market: market.map(Into::into),
+            side,
+            conditional_orders_only,
+            limit_orders_only,
+        })
+        .await
     }
 
-    pub async fn cancel_order(&self, order_id: Id) -> Result<String> {
-        self.delete(&format!("/orders/{}", order_id), None).await
+    #[deprecated=deprecate_msg!()]
+    pub async fn cancel_order(&self, order_id: Id) -> Result<<CancelOrder as Request>::Response> {
+        self.request(CancelOrder::new(order_id)).await
     }
 
-    pub async fn cancel_order_by_client_id(&self, client_id: &str) -> Result<String> {
-        self.delete(&dbg!(format!("/orders/by_client_id/{}", client_id)), None)
-            .await
+    #[deprecated=deprecate_msg!()]
+    pub async fn cancel_order_by_client_id(
+        &self,
+        client_id: &str,
+    ) -> Result<<CancelOrderByClientId as Request>::Response> {
+        self.request(CancelOrderByClientId::new(client_id)).await
     }
 }
