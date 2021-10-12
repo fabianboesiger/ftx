@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 name = "ftx"
 readme = "README.md"
 repository = "https://github.com/fabianboesiger/ftx"
-version = "0.3.1"
+version = "0.4.0"
 
 [dependencies]
 chrono = {version = "^0.4.19", features = ["serde"]}
@@ -30,7 +30,7 @@ tokio = {version = "^1.5.0", features = ["macros"], optional = true}
 tokio-tungstenite = {version = "^0.14.0", features = ["native-tls"], optional = true}
 
 [dev-dependencies]
-env_logger = "^0.8.3"
+env_logger = "^0.9.0"
 tokio = {version = "^1.5.0", features = ["full"]}
 
 [features]
