@@ -88,9 +88,12 @@ Work in progress, contributions are welcome.
 	- [x] Orders
 
 ## Installation
+
+The minimal supported Rust version is 1.54.
+
 Add the following line to your Cargo.toml file:
 ```
-ftx = "0.3.1"
+ftx = "0.3"
 ```
 Or for the latest github version:
 ```
