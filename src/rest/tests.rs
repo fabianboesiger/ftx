@@ -215,7 +215,7 @@ pub async fn manipulate_orders() {
     // Testing with ETH since BTC's minimum provide (maker) size is 0.01 BTC,
     // too large for testing purposes
     let market = String::from("ETH-PERP");
-    let price = api.get_market(market.as_str()).await.unwrap().price;
+    let price = api.request(GetMarket::new(&market)).await.unwrap().price;
 
     // Bid size will start at 0.001, which is ETH-PERP's minimum size increment
     let initial_bid_size = dec!(0.001);
