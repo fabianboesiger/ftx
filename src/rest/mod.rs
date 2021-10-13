@@ -232,6 +232,7 @@ impl Rest {
         self.request(GetMarkets).await
     }
 
+    #[deprecated=deprecate_msg!()]
     pub async fn get_market(&self, market_name: &str) -> Result<<GetMarket as Request>::Response> {
         self.request(GetMarket::new(market_name)).await
     }
