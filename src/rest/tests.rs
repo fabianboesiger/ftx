@@ -12,7 +12,7 @@ async fn init_api() -> Rest {
 
     // Test create subaccount only if credentials are account-wide
     if subaccount.is_none() {
-        read_only(api.request(CreateSubAccount::new("Bot")).await);
+        read_only(api.request(CreateSubaccount::new("Bot")).await);
     }
 
     api
@@ -30,7 +30,7 @@ async fn get_subaccounts() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
         // Test only if credentials are account-wide
-        rest.request(GetSubAccounts).await.unwrap();
+        rest.request(GetSubaccounts).await.unwrap();
     }
 }
 
@@ -39,7 +39,7 @@ async fn create_subaccount() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
         // Test only if credentials are account-wide
-        read_only(rest.request(CreateSubAccount::new("Bot")).await);
+        read_only(rest.request(CreateSubaccount::new("Bot")).await);
     }
 }
 

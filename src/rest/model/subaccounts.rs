@@ -20,9 +20,9 @@ pub struct Subaccount {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetSubAccounts;
+pub struct GetSubaccounts;
 
-impl Request for GetSubAccounts {
+impl Request for GetSubaccounts {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/subaccounts";
     const AUTH: bool = true;
@@ -31,11 +31,11 @@ impl Request for GetSubAccounts {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct CreateSubAccount {
+pub struct CreateSubaccount {
     pub nickname: String,
 }
 
-impl CreateSubAccount {
+impl CreateSubaccount {
     pub fn new(nickname: &str) -> Self {
         Self {
             nickname: nickname.to_string(),
@@ -51,7 +51,7 @@ pub struct Create {
     pub editable: bool,
 }
 
-impl Request for CreateSubAccount {
+impl Request for CreateSubaccount {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts";
     const AUTH: bool = true;
