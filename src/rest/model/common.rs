@@ -11,7 +11,9 @@ pub enum OrderType {
     Market,
     Limit,
     Stop,
+    #[serde(alias = "trailing_stop")]
     TrailingStop,
+    #[serde(alias = "take_profit")]
     TakeProfit,
 }
 
