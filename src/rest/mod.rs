@@ -172,16 +172,16 @@ impl Rest {
     }
 
     #[deprecated=deprecate_msg!()]
-    pub async fn get_subaccounts(&self) -> Result<<GetSubAccounts as Request>::Response> {
-        self.request(GetSubAccounts).await
+    pub async fn get_subaccounts(&self) -> Result<<GetSubaccounts as Request>::Response> {
+        self.request(GetSubaccounts).await
     }
 
     #[deprecated=deprecate_msg!()]
     pub async fn create_subaccount(
         &self,
         nickname: &str,
-    ) -> Result<<CreateSubAccount as Request>::Response> {
-        self.request(CreateSubAccount::new(nickname)).await
+    ) -> Result<<CreateSubaccount as Request>::Response> {
+        self.request(CreateSubaccount::new(nickname)).await
     }
 
     #[deprecated=deprecate_msg!()]
