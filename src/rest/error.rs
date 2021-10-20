@@ -14,6 +14,9 @@ pub enum Error {
     NoSecretConfigured,
 
     #[error(transparent)]
+    SerdeQs(#[from] serde_qs::Error),
+
+    #[error(transparent)]
     Reqwest(#[from] reqwest::Error),
 
     #[error(transparent)]

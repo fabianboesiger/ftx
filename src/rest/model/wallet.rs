@@ -67,7 +67,7 @@ impl Request for GetWalletDeposits {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetWalletBalances;
+pub struct GetWalletBalances {}
 
 impl Request for GetWalletBalances {
     const METHOD: Method = Method::GET;
@@ -137,7 +137,7 @@ pub struct CoinInfo {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetCoins;
+pub struct GetCoins {}
 
 impl Request for GetCoins {
     const METHOD: Method = Method::GET;

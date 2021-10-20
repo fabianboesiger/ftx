@@ -16,7 +16,7 @@ use reqwest::{
     Client, ClientBuilder, Method,
 };
 use rust_decimal::prelude::*;
-use serde_json::{from_reader, to_string, to_value};
+use serde_json::{from_reader, to_string};
 use std::time::{SystemTime, UNIX_EPOCH};
 
 macro_rules! deprecate_msg {
@@ -75,17 +75,24 @@ impl Rest {
     where
         R: Request,
     {
-        let path = req.path();
+        let (params, body) = match R::METHOD {
+            Method::GET => (Some(serde_qs::to_string(&req)?), String::new()),
+            _ => (None, to_string(&req)?),
+        };
+
+        let mut path = req.path().into_owned();
+        if let Some(params) = params {
+            if !params.is_empty() {
+                path.push('?');
+                path.push_str(&params);
+            }
+        }
         let url = format!("{}{}", self.endpoint.rest(), path);
+
         let timestamp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_millis();
-
-        let (params, body) = match R::METHOD {
-            Method::GET => (to_value(&req)?.as_object().cloned(), String::new()),
-            _ => (None, to_string(&req)?),
-        };
 
         log::trace!("timestamp: {}", timestamp);
         log::trace!("method: {}", R::METHOD);
@@ -110,7 +117,8 @@ impl Rest {
                 }
             };
 
-            let sign_payload = format!("{}{}/api{}{}", timestamp, R::METHOD, req.path(), body);
+            let sign_payload = format!("{}{}/api{}{}", timestamp, R::METHOD, path, body);
+
             let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
             let sign = hex::encode(sign);
             headers.insert(
@@ -152,7 +160,6 @@ impl Rest {
             .request(R::METHOD, url)
             .headers(headers)
             .body(body)
-            .query(&params)
             .send()
             .await?
             .bytes()
@@ -173,7 +180,7 @@ impl Rest {
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_subaccounts(&self) -> Result<<GetSubaccounts as Request>::Response> {
-        self.request(GetSubaccounts).await
+        self.request(GetSubaccounts {}).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -229,7 +236,7 @@ impl Rest {
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_markets(&self) -> Result<<GetMarkets as Request>::Response> {
-        self.request(GetMarkets).await
+        self.request(GetMarkets {}).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -288,7 +295,7 @@ impl Rest {
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_futures(&self) -> Result<<GetFutures as Request>::Response> {
-        self.request(GetFutures).await
+        self.request(GetFutures {}).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -298,7 +305,7 @@ impl Rest {
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_account(&self) -> Result<<GetAccount as Request>::Response> {
-        self.request(GetAccount).await
+        self.request(GetAccount {}).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -311,12 +318,12 @@ impl Rest {
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_coins(&self) -> Result<<GetCoins as Request>::Response> {
-        self.request(GetCoins).await
+        self.request(GetCoins {}).await
     }
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_positions(&self) -> Result<<GetPositions as Request>::Response> {
-        self.request(GetPositions).await
+        self.request(GetPositions {}).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -334,7 +341,7 @@ impl Rest {
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_wallet_balances(&self) -> Result<<GetWalletBalances as Request>::Response> {
-        self.request(GetWalletBalances).await
+        self.request(GetWalletBalances {}).await
     }
 
     #[deprecated=deprecate_msg!()]

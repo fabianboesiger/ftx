@@ -5,7 +5,7 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetPositions;
+pub struct GetPositions {}
 
 impl Request for GetPositions {
     const METHOD: Method = Method::GET;
