@@ -20,7 +20,7 @@ pub struct Subaccount {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetSubaccounts;
+pub struct GetSubaccounts {}
 
 impl Request for GetSubaccounts {
     const METHOD: Method = Method::GET;

@@ -39,7 +39,7 @@ pub struct Future {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetFutures;
+pub struct GetFutures {}
 
 impl Request for GetFutures {
     const METHOD: Method = Method::GET;

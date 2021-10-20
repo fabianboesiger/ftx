@@ -9,7 +9,7 @@ async fn main() {
     dotenv().ok();
     let api = Rest::new(Options::from_env());
     println!("Account:");
-    println!("{:#?}", api.request(GetAccount).await.unwrap());
+    println!("{:#?}", api.request(GetAccount {}).await.unwrap());
     println!("Positions:");
-    println!("{:#?}", api.request(GetPositions).await.unwrap());
+    println!("{:#?}", api.request(GetPositions {}).await.unwrap());
 }

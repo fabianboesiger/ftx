@@ -30,7 +30,7 @@ async fn get_subaccounts() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
         // Test only if credentials are account-wide
-        rest.request(GetSubaccounts).await.unwrap();
+        rest.request(GetSubaccounts {}).await.unwrap();
     }
 }
 
@@ -92,7 +92,7 @@ async fn transfer_between_subaccounts() {
 
 #[tokio::test]
 async fn get_markets() {
-    init_api().await.request(GetMarkets).await.unwrap();
+    init_api().await.request(GetMarkets {}).await.unwrap();
 }
 
 #[tokio::test]
@@ -142,7 +142,7 @@ async fn get_historical_prices() {
 
 #[tokio::test]
 async fn get_futures() {
-    init_api().await.request(GetFutures).await.unwrap();
+    init_api().await.request(GetFutures {}).await.unwrap();
 }
 
 #[tokio::test]
@@ -201,7 +201,7 @@ async fn account_deserialization() {
 
 #[tokio::test]
 async fn get_coins() {
-    init_api().await.request(GetCoins).await.unwrap();
+    init_api().await.request(GetCoins {}).await.unwrap();
 }
 
 #[tokio::test]
@@ -304,4 +304,18 @@ pub async fn manipulate_orders() {
     assert_eq!(None, rejected_order.avg_fill_price);
 
     assert_eq!(OrderStatus::New, rejected_order.status);
+}
+
+#[tokio::test]
+async fn get_open_orders() {
+    init_api()
+        .await
+        .request(GetOpenOrders::all_market())
+        .await
+        .unwrap(); // works fine
+    init_api()
+        .await
+        .request(GetOpenOrders::with_market("ETH-PERP"))
+        .await
+        .unwrap(); // panics
 }

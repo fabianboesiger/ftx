@@ -35,7 +35,7 @@ pub struct Market {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetMarkets;
+pub struct GetMarkets {}
 
 impl Request for GetMarkets {
     const METHOD: Method = Method::GET;
