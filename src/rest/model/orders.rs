@@ -64,7 +64,8 @@ impl Request for GetOpenOrders {
 pub struct PlaceOrder {
     pub market: String,
     pub side: Side,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    // Price should be serialized even if it is None, otherwise
+    // market orders will break; test with rest::tests::market_order
     pub price: Option<Decimal>,
     pub r#type: OrderType,
     pub size: Decimal,
