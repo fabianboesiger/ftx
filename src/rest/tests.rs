@@ -205,6 +205,24 @@ async fn get_coins() {
 }
 
 #[tokio::test]
+async fn market_order() {
+    // A live test that buys 1 1INCH-PERP
+    /*
+    init_api().await.place_order(
+        "1INCH/USD",
+        Side::Buy,
+        None,
+        OrderType::Market,
+        dec!(1),
+        None,
+        None,
+        None,
+        None,
+    ).await.unwrap();
+    */
+}
+
+#[tokio::test]
 async fn place_modify_cancel_orders() {
     manipulate_orders().await;
 }
