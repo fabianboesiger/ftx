@@ -330,10 +330,10 @@ async fn get_open_orders() {
         .await
         .request(GetOpenOrders::all_market())
         .await
-        .unwrap(); // works fine
+        .unwrap();
     init_api()
         .await
         .request(GetOpenOrders::with_market("ETH-PERP"))
         .await
-        .unwrap(); // panics
+        .unwrap();
 }
