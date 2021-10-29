@@ -61,16 +61,6 @@ pub struct FutureStats {
     pub open_interest: Decimal,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct FundingRate {
-    pub future: Symbol,
-    pub rate: Decimal,
-    pub time: DateTime<Utc>,
-}
-
-pub type FundingRates = Vec<FundingRate>;
-
 pub fn serialize_as_timestamp<S>(
     dt: &Option<DateTime<Utc>>,
     serializer: S,

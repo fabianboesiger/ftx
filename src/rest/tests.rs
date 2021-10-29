@@ -155,6 +155,11 @@ async fn get_future() {
 }
 
 #[tokio::test]
+async fn get_funding_rates() {
+    init_api().await.request(GetFundingRates {}).await.unwrap();
+}
+
+#[tokio::test]
 async fn account_deserialization() {
     // Sanitized response from FTX API.
     let json = r#"{
