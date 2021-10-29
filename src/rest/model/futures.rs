@@ -75,3 +75,25 @@ impl Request for GetFuture {
         Cow::Owned(format!("/futures/{}", self.future_name))
     }
 }
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FundingRate {
+    pub future: Symbol,
+    pub rate: Decimal,
+    pub time: DateTime<Utc>,
+}
+
+pub type FundingRates = Vec<FundingRate>;
+
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct GetFundingRates {}
+
+impl Request for GetFundingRates {
+    const METHOD: Method = Method::GET;
+    const PATH: &'static str = "/funding_rates";
+    const AUTH: bool = false;
+
+    type Response = FundingRates;
+}
