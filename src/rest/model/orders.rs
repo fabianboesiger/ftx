@@ -235,7 +235,7 @@ impl Request for GetOrderByClientId {
     const PATH: &'static str = "/orders/by_client_id/{}";
     const AUTH: bool = true;
 
-    type Response = String;
+    type Response = OrderInfo;
 
     fn path(&self) -> Cow<'_, str> {
         Cow::Owned(format!("/orders/by_client_id/{}", self.client_id))
