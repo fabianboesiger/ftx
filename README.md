@@ -28,6 +28,7 @@ Work in progress, contributions are welcome.
 	- [x] List all futures
 	- [x] Get future
 	- [ ] Get future stats
+	- [x] Get funding rates
 	- [ ] Get index weights
 	- [ ] Get expired futurtes
 	- [ ] Get historical index
