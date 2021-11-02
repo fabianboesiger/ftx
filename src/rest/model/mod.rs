@@ -18,7 +18,6 @@ pub use self::wallet::*;
 
 use chrono::{DateTime, Utc};
 use http::Method;
-use rust_decimal::prelude::*;
 use serde::Serializer;
 use serde::{de::DeserializeOwned, ser::Error, Deserialize, Serialize};
 use std::borrow::Cow;
