@@ -102,11 +102,11 @@ impl Request for GetFundingRates {
 #[serde(rename_all = "camelCase")]
 pub struct FutureStats {
     pub volume: Decimal,
-    pub next_funding_rate: Decimal,
-    pub next_funding_time: DateTime<Utc>,
-    pub expiration_price: Decimal,
-    pub predicted_expiration_price: Decimal,
-    pub strike_price: Decimal,
+    pub next_funding_rate: Option<Decimal>,
+    pub next_funding_time: Option<DateTime<Utc>>,
+    pub expiration_price: Option<Decimal>,
+    pub predicted_expiration_price: Option<Decimal>,
+    pub strike_price: Option<Decimal>,
     pub open_interest: Decimal,
 }
 
