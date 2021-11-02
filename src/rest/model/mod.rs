@@ -18,7 +18,6 @@ pub use self::wallet::*;
 
 use chrono::{DateTime, Utc};
 use http::Method;
-use rust_decimal::prelude::*;
 use serde::Serializer;
 use serde::{de::DeserializeOwned, ser::Error, Deserialize, Serialize};
 use std::borrow::Cow;
@@ -48,18 +47,6 @@ pub struct ErrorResponse {
 }
 
 // REST API -> Markets
-
-#[derive(Copy, Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct FutureStats {
-    pub volume: Decimal,
-    pub next_funding_rate: Decimal,
-    pub next_funding_time: DateTime<Utc>,
-    pub expiration_price: Decimal,
-    pub predicted_expiration_price: Decimal,
-    pub strike_price: Decimal,
-    pub open_interest: Decimal,
-}
 
 pub fn serialize_as_timestamp<S>(
     dt: &Option<DateTime<Utc>>,

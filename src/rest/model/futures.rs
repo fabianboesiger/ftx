@@ -97,3 +97,34 @@ impl Request for GetFundingRates {
 
     type Response = FundingRates;
 }
+
+#[derive(Copy, Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FutureStats {
+    pub volume: Decimal,
+    pub next_funding_rate: Decimal,
+    pub next_funding_time: DateTime<Utc>,
+    pub expiration_price: Decimal,
+    pub predicted_expiration_price: Decimal,
+    pub strike_price: Decimal,
+    pub open_interest: Decimal,
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct GetFutureStats {
+    #[serde(skip_serializing)]
+    pub future_name: String,
+}
+
+impl Request for GetFutureStats {
+    const METHOD: Method = Method::GET;
+    const PATH: &'static str = "/futures/{}/stats";
+    const AUTH: bool = false;
+
+    type Response = FutureStats;
+
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/futures/{}/stats", self.future_name))
+    }
+}
