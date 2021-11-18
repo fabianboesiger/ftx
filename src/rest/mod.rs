@@ -138,7 +138,7 @@ impl Rest {
         /*
         let response: String = self
             .client
-            .request(method, url)
+            .request(R::METHOD, url)
             .query(&params)
             .headers(headers)
             .body(body)

@@ -2,8 +2,8 @@
 
 Unofficial Rust API bindings for the FTX exchange.
 
-[crates.io](https://crates.io/crates/ftx) | 
-[docs.rs](https://docs.rs/ftx/latest/ftx/index.html) | 
+[crates.io](https://crates.io/crates/ftx) |
+[docs.rs](https://docs.rs/ftx/latest/ftx/index.html) |
 [FTX API Documentation](https://docs.ftx.com/#overview)
 
 ## Progress
@@ -73,6 +73,17 @@ Work in progress, contributions are welcome.
 - [ ] Staking
 - [ ] Convert
 - [ ] Spot Margin
+	- [ ] Get lending history
+	- [ ] Get borrow rates
+	- [ ] Get lending rates
+	- [ ] Get daily borrowed amounts
+	- [ ] Get market info
+	- [ ] Get my borrow history
+	- [ ] Get my borrow history
+	- [ ] Get my lending history
+	- [ ] Get lending offers
+	- [x] Get lending info
+	- [x] Submit lending offer
 - [ ] NFTs
 - [ ] FTXPay
 
