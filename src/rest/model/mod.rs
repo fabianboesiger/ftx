@@ -4,6 +4,7 @@ mod futures;
 mod markets;
 mod orders;
 mod positions;
+mod spot_margin;
 mod subaccounts;
 mod wallet;
 
@@ -13,6 +14,7 @@ pub use self::futures::*;
 pub use self::markets::*;
 pub use self::orders::*;
 pub use self::positions::*;
+pub use self::spot_margin::*;
 pub use self::subaccounts::*;
 pub use self::wallet::*;
 
