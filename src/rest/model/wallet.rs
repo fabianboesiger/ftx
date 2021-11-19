@@ -4,6 +4,7 @@ use chrono::{DateTime, Utc};
 use http::Method;
 use rust_decimal::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -106,6 +107,17 @@ impl Request for GetWalletDepositAddress {
     const AUTH: bool = true;
 
     type Response = WalletDepositAddress;
+
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!(
+            "/wallet/deposit_address/{}{}",
+            self.coin,
+            self.method
+                .as_ref()
+                .map(|method| format!("?method={}", method))
+                .unwrap_or_default(),
+        ))
+    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
