@@ -2,7 +2,10 @@ use {
     dotenv::dotenv,
     ftx::{
         options::Options,
-        rest::{GetLendingInfo, LendingInfo, Rest, SubmitLendingOffer},
+        rest::{
+            GetLendingInfo, GetLendingRates, GetMyLendingHistory, LendingInfo, Rest,
+            SubmitLendingOffer,
+        },
     },
     std::env,
 };
@@ -17,6 +20,12 @@ async fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
         println!("{:#?}", lending_info);
+
+        let lending_rates = api.request(GetLendingRates {}).await.unwrap();
+        println!("{:#?}", lending_rates);
+
+        let lending_history = api.request(GetMyLendingHistory::default()).await.unwrap();
+        println!("{:#?}", lending_history);
     } else {
         let coin = &args[1];
 
