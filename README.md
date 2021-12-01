@@ -79,7 +79,6 @@ Work in progress, contributions are welcome.
 	- [ ] Get daily borrowed amounts
 	- [ ] Get market info
 	- [ ] Get my borrow history
-	- [ ] Get my borrow history
 	- [x] Get my lending history
 	- [ ] Get lending offers
 	- [x] Get lending info
