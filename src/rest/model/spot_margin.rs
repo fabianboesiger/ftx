@@ -11,7 +11,7 @@ pub struct GetLendingRates {}
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct LendingRates {
+pub struct LendingRate {
     pub coin: String,
     pub estimate: Decimal, // estimated hourly lending rate for the next spot margin cycle
     pub previous: Decimal, // hourly lending rate in the previous spot margin cycle
@@ -22,7 +22,7 @@ impl Request for GetLendingRates {
     const PATH: &'static str = "/spot_margin/lending_rates";
     const AUTH: bool = true;
 
-    type Response = Vec<LendingRates>;
+    type Response = Vec<LendingRate>;
 }
 
 #[derive(Clone, Debug, Deserialize)]
