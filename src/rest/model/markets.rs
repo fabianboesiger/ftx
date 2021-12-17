@@ -179,7 +179,6 @@ pub struct Price {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct GetHistoricalPrices {
     #[serde(skip_serializing)]
     pub market_name: String,
