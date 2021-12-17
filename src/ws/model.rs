@@ -314,17 +314,3 @@ pub enum Liquidity {
     Maker,
     Taker,
 }
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Market {
-    name: Symbol,
-    enabled: bool,
-    price_increment: Decimal,
-    size_increment: Decimal,
-    #[serde(rename = "type")]
-    pub market_type: MarketType,
-    base_currency: Option<Coin>,
-    quote_currency: Option<Coin>,
-    underlying: Option<Coin>,
-}
