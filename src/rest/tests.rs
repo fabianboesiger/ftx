@@ -157,7 +157,7 @@ async fn get_future() {
 #[tokio::test]
 async fn get_expired_futures() {
     let rest = init_api().await;
-    let results = rest.request(GetExpiredFutures {}).await.unwrap();
+    rest.request(GetExpiredFutures {}).await.unwrap();
 }
 
 #[tokio::test]
