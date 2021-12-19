@@ -44,9 +44,7 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-        # TODO: Remove `--no-run` if/when the tests can be run without the need for
-        #       an API key environment variable
-        args: --no-run
+        # args: --no-run
 
     - name: cargo build
       uses: actions-rs/cargo@v1

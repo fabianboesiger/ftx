@@ -239,6 +239,7 @@ async fn order_book_checksum() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn fills() {
     let mut ws = init_authenticated_ws().await;
 
@@ -290,6 +291,7 @@ async fn subscribe_authenticated_updates_on_unauthenticated_channel() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn orders() {
     let mut ws = init_authenticated_ws().await;
 
