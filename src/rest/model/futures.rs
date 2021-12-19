@@ -128,3 +128,15 @@ impl Request for GetFutureStats {
         Cow::Owned(format!("/futures/{}/stats", self.future_name))
     }
 }
+
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct GetExpiredFutures {}
+
+impl Request for GetExpiredFutures {
+    const METHOD: Method = Method::GET;
+    const PATH: &'static str = "/expired_futures";
+    const AUTH: bool = false;
+
+    type Response = Vec<Future>;
+}

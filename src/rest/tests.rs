@@ -173,6 +173,12 @@ async fn get_future() {
 }
 
 #[tokio::test]
+async fn get_expired_futures() {
+    let rest = init_api().await;
+    rest.request(GetExpiredFutures {}).await.unwrap();
+}
+
+#[tokio::test]
 async fn get_funding_rates() {
     init_unauthenticated_api()
         .await
