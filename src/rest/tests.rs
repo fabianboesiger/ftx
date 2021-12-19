@@ -237,11 +237,12 @@ async fn get_coins() {
         .unwrap();
 }
 
+/*
 #[tokio::test]
 #[ignore]
 async fn market_order() {
     // A live test that buys 1 1INCH-PERP
-
+    
     init_api()
         .await
         .place_order(
@@ -258,6 +259,7 @@ async fn market_order() {
         .await
         .unwrap();
 }
+*/
 
 #[tokio::test]
 #[ignore]
