@@ -19,9 +19,7 @@ async fn init_api() -> Rest {
 }
 
 async fn init_unauthenticated_api() -> Rest {
-    let api = Rest::new(Options::default());
-
-    api
+    Rest::new(Options::default())
 }
 
 fn read_only<T>(result: Result<T>) {
