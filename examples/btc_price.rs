@@ -11,7 +11,7 @@ async fn main() -> Result<()> {
     let api = Rest::new(Options::from_env());
 
     let price = api.request(GetMarket::new("BTC/USD")).await?.price;
-    println!("1 BTC is worth {} USD.", price);
+    println!("1 BTC is worth {} USD.", price.unwrap());
 
     Ok(())
 }

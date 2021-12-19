@@ -18,6 +18,12 @@ async fn init_api() -> Rest {
     api
 }
 
+async fn init_unauthenticated_api() -> Rest {
+    let api = Rest::new(Options::default());
+
+    api
+}
+
 fn read_only<T>(result: Result<T>) {
     match result {
         Err(Error::Api(error)) if error == *"Not allowed with read-only permissions" => {}
@@ -26,6 +32,7 @@ fn read_only<T>(result: Result<T>) {
 }
 
 #[tokio::test]
+#[ignore]
 async fn get_subaccounts() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -35,6 +42,7 @@ async fn get_subaccounts() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn create_subaccount() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -44,6 +52,7 @@ async fn create_subaccount() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn change_subaccount_name() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -53,6 +62,7 @@ async fn change_subaccount_name() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn delete_subaccount() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -62,6 +72,7 @@ async fn delete_subaccount() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn get_subaccount_balances() {
     let rest = init_api().await;
     // Test using given subaccount otherwise use "Bot"
@@ -75,6 +86,7 @@ async fn get_subaccount_balances() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn transfer_between_subaccounts() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -92,12 +104,12 @@ async fn transfer_between_subaccounts() {
 
 #[tokio::test]
 async fn get_markets() {
-    init_api().await.request(GetMarkets {}).await.unwrap();
+    init_unauthenticated_api().await.request(GetMarkets {}).await.unwrap();
 }
 
 #[tokio::test]
 async fn get_market() {
-    init_api()
+    init_unauthenticated_api()
         .await
         .request(GetMarket::new("BTC/USD"))
         .await
@@ -106,12 +118,12 @@ async fn get_market() {
 
 #[tokio::test]
 async fn get_orderbook() {
-    init_api()
+    init_unauthenticated_api()
         .await
         .request(GetOrderBook::new("BTC/USD"))
         .await
         .unwrap();
-    init_api()
+    init_unauthenticated_api()
         .await
         .request(GetOrderBook::with_depth("BTC/USD", 50))
         .await
@@ -120,7 +132,7 @@ async fn get_orderbook() {
 
 #[tokio::test]
 async fn get_trades() {
-    init_api()
+    init_unauthenticated_api()
         .await
         .request(GetTrades::new("BTC/USD"))
         .await
@@ -129,7 +141,7 @@ async fn get_trades() {
 
 #[tokio::test]
 async fn get_historical_prices() {
-    init_api()
+    init_unauthenticated_api()
         .await
         .request(GetHistoricalPrices {
             market_name: "BTC/USD".into(),
@@ -142,12 +154,12 @@ async fn get_historical_prices() {
 
 #[tokio::test]
 async fn get_futures() {
-    init_api().await.request(GetFutures {}).await.unwrap();
+    init_unauthenticated_api().await.request(GetFutures {}).await.unwrap();
 }
 
 #[tokio::test]
 async fn get_future() {
-    init_api()
+    init_unauthenticated_api()
         .await
         .request(GetFuture::new("BTC-PERP"))
         .await
@@ -156,7 +168,7 @@ async fn get_future() {
 
 #[tokio::test]
 async fn get_funding_rates() {
-    init_api().await.request(GetFundingRates {}).await.unwrap();
+    init_unauthenticated_api().await.request(GetFundingRates {}).await.unwrap();
 }
 
 #[tokio::test]
@@ -206,13 +218,14 @@ async fn account_deserialization() {
 
 #[tokio::test]
 async fn get_coins() {
-    init_api().await.request(GetCoins {}).await.unwrap();
+    init_unauthenticated_api().await.request(GetCoins {}).await.unwrap();
 }
 
 #[tokio::test]
+#[ignore]
 async fn market_order() {
     // A live test that buys 1 1INCH-PERP
-    /*
+    
     init_api().await.place_order(
         "1INCH/USD",
         Side::Buy,
@@ -224,10 +237,10 @@ async fn market_order() {
         None,
         None,
     ).await.unwrap();
-    */
 }
 
 #[tokio::test]
+#[ignore]
 async fn place_modify_cancel_orders() {
     manipulate_orders().await;
 }
@@ -246,9 +259,9 @@ pub async fn manipulate_orders() {
     let modified_bid_size = dec!(0.002);
 
     // Bid at 95% of the current price
-    let initial_bid_price = dec!(0.95) * price;
+    let initial_bid_price = dec!(0.95) * price.unwrap();
     // Bid will be modified to 94% of the current price
-    let modified_bid_price = dec!(0.94) * price;
+    let modified_bid_price = dec!(0.94) * price.unwrap();
 
     // Round to 0.1, which is ETH-PERP's minimum price increment
     let initial_bid_price = initial_bid_price.round_dp(1);
@@ -310,7 +323,7 @@ pub async fn manipulate_orders() {
     assert_eq!(OrderStatus::Closed, cancelled_order.status);
 
     // Place a post-only order that will be rejected
-    let rejected_bid_price = dec!(1.1) * price; // Bid at 110% of current price
+    let rejected_bid_price = dec!(1.1) * price.unwrap(); // Bid at 110% of current price
     let rejected_order = api
         .request(PlaceOrder {
             market,
@@ -330,6 +343,7 @@ pub async fn manipulate_orders() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn get_open_orders() {
     init_api()
         .await
