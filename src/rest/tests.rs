@@ -174,7 +174,7 @@ async fn get_future() {
 
 #[tokio::test]
 async fn get_expired_futures() {
-    let rest = init_api().await;
+    let rest = init_unauthenticated_api().await;
     rest.request(GetExpiredFutures {}).await.unwrap();
 }
 
