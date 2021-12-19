@@ -104,7 +104,11 @@ async fn transfer_between_subaccounts() {
 
 #[tokio::test]
 async fn get_markets() {
-    init_unauthenticated_api().await.request(GetMarkets {}).await.unwrap();
+    init_unauthenticated_api()
+        .await
+        .request(GetMarkets {})
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
@@ -154,7 +158,11 @@ async fn get_historical_prices() {
 
 #[tokio::test]
 async fn get_futures() {
-    init_unauthenticated_api().await.request(GetFutures {}).await.unwrap();
+    init_unauthenticated_api()
+        .await
+        .request(GetFutures {})
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
@@ -168,7 +176,11 @@ async fn get_future() {
 
 #[tokio::test]
 async fn get_funding_rates() {
-    init_unauthenticated_api().await.request(GetFundingRates {}).await.unwrap();
+    init_unauthenticated_api()
+        .await
+        .request(GetFundingRates {})
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
@@ -218,25 +230,33 @@ async fn account_deserialization() {
 
 #[tokio::test]
 async fn get_coins() {
-    init_unauthenticated_api().await.request(GetCoins {}).await.unwrap();
+    init_unauthenticated_api()
+        .await
+        .request(GetCoins {})
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
 #[ignore]
 async fn market_order() {
     // A live test that buys 1 1INCH-PERP
-    
-    init_api().await.place_order(
-        "1INCH/USD",
-        Side::Buy,
-        None,
-        OrderType::Market,
-        dec!(1),
-        None,
-        None,
-        None,
-        None,
-    ).await.unwrap();
+
+    init_api()
+        .await
+        .place_order(
+            "1INCH/USD",
+            Side::Buy,
+            None,
+            OrderType::Market,
+            dec!(1),
+            None,
+            None,
+            None,
+            None,
+        )
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
