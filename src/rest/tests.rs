@@ -155,6 +155,7 @@ async fn get_historical_prices() {
 }
 
 #[tokio::test]
+#[ignore]
 async fn get_fills() {
     init_api()
         .await

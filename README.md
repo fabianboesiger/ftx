@@ -66,7 +66,7 @@ Work in progress, contributions are welcome.
 	- [x] Cancel order by client ID
 	- [ ] Cancel open trigger order
 	- [x] Cancel all orders
-- [ ] Fills
+- [x] Fills
 - [ ] Funding Payments
 - [ ] Leveraged Tokens
 - [ ] Options
