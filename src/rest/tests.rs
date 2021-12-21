@@ -155,6 +155,16 @@ async fn get_historical_prices() {
 }
 
 #[tokio::test]
+#[ignore]
+async fn get_fills() {
+    init_api()
+        .await
+        .request(GetFills::new("RUNE/USD"))
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
 async fn get_futures() {
     init_unauthenticated_api()
         .await
