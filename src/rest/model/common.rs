@@ -23,7 +23,7 @@ impl Default for OrderType {
     }
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 /// Represents the status of the order.
 /// However, the REST and websockets APIs assign these values differently.
@@ -75,7 +75,7 @@ impl Default for Side {
     }
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum FutureType {
     Future,
@@ -93,7 +93,7 @@ pub enum DepositStatus {
     Complete,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum MarketType {
     Future,
@@ -103,7 +103,7 @@ pub enum MarketType {
 /// Returned by GET /positions.
 /// See https://docs.ftx.com/#get-positions.
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Position {
     pub cost: Decimal,
@@ -123,7 +123,7 @@ pub struct Position {
     pub collateral_used: Decimal,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum WithdrawStatus {
     Requested,

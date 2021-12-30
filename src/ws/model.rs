@@ -3,11 +3,11 @@ use chrono::{DateTime, Utc};
 use crc32fast::Hasher;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, TimestampSecondsWithFrac};
 use std::collections::BTreeMap;
 
-#[derive(Clone, Debug, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum Channel {
     Orderbook(Symbol),
@@ -26,7 +26,7 @@ pub struct Response {
 }
 */
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     pub market: Option<Symbol>,
@@ -34,7 +34,7 @@ pub struct Response {
     pub data: Option<ResponseData>,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Type {
     Subscribed,
@@ -48,7 +48,7 @@ pub enum Type {
 
 /// Represents the response received from FTX, and is used for
 /// deserialization
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(untagged)]
 pub enum ResponseData {
@@ -60,7 +60,7 @@ pub enum ResponseData {
 }
 
 /// Represents the data we return to the user
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub enum Data {
     Ticker(Ticker),
     Trade(Trade),
@@ -70,7 +70,7 @@ pub enum Data {
 }
 
 #[serde_as]
-#[derive(Copy, Clone, Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Ticker {
     pub bid: Decimal,
@@ -82,7 +82,7 @@ pub struct Ticker {
     pub time: DateTime<Utc>,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Trade {
     pub id: Id,
@@ -96,7 +96,7 @@ pub struct Trade {
 /// Order book data received from FTX which is used for initializing and updating
 /// the OrderBook struct
 #[serde_as]
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OrderbookData {
     pub action: OrderbookAction,
@@ -111,7 +111,7 @@ pub struct OrderbookData {
 
 type Checksum = u32;
 
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderbookAction {
     /// Initial snapshot of the orderbook
@@ -123,7 +123,7 @@ pub enum OrderbookAction {
 /// Represents the current state of the orderbook, guaranteed to be accurate
 /// up to the best 100 bids and best 100 asks since the latest update.
 /// Supports efficient insertions, updates, and deletions via a BTreeMap.
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Orderbook {
     pub symbol: Symbol,
     pub bids: BTreeMap<Decimal, Decimal>,
@@ -287,7 +287,7 @@ impl Orderbook {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Fill {
     pub id: Id,
@@ -308,7 +308,7 @@ pub struct Fill {
     pub liquidity: Liquidity,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum Liquidity {
     Maker,

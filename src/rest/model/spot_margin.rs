@@ -9,7 +9,7 @@ use {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetLendingRates {}
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LendingRate {
     pub coin: String,
@@ -25,7 +25,7 @@ impl Request for GetLendingRates {
     type Response = Vec<LendingRate>;
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MyLendingHistory {
     pub coin: String,
@@ -61,7 +61,7 @@ impl Request for GetMyLendingHistory {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetLendingInfo {}
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct LendingInfo {
     pub coin: String,

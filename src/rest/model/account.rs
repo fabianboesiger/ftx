@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// Returned by GET /account.
 /// See https://docs.ftx.com/#get-account-information.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Account {
     pub backstop_provider: bool,
