@@ -81,6 +81,7 @@ impl Request for GetWalletBalances {
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct GetWalletDepositAddress {
+    #[serde(skip_serializing)]
     pub coin: String,
     pub method: Option<String>,
 }
@@ -109,14 +110,7 @@ impl Request for GetWalletDepositAddress {
     type Response = WalletDepositAddress;
 
     fn path(&self) -> Cow<'_, str> {
-        Cow::Owned(format!(
-            "/wallet/deposit_address/{}{}",
-            self.coin,
-            self.method
-                .as_ref()
-                .map(|method| format!("?method={}", method))
-                .unwrap_or_default(),
-        ))
+        Cow::Owned(format!("/wallet/deposit_address/{}", self.coin))
     }
 }
 
