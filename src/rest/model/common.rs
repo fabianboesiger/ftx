@@ -128,6 +128,7 @@ pub struct Position {
 pub enum WithdrawStatus {
     Requested,
     Processing,
+    Sent,
     Complete,
     Cancelled,
 }
