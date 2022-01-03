@@ -160,7 +160,7 @@ pub struct WalletWithdrawal {
     pub coin: String,
     pub size: Decimal,
     pub time: String,
-    pub address: String,
+    pub address: Option<String>, // `None` for transfers between sub-accounts
     pub status: WithdrawStatus,
     pub fee: Option<Decimal>, // fee, not included in size
     pub txid: Option<String>,
@@ -191,4 +191,24 @@ impl Request for GetWalletWithdrawals {
     const AUTH: bool = true;
 
     type Response = Vec<WalletWithdrawal>;
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RequestWithdrawal {
+    pub coin: String,
+    pub size: Decimal,
+    pub address: String,
+    pub tag: Option<String>,
+    pub method: Option<String>,
+    pub password: Option<String>,
+    pub code: Option<String>,
+}
+
+impl Request for RequestWithdrawal {
+    const METHOD: Method = Method::POST;
+    const PATH: &'static str = "/wallet/withdrawals";
+    const AUTH: bool = true;
+
+    type Response = WalletWithdrawal;
 }

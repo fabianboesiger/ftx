@@ -42,8 +42,8 @@ Work in progress, contributions are welcome.
 	- [ ] Get balances of all accounts
 	- [x] Get deposit address
 	- [x] Get deposit history
-	- [ ] Get withdrawal history
-	- [ ] Request withdrawal
+	- [x] Get withdrawal history
+	- [x] Request withdrawal
 	- [ ] Get airdrops
 	- [ ] Get withdrawal fees
 	- [ ] Get saved addresses
