@@ -24,7 +24,7 @@ macro_rules! deprecate_msg {
         "This function is deprecated. Please use Rest::request instead."
     };
 }
-
+#[derive(Debug, Clone)]
 pub struct Rest {
     secret: Option<String>,
     client: Client,
