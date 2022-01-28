@@ -1,5 +1,5 @@
 use super::common::{Coin, Id, MarketType, Side, Symbol};
-use super::Request;
+use super::{PagedRequest, Request};
 use chrono::{DateTime, Utc};
 use http::Method;
 use rust_decimal::Decimal;
@@ -171,17 +171,7 @@ impl Request for GetTrades {
     type Response = Vec<Trade>;
 
     fn path(&self) -> Cow<'_, str> {
-        match self.limit {
-            None => Cow::Owned(format!("/markets/{}/trades", self.market_name)),
-            Some(_) => Cow::Owned(format!(
-                "/markets/{}/trades?start_time={}&end_time={}&limit={}",
-                self.market_name,
-                self.start_time.unwrap().timestamp(),
-                self.end_time.unwrap().timestamp(),
-                self.limit.unwrap(),
-            )),
-        }
-        
+        Cow::Owned(format!("/markets/{}/trades", self.market_name))
     }
 }
 
@@ -242,17 +232,6 @@ impl Request for GetHistoricalPrices {
     type Response = Vec<Candle>;
 
     fn path(&self) -> Cow<'_, str> {
-        match self.limit {
-            None => Cow::Owned(format!("/markets/{}/candles", self.market_name)),
-            Some(_) => Cow::Owned(format!(
-                "/markets/{}/candles?resolution={}&start_time={}&end_time={}&limit={}",
-                self.market_name,
-                self.resolution,
-                self.start_time.unwrap().timestamp(),
-                self.end_time.unwrap().timestamp(),
-                self.limit.unwrap(),
-            )),
-        }
-        
+        Cow::Owned(format!("/markets/{}/candles", self.market_name))
     }
 }
