@@ -1,5 +1,5 @@
 use super::common::{Coin, Id, MarketType, Side, Symbol};
-use super::{PagedRequest, Request};
+use super::Request;
 use chrono::{DateTime, Utc};
 use http::Method;
 use rust_decimal::Decimal;
