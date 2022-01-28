@@ -153,6 +153,14 @@ impl GetTrades {
             ..Default::default()
         }
     }
+    pub fn new_paged(market_name: &str, limit: u32, start_time: DateTime<Utc>, end_time: DateTime<Utc>) -> Self {
+        Self {
+            market_name: market_name.into(),
+            limit: Some(limit),
+            start_time: Some(start_time),
+            end_time: Some(end_time),
+        }
+    }
 }
 
 impl Request for GetTrades {
@@ -163,13 +171,23 @@ impl Request for GetTrades {
     type Response = Vec<Trade>;
 
     fn path(&self) -> Cow<'_, str> {
-        Cow::Owned(format!("/markets/{}/trades", self.market_name))
+        match self.limit {
+            None => Cow::Owned(format!("/markets/{}/trades", self.market_name)),
+            Some(_) => Cow::Owned(format!(
+                "/markets/{}/trades?start_time={}&end_time={}&limit={}",
+                self.market_name,
+                self.start_time.unwrap().timestamp(),
+                self.end_time.unwrap().timestamp(),
+                self.limit.unwrap(),
+            )),
+        }
+        
     }
 }
 
 #[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Price {
+pub struct Candle {
     pub close: Decimal,
     pub high: Decimal,
     pub low: Decimal,
@@ -205,6 +223,15 @@ impl GetHistoricalPrices {
             ..Default::default()
         }
     }
+    pub fn new_paged(market_name: &str, resolution: u32, limit: u32, start_time: DateTime<Utc>, end_time: DateTime<Utc>) -> Self {
+        Self {
+            market_name: market_name.into(),
+            resolution,
+            limit: Some(limit),
+            start_time: Some(start_time),
+            end_time: Some(end_time),
+        }
+    }
 }
 
 impl Request for GetHistoricalPrices {
@@ -212,9 +239,20 @@ impl Request for GetHistoricalPrices {
     const PATH: &'static str = "/markets/{}/candles";
     const AUTH: bool = false;
 
-    type Response = Vec<Price>;
+    type Response = Vec<Candle>;
 
     fn path(&self) -> Cow<'_, str> {
-        Cow::Owned(format!("/markets/{}/candles", self.market_name))
+        match self.limit {
+            None => Cow::Owned(format!("/markets/{}/candles", self.market_name)),
+            Some(_) => Cow::Owned(format!(
+                "/markets/{}/candles?resolution={}&start_time={}&end_time={}&limit={}",
+                self.market_name,
+                self.resolution,
+                self.start_time.unwrap().timestamp(),
+                self.end_time.unwrap().timestamp(),
+                self.limit.unwrap(),
+            )),
+        }
+        
     }
 }
