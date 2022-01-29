@@ -198,6 +198,15 @@ async fn get_funding_rates() {
 }
 
 #[tokio::test]
+async fn get_index_weights() {
+    init_unauthenticated_api()
+        .await
+        .request(GetIndexWeights::new("ALT"))
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
 async fn get_historical_index() {
     init_unauthenticated_api()
         .await

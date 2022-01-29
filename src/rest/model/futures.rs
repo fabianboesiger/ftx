@@ -176,6 +176,32 @@ impl Request for GetExpiredFutures {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
+pub struct GetIndexWeights {
+    #[serde(skip_serializing)]
+    pub index: Symbol,
+}
+
+impl GetIndexWeights {
+    pub fn new(index: &str) -> Self {
+        Self {
+            index: index.into(),
+        }
+    }
+}
+
+impl Request for GetIndexWeights {
+    const METHOD: Method = Method::GET;
+    const PATH: &'static str = "/indexes/{}/weights";
+    const AUTH: bool = false;
+
+    type Response = std::collections::HashMap<String, Decimal>;
+
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/indexes/{}/weights", self.index))
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
 pub struct GetHistoricalIndex {
     market_name: String,
     resolution: u32,
