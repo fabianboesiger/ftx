@@ -1,5 +1,5 @@
 use super::common::{FutureType, Symbol};
-use super::Request;
+use super::{Request, Resolution};
 use chrono::{DateTime, Utc};
 use http::Method;
 use rust_decimal::Decimal;
@@ -229,10 +229,10 @@ pub struct HistoricalCandle {
 }
 
 impl GetHistoricalIndex {
-    pub fn new(market: &str, res: u32) -> Self {
+    pub fn new(market: &str, resolution: Resolution) -> Self {
         Self {
             market_name: market.into(),
-            resolution: res,
+            resolution: resolution.get_seconds(),
             start_time: None,
             end_time: None,
         }
@@ -240,13 +240,13 @@ impl GetHistoricalIndex {
 
     pub fn new_paged(
         market: &str,
-        resolution: u32,
+        resolution: Resolution,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
     ) -> Self {
         Self {
             market_name: market.into(),
-            resolution,
+            resolution: resolution.get_seconds(),
             start_time,
             end_time,
         }

@@ -210,7 +210,7 @@ async fn get_index_weights() {
 async fn get_historical_index() {
     init_unauthenticated_api()
         .await
-        .request(GetHistoricalIndex::new("BTC", 60))
+        .request(GetHistoricalIndex::new("BTC", Resolution::Minute))
         .await
         .unwrap();
 }
