@@ -31,7 +31,7 @@ Work in progress, contributions are welcome.
 	- [x] Get funding rates
 	- [ ] Get index weights
 	- [x] Get expired futures
-	- [ ] Get historical index
+	- [x] Get historical index
 - [ ] Account
 	- [x] Get account information
 	- [x] Get positions
