@@ -24,14 +24,14 @@ Work in progress, contributions are welcome.
 	- [x] Get orderbook
 	- [x] Get trades
 	- [x] Get historical prices
-- [ ] Futures
+- [x] Futures
 	- [x] List all futures
 	- [x] Get future
 	- [x] Get future stats
 	- [x] Get funding rates
-	- [ ] Get index weights
+	- [x] Get index weights
 	- [x] Get expired futures
-	- [ ] Get historical index
+	- [x] Get historical index
 - [ ] Account
 	- [x] Get account information
 	- [x] Get positions

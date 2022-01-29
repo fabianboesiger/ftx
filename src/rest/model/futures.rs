@@ -87,8 +87,42 @@ pub struct FundingRate {
 pub type FundingRates = Vec<FundingRate>;
 
 #[derive(Debug, Clone, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct GetFundingRates {}
+pub struct GetFundingRates {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    future: Option<Symbol>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
+    start_time: Option<DateTime<Utc>>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
+    end_time: Option<DateTime<Utc>>,
+}
+
+impl GetFundingRates {
+    pub fn new() -> Self {
+        Self {
+            future: None,
+            start_time: None,
+            end_time: None,
+        }
+    }
+
+    pub fn new_paged(
+        future: Option<Symbol>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Self {
+        Self {
+            future,
+            start_time,
+            end_time,
+        }
+    }
+}
 
 impl Request for GetFundingRates {
     const METHOD: Method = Method::GET;
@@ -139,4 +173,94 @@ impl Request for GetExpiredFutures {
     const AUTH: bool = false;
 
     type Response = Vec<Future>;
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct GetIndexWeights {
+    #[serde(skip_serializing)]
+    pub index: Symbol,
+}
+
+impl GetIndexWeights {
+    pub fn new(index: &str) -> Self {
+        Self {
+            index: index.into(),
+        }
+    }
+}
+
+impl Request for GetIndexWeights {
+    const METHOD: Method = Method::GET;
+    const PATH: &'static str = "/indexes/{}/weights";
+    const AUTH: bool = false;
+
+    type Response = std::collections::HashMap<String, Decimal>;
+
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/indexes/{}/weights", self.index))
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct GetHistoricalIndex {
+    market_name: String,
+    resolution: u32,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
+    start_time: Option<DateTime<Utc>>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        serialize_with = "super::serialize_as_timestamp"
+    )]
+    end_time: Option<DateTime<Utc>>,
+}
+
+#[derive(Copy, Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HistoricalCandle {
+    pub open: Decimal,
+    pub high: Decimal,
+    pub low: Decimal,
+    pub close: Decimal,
+    pub start_time: DateTime<Utc>,
+    pub volume: Option<Decimal>,
+}
+
+impl GetHistoricalIndex {
+    pub fn new(market: &str, res: u32) -> Self {
+        Self {
+            market_name: market.into(),
+            resolution: res,
+            start_time: None,
+            end_time: None,
+        }
+    }
+
+    pub fn new_paged(
+        market: &str,
+        resolution: u32,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Self {
+        Self {
+            market_name: market.into(),
+            resolution,
+            start_time,
+            end_time,
+        }
+    }
+}
+
+impl Request for GetHistoricalIndex {
+    const METHOD: Method = Method::GET;
+    const PATH: &'static str = "/indexes/{}/candles";
+    const AUTH: bool = false;
+
+    type Response = Vec<HistoricalCandle>;
+
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/indexes/{}/candles", self.market_name))
+    }
 }
