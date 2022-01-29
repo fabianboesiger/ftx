@@ -154,7 +154,12 @@ impl GetTrades {
     }
     // User can specify limit, start_time, and end_time.
     // If none, use Option::None as parameter.
-    pub fn new_paged(market_name: &str, limit: Option<u32>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>) -> Self {
+    pub fn new_paged(
+        market_name: &str,
+        limit: Option<u32>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Self {
         Self {
             market_name: market_name.into(),
             limit,
@@ -216,7 +221,13 @@ impl GetHistoricalPrices {
     }
     // User can specify limit, start_time, and end_time.
     // If none, use Option::None as parameter.
-    pub fn new_paged(market_name: &str, resolution: u32, limit: Option<u32>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>) -> Self {
+    pub fn new_paged(
+        market_name: &str,
+        resolution: u32,
+        limit: Option<u32>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Self {
         Self {
             market_name: market_name.into(),
             resolution,

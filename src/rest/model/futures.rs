@@ -130,7 +130,6 @@ impl Request for GetFundingRates {
     const AUTH: bool = false;
 
     type Response = FundingRates;
-
 }
 
 #[derive(Copy, Clone, Debug, Deserialize)]
