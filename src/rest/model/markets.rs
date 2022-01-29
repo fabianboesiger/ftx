@@ -1,4 +1,4 @@
-use super::common::{Coin, Id, MarketType, Side, Symbol};
+use super::common::{Coin, Id, MarketType, Resolution, Side, Symbol};
 use super::Request;
 use chrono::{DateTime, Utc};
 use http::Method;
@@ -212,10 +212,10 @@ pub struct GetHistoricalPrices {
 }
 
 impl GetHistoricalPrices {
-    pub fn new(market_name: &str, resolution: u32) -> Self {
+    pub fn new(market_name: &str, resolution: Resolution) -> Self {
         Self {
             market_name: market_name.into(),
-            resolution,
+            resolution: resolution.get_seconds(),
             ..Default::default()
         }
     }
@@ -223,14 +223,14 @@ impl GetHistoricalPrices {
     // If none, use Option::None as parameter.
     pub fn new_paged(
         market_name: &str,
-        resolution: u32,
+        resolution: Resolution,
         limit: Option<u32>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
     ) -> Self {
         Self {
             market_name: market_name.into(),
-            resolution,
+            resolution: resolution.get_seconds(),
             limit,
             start_time,
             end_time,
