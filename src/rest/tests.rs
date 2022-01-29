@@ -192,7 +192,16 @@ async fn get_expired_futures() {
 async fn get_funding_rates() {
     init_unauthenticated_api()
         .await
-        .request(GetFundingRates {})
+        .request(GetFundingRates::new())
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
+async fn get_historical_index() {
+    init_unauthenticated_api()
+        .await
+        .request(GetHistoricalIndex::new("BTC", 60))
         .await
         .unwrap();
 }

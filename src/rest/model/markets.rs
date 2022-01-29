@@ -128,7 +128,6 @@ pub struct Trade {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct GetTrades {
     #[serde(skip_serializing)]
     pub market_name: String,
@@ -158,9 +157,9 @@ impl GetTrades {
     pub fn new_paged(market_name: &str, limit: Option<u32>, start_time: Option<DateTime<Utc>>, end_time: Option<DateTime<Utc>>) -> Self {
         Self {
             market_name: market_name.into(),
-            limit: limit,
-            start_time: start_time,
-            end_time: end_time,
+            limit,
+            start_time,
+            end_time,
         }
     }
 }
@@ -221,9 +220,9 @@ impl GetHistoricalPrices {
         Self {
             market_name: market_name.into(),
             resolution,
-            limit: limit,
-            start_time: start_time,
-            end_time: end_time,
+            limit,
+            start_time,
+            end_time,
         }
     }
 }
