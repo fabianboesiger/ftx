@@ -1,4 +1,4 @@
-pub use crate::rest::{Coin, Id, MarketType, OrderInfo, Side, Symbol};
+pub use crate::rest::{Coin, Id, MarketType, OrderInfo, Side, Symbol, Trade};
 use chrono::{DateTime, Utc};
 use crc32fast::Hasher;
 use rust_decimal::Decimal;
@@ -16,15 +16,6 @@ pub enum Channel {
     Fills,
     Orders,
 }
-
-/*
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Response {
-    pub channel: Channel,
-    pub market: Symbol,
-}
-*/
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -81,18 +72,6 @@ pub struct Ticker {
     #[serde_as(as = "TimestampSecondsWithFrac<f64>")]
     pub time: DateTime<Utc>,
 }
-
-// #[derive(Copy, Clone, Debug, Deserialize)]
-// #[serde(rename_all = "camelCase")]
-// pub struct Trade {
-//     pub id: Id,
-//     pub price: Decimal,
-//     pub size: Decimal,
-//     pub side: Side,
-//     pub liquidation: bool,
-//     pub time: DateTime<Utc>, // API returns "2021-05-23T05:24:24.315884+00:00"
-// }
-use crate::rest::Trade;
 
 /// Order book data received from FTX which is used for initializing and updating
 /// the OrderBook struct
