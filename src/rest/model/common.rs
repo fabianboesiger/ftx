@@ -137,7 +137,10 @@ pub enum WithdrawStatus {
 pub enum Resolution {
     FifteenSeconds,
     Minute,
+    FiveMinutes,
+    FifteenMinutes,
     Hour,
+    FourHours,
     Day,
     TwoDays,
     ThreeDays,
@@ -175,7 +178,10 @@ impl Resolution {
         match self {
             Resolution::FifteenSeconds => 15,
             Resolution::Minute => 60,
+            Resolution::FiveMinutes => 300,
+            Resolution::FifteenMinutes => 900,
             Resolution::Hour => 3600,
+            Resolution::FourHours => 14400,
             Resolution::Day => 86400,
             Resolution::TwoDays => 86400 * 2,
             Resolution::ThreeDays => 86400 * 3,

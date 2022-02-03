@@ -82,16 +82,17 @@ pub struct Ticker {
     pub time: DateTime<Utc>,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct Trade {
-    pub id: Id,
-    pub price: Decimal,
-    pub size: Decimal,
-    pub side: Side,
-    pub liquidation: bool,
-    pub time: DateTime<Utc>, // API returns "2021-05-23T05:24:24.315884+00:00"
-}
+// #[derive(Copy, Clone, Debug, Deserialize)]
+// #[serde(rename_all = "camelCase")]
+// pub struct Trade {
+//     pub id: Id,
+//     pub price: Decimal,
+//     pub size: Decimal,
+//     pub side: Side,
+//     pub liquidation: bool,
+//     pub time: DateTime<Utc>, // API returns "2021-05-23T05:24:24.315884+00:00"
+// }
+use crate::rest::Trade;
 
 /// Order book data received from FTX which is used for initializing and updating
 /// the OrderBook struct
