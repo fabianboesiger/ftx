@@ -91,6 +91,7 @@ pub enum DepositStatus {
     Unconfirmed,
     Cancelled,
     Complete,
+    Initiated,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
