@@ -31,7 +31,7 @@ pub struct WalletBalance {
 pub struct WalletDeposit {
     pub id: Id,
     pub coin: String,
-    pub size: Decimal,
+    pub size: Option<Decimal>,
     pub time: String,
     pub status: DepositStatus,
     pub confirmations: Option<usize>,
