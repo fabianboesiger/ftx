@@ -24,14 +24,14 @@ Work in progress, contributions are welcome.
 	- [x] Get orderbook
 	- [x] Get trades
 	- [x] Get historical prices
-- [ ] Futures
+- [x] Futures
 	- [x] List all futures
 	- [x] Get future
 	- [x] Get future stats
 	- [x] Get funding rates
-	- [ ] Get index weights
+	- [x] Get index weights
 	- [x] Get expired futures
-	- [ ] Get historical index
+	- [x] Get historical index
 - [ ] Account
 	- [x] Get account information
 	- [x] Get positions
@@ -42,8 +42,8 @@ Work in progress, contributions are welcome.
 	- [ ] Get balances of all accounts
 	- [x] Get deposit address
 	- [x] Get deposit history
-	- [ ] Get withdrawal history
-	- [ ] Request withdrawal
+	- [x] Get withdrawal history
+	- [x] Request withdrawal
 	- [ ] Get airdrops
 	- [ ] Get withdrawal fees
 	- [ ] Get saved addresses

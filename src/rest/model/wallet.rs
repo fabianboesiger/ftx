@@ -31,7 +31,7 @@ pub struct WalletBalance {
 pub struct WalletDeposit {
     pub id: Id,
     pub coin: String,
-    pub size: Decimal,
+    pub size: Option<Decimal>,
     pub time: String,
     pub status: DepositStatus,
     pub confirmations: Option<usize>,
@@ -81,6 +81,7 @@ impl Request for GetWalletBalances {
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct GetWalletDepositAddress {
+    #[serde(skip_serializing)]
     pub coin: String,
     pub method: Option<String>,
 }
@@ -109,14 +110,7 @@ impl Request for GetWalletDepositAddress {
     type Response = WalletDepositAddress;
 
     fn path(&self) -> Cow<'_, str> {
-        Cow::Owned(format!(
-            "/wallet/deposit_address/{}{}",
-            self.coin,
-            self.method
-                .as_ref()
-                .map(|method| format!("?method={}", method))
-                .unwrap_or_default(),
-        ))
+        Cow::Owned(format!("/wallet/deposit_address/{}", self.coin))
     }
 }
 
@@ -166,7 +160,7 @@ pub struct WalletWithdrawal {
     pub coin: String,
     pub size: Decimal,
     pub time: String,
-    pub address: String,
+    pub address: Option<String>, // `None` for transfers between sub-accounts
     pub status: WithdrawStatus,
     pub fee: Option<Decimal>, // fee, not included in size
     pub txid: Option<String>,
@@ -197,4 +191,24 @@ impl Request for GetWalletWithdrawals {
     const AUTH: bool = true;
 
     type Response = Vec<WalletWithdrawal>;
+}
+
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct RequestWithdrawal {
+    pub coin: String,
+    pub size: Decimal,
+    pub address: String,
+    pub tag: Option<String>,
+    pub method: Option<String>,
+    pub password: Option<String>,
+    pub code: Option<String>,
+}
+
+impl Request for RequestWithdrawal {
+    const METHOD: Method = Method::POST;
+    const PATH: &'static str = "/wallet/withdrawals";
+    const AUTH: bool = true;
+
+    type Response = WalletWithdrawal;
 }

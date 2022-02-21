@@ -1,4 +1,4 @@
-use super::common::{Coin, Id, MarketType, Side, Symbol};
+use super::common::{Coin, Id, MarketType, Resolution, Side, Symbol};
 use super::Request;
 use chrono::{DateTime, Utc};
 use http::Method;
@@ -128,7 +128,6 @@ pub struct Trade {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct GetTrades {
     #[serde(skip_serializing)]
     pub market_name: String,
@@ -153,6 +152,21 @@ impl GetTrades {
             ..Default::default()
         }
     }
+    // User can specify limit, start_time, and end_time.
+    // If none, use Option::None as parameter.
+    pub fn new_paged(
+        market_name: &str,
+        limit: Option<u32>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Self {
+        Self {
+            market_name: market_name.into(),
+            limit,
+            start_time,
+            end_time,
+        }
+    }
 }
 
 impl Request for GetTrades {
@@ -169,7 +183,7 @@ impl Request for GetTrades {
 
 #[derive(Copy, Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Price {
+pub struct Candle {
     pub close: Decimal,
     pub high: Decimal,
     pub low: Decimal,
@@ -198,11 +212,28 @@ pub struct GetHistoricalPrices {
 }
 
 impl GetHistoricalPrices {
-    pub fn new(market_name: &str, resolution: u32) -> Self {
+    pub fn new(market_name: &str, resolution: Resolution) -> Self {
         Self {
             market_name: market_name.into(),
-            resolution,
+            resolution: resolution.get_seconds(),
             ..Default::default()
+        }
+    }
+    // User can specify limit, start_time, and end_time.
+    // If none, use Option::None as parameter.
+    pub fn new_paged(
+        market_name: &str,
+        resolution: Resolution,
+        limit: Option<u32>,
+        start_time: Option<DateTime<Utc>>,
+        end_time: Option<DateTime<Utc>>,
+    ) -> Self {
+        Self {
+            market_name: market_name.into(),
+            resolution: resolution.get_seconds(),
+            limit,
+            start_time,
+            end_time,
         }
     }
 }
@@ -212,7 +243,7 @@ impl Request for GetHistoricalPrices {
     const PATH: &'static str = "/markets/{}/candles";
     const AUTH: bool = false;
 
-    type Response = Vec<Price>;
+    type Response = Vec<Candle>;
 
     fn path(&self) -> Cow<'_, str> {
         Cow::Owned(format!("/markets/{}/candles", self.market_name))
