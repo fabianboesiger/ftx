@@ -69,17 +69,20 @@ impl Options {
             .subaccount_optional(var("SUBACCOUNT").ok())
     }
 
+    #[must_use]
     pub fn authenticate(mut self, key: String, secret: String) -> Self {
         self.key = Some(key);
         self.secret = Some(secret);
         self
     }
 
+    #[must_use]
     pub fn subaccount(mut self, subaccount: String) -> Self {
         self.subaccount = Some(subaccount);
         self
     }
 
+    #[must_use]
     pub fn subaccount_optional(mut self, subaccount: Option<String>) -> Self {
         self.subaccount = subaccount;
         self

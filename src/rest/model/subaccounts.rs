@@ -10,7 +10,7 @@ use std::borrow::Cow;
 use std::convert::TryFrom;
 use std::fmt::Debug;
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Subaccount {
     pub nickname: String,
@@ -43,7 +43,7 @@ impl CreateSubaccount {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Create {
     pub nickname: String,
