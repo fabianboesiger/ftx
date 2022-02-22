@@ -116,7 +116,7 @@ impl Request for GetOrderBook {
     }
 }
 
-#[derive(Copy, Clone, Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Trade {
     pub id: Id,
