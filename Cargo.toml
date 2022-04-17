@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 name = "ftx"
 readme = "README.md"
 repository = "https://github.com/fabianboesiger/ftx"
-version = "0.4.4"
+version = "0.5.0"
 
 [dependencies]
 chrono = {version = "^0.4.19", features = ["serde"]}
