@@ -156,7 +156,9 @@ impl Request for GetCoins {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WalletWithdrawal {
-    pub id: Id,
+    // Exclude `id` for now.  For FTX Card withdrawals `id` is unfortunately returned as an
+    // alphanumeric `String` (eg. `"swipe_170108"`) instead of a number.
+    /*pub id: Id,*/
     pub coin: String,
     pub size: Decimal,
     pub time: String,
