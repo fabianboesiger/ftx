@@ -104,7 +104,7 @@ The minimal supported Rust version is 1.54.
 
 Add the following line to your Cargo.toml file:
 ```
-ftx = "0.3"
+ftx = "0.5"
 ```
 Or for the latest github version:
 ```
