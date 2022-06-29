@@ -271,7 +271,7 @@ pub struct SavedAddress {
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct GetSavedAddresses {
-    pub coin: String
+    pub coin: String,
 }
 
 /// Request data for delete a saved-address.
