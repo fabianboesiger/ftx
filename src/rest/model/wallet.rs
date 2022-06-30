@@ -248,6 +248,45 @@ pub struct CreateSavedAddress {
     pub whitelist: bool,
     pub code: Option<String>,
 }
+impl Request for CreateSavedAddress {
+    const METHOD: Method = Method::POST;
+    const PATH: &'static str = "/wallet/saved_addresses";
+    const AUTH: bool = true;
+
+    type Response = SavedAddress;
+}
+
+/// Request data for get saved-addresses.
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct GetSavedAddresses {
+    pub coin: String,
+}
+impl Request for GetSavedAddresses {
+    const METHOD: Method = Method::GET;
+    const PATH: &'static str = "/wallet/saved_addresses";
+    const AUTH: bool = true;
+
+    type Response = Vec<SavedAddress>;
+}
+
+/// Request data for delete a saved-address.
+#[derive(Debug, Clone, Serialize, Default)]
+pub struct DeleteSavedAddress {
+    #[serde(skip_serializing)]
+    pub saved_address_id: u64,
+}
+
+impl Request for DeleteSavedAddress {
+    const METHOD: Method = Method::DELETE;
+    const PATH: &'static str = "/wallet/saved_addresses/{}";
+    const AUTH: bool = true;
+
+    type Response = String;
+    fn path(&self) -> Cow<'_, str> {
+        Cow::Owned(format!("/wallet/saved_addresses/{}", self.saved_address_id))
+    }
+}
 
 /// Information of a saved-address.
 #[derive(Clone, Debug, Deserialize)]
@@ -265,45 +304,4 @@ pub struct SavedAddress {
     pub wallet: String,
     pub whitelisted: Option<bool>,
     pub whitelisted_after: Option<String>,
-}
-
-/// Request data for get saved-addresses.
-#[derive(Debug, Clone, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct GetSavedAddresses {
-    pub coin: String,
-}
-
-/// Request data for delete a saved-address.
-#[derive(Debug, Clone, Serialize, Default)]
-pub struct DeleteSavedAddress {
-    #[serde(skip_serializing)]
-    pub saved_address_id: u64,
-}
-
-impl Request for GetSavedAddresses {
-    const METHOD: Method = Method::GET;
-    const PATH: &'static str = "/wallet/saved_addresses";
-    const AUTH: bool = true;
-
-    type Response = Vec<SavedAddress>;
-}
-
-impl Request for CreateSavedAddress {
-    const METHOD: Method = Method::POST;
-    const PATH: &'static str = "/wallet/saved_addresses";
-    const AUTH: bool = true;
-
-    type Response = SavedAddress;
-}
-
-impl Request for DeleteSavedAddress {
-    const METHOD: Method = Method::DELETE;
-    const PATH: &'static str = "/wallet/saved_addresses/{}";
-    const AUTH: bool = true;
-
-    type Response = String;
-    fn path(&self) -> Cow<'_, str> {
-        Cow::Owned(format!("/wallet/saved_addresses/{}", self.saved_address_id))
-    }
 }
