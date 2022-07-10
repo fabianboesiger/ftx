@@ -89,17 +89,17 @@ pub type FundingRates = Vec<FundingRate>;
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct GetFundingRates {
     #[serde(skip_serializing_if = "Option::is_none")]
-    future: Option<Symbol>,
+    pub future: Option<Symbol>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "super::serialize_as_timestamp"
     )]
-    start_time: Option<DateTime<Utc>>,
+    pub start_time: Option<DateTime<Utc>>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "super::serialize_as_timestamp"
     )]
-    end_time: Option<DateTime<Utc>>,
+    pub end_time: Option<DateTime<Utc>>,
 }
 
 impl GetFundingRates {
