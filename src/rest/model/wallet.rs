@@ -19,11 +19,9 @@ pub struct WalletBalance {
     pub coin: String,
     pub free: Decimal,
     pub total: Decimal,
+    pub usd_value: Option<Decimal>,
     pub spot_borrow: Decimal,
     pub available_without_borrow: Decimal,
-    /// As of 2021-05-12, usdValue is not documented on
-    /// https://docs.ftx.com/#get-balances, but it is returned.
-    pub usd_value: Option<Decimal>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
