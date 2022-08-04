@@ -5,8 +5,9 @@ use http::Method;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
+
 pub struct GetFills {
+    #[serde(rename = "camelCase")]
     pub market_name: String,
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -18,7 +19,7 @@ pub struct GetFills {
         serialize_with = "super::serialize_as_timestamp"
     )]
     pub end_time: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "camelCase")]
     pub order_id: Option<Id>,
 }
 
