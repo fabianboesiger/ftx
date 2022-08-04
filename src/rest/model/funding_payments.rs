@@ -17,7 +17,6 @@ pub struct FundingPayment {
 type FundingPayments = Vec<FundingPayment>;
 
 #[derive(Debug, Clone, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct GetFundingPayments {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub future: Option<String>,
