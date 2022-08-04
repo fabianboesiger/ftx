@@ -1,7 +1,6 @@
 mod account;
 mod common;
 mod fills;
-mod funding_payments;
 mod futures;
 mod markets;
 mod orders;
@@ -13,7 +12,6 @@ mod wallet;
 pub use self::account::*;
 pub use self::common::*;
 pub use self::fills::*;
-pub use self::funding_payments::*;
 pub use self::futures::*;
 pub use self::markets::*;
 pub use self::orders::*;
