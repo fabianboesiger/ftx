@@ -165,6 +165,20 @@ async fn get_fills() {
 }
 
 #[tokio::test]
+#[ignore]
+async fn get_funding_payments() {
+    init_api()
+        .await
+        .request(GetFundingPayments {
+            start_time: None,
+            end_time: None,
+            future: Some("ETH-PERP".into()),
+        })
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
 async fn get_futures() {
     init_unauthenticated_api()
         .await
