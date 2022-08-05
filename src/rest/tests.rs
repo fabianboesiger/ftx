@@ -32,7 +32,7 @@ fn read_only<T>(result: Result<T>) {
 }
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn get_subaccounts() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -42,7 +42,7 @@ async fn get_subaccounts() {
 }
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn create_subaccount() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -52,7 +52,7 @@ async fn create_subaccount() {
 }
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn change_subaccount_name() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -62,7 +62,7 @@ async fn change_subaccount_name() {
 }
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn delete_subaccount() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -72,7 +72,7 @@ async fn delete_subaccount() {
 }
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn get_subaccount_balances() {
     let rest = init_api().await;
     // Test using given subaccount otherwise use "Bot"
@@ -86,7 +86,7 @@ async fn get_subaccount_balances() {
 }
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn transfer_between_subaccounts() {
     let rest = init_api().await;
     if rest.subaccount.is_none() {
@@ -157,7 +157,7 @@ async fn get_historical_prices() {
 }
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn get_fills() {
     init_api()
         .await
@@ -167,7 +167,7 @@ async fn get_fills() {
 }
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn get_funding_payments() {
     init_api()
         .await
@@ -287,7 +287,7 @@ async fn get_coins() {
 
 /*
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn market_order() {
     // A live test that buys 1 1INCH-PERP
 
@@ -310,7 +310,7 @@ async fn market_order() {
 */
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn place_modify_cancel_orders() {
     manipulate_orders().await;
 }
@@ -413,7 +413,7 @@ pub async fn manipulate_orders() {
 }
 
 #[tokio::test]
-#[ignore]
+// #[ignore]
 async fn get_open_orders() {
     init_api()
         .await
