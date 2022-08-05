@@ -243,7 +243,6 @@ impl Request for GetOrderByClientId {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-#[serde(rename_all = "camelCase")]
 pub struct GetOrderHistory {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub market: Option<String>,
