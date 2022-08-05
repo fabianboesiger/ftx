@@ -7,21 +7,21 @@ pub enum Endpoint {
 }
 
 impl Endpoint {
-    pub fn ws(&self) -> &'static str {
+    pub const fn ws(&self) -> &'static str {
         match self {
             Endpoint::Com => "wss://ftx.com/ws",
             Endpoint::Us => "wss://ftx.us/ws",
         }
     }
 
-    pub fn rest(&self) -> &'static str {
+    pub const fn rest(&self) -> &'static str {
         match self {
             Endpoint::Com => "https://ftx.com/api",
             Endpoint::Us => "https://ftx.us/api",
         }
     }
 
-    pub fn header_prefix(&self) -> &'static str {
+    pub const fn header_prefix(&self) -> &'static str {
         match self {
             Endpoint::Com => "FTX",
             Endpoint::Us => "FTXUS",

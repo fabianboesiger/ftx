@@ -11,6 +11,7 @@ repository = "https://github.com/fabianboesiger/ftx"
 version = "0.5.0"
 
 [dependencies]
+anyhow = "1.0.59"
 chrono = {version = "^0.4.19", features = ["serde"]}
 crc32fast = "^1.2.1"
 dotenv = "^0.15.0"

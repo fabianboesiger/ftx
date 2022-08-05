@@ -1,5 +1,6 @@
 use super::*;
 use crate::rest::{OrderStatus, Rest};
+use anyhow::{anyhow, Result};
 use dotenv::dotenv;
 use rust_decimal_macros::dec;
 
@@ -17,10 +18,10 @@ async fn init_unauthenticated_ws() -> Ws {
 }
 
 #[allow(dead_code)]
-async fn init_api() -> Rest {
-    dotenv().ok();
+async fn init_api() -> Result<Rest> {
+    dotenv()?;
 
-    Rest::new(Options::from_env())
+    Ok(Rest::new(Options::from_env()))
 }
 
 #[tokio::test]

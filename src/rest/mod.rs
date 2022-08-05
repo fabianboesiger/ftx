@@ -89,10 +89,7 @@ impl Rest {
         }
         let url = format!("{}{}", self.endpoint.rest(), path);
 
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis();
+        let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
 
         log::trace!("timestamp: {}", timestamp);
         log::trace!("method: {}", R::METHOD);
@@ -105,33 +102,27 @@ impl Rest {
             HeaderValue::from_static("application/json"),
         );
         headers.insert(
-            HeaderName::from_str(&format!("{}-TS", self.endpoint.header_prefix())).unwrap(),
-            HeaderValue::from_str(&format!("{}", timestamp)).unwrap(),
+            HeaderName::from_str(&format!("{}-TS", self.endpoint.header_prefix()))?,
+            HeaderValue::from_str(&format!("{}", timestamp))?,
         );
 
         if R::AUTH {
-            let secret = match self.secret {
-                Some(ref secret) => &**secret,
-                None => {
-                    return Err(Error::NoSecretConfigured);
-                }
-            };
+            let secret = self.secret.as_ref().ok_or(Error::NoSecretConfigured)?;
 
             let sign_payload = format!("{}{}/api{}{}", timestamp, R::METHOD, path, body);
 
             let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
             let sign = hex::encode(sign);
             headers.insert(
-                HeaderName::from_str(&format!("{}-SIGN", self.endpoint.header_prefix())).unwrap(),
-                HeaderValue::from_str(&sign).unwrap(),
+                HeaderName::from_str(&format!("{}-SIGN", self.endpoint.header_prefix()))?,
+                HeaderValue::from_str(&sign)?,
             );
         }
 
         if let Some(subaccount) = &self.subaccount {
             headers.insert(
-                HeaderName::from_str(&format!("{}-SUBACCOUNT", self.endpoint.header_prefix()))
-                    .unwrap(),
-                HeaderValue::from_str(subaccount).unwrap(),
+                HeaderName::from_str(&format!("{}-SUBACCOUNT", self.endpoint.header_prefix()))?,
+                HeaderValue::from_str(subaccount)?,
             );
         }
 
@@ -149,8 +140,8 @@ impl Rest {
 
         use std::fs::File;
         use std::io::prelude::*;
-        let mut file = File::create("response.json").unwrap();
-        file.write_all(response.as_bytes()).unwrap();
+        let mut file = File::create("response.json")?;
+        file.write_all(response.as_bytes())?;
 
         panic!("{:#?}", response);
         */
@@ -165,17 +156,26 @@ impl Rest {
             .bytes()
             .await?;
 
-        match from_reader(&*body) {
-            Ok(SuccessResponse { result, .. }) => Ok(result),
+        from_reader(&*body)
+            .map(|res: SuccessResponse<R::Response>| res.result)
+            .map_err(|_| {
+                from_reader(&*body)
+                    .map(|res: ErrorResponse| Error::Api(res.error))
+                    .unwrap_or_else(Into::into)
+            })
+            .map_err(Into::into)
 
-            Err(e) => {
-                if let Ok(ErrorResponse { error, .. }) = from_reader(&*body) {
-                    Err(Error::Api(error))
-                } else {
-                    Err(e.into())
-                }
-            }
-        }
+        // match from_reader(&*body) {
+        //     Ok(SuccessResponse { result, .. }) => Ok(result),
+
+        //     Err(e) => {
+        //         if let Ok(ErrorResponse { error, .. }) = from_reader(&*body) {
+        //             Err(Error::Api(error))
+        //         } else {
+        //             Err(e.into())
+        //         }
+        //     }
+        // }
     }
 
     #[deprecated=deprecate_msg!()]
@@ -414,6 +414,17 @@ impl Rest {
         post_only: Option<bool>,
         client_id: Option<&str>,
     ) -> Result<<PlaceOrder as Request>::Response> {
+        // Limit orders should have price specified
+        if matches!(r#type, OrderType::Limit) && price.is_none() {
+            return Err(Error::PlacingLimitOrderRequiresPrice.into());
+        }
+
+        // if let OrderType::Limit = r#type {
+        //     if price.is_none() {
+        //         return Err(Error::PlacingLimitOrderRequiresPrice);
+        //     }
+        // }
+
         let req = PlaceOrder {
             market: market.to_string(),
             side,
@@ -426,13 +437,6 @@ impl Rest {
             client_id: client_id.map(ToString::to_string),
             reject_on_price_band: false,
         };
-
-        // Limit orders should have price specified
-        if let OrderType::Limit = r#type {
-            if price.is_none() {
-                return Err(Error::PlacingLimitOrderRequiresPrice);
-            }
-        }
 
         self.request(req).await
     }
