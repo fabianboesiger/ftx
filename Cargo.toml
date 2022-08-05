@@ -12,7 +12,9 @@ version = "0.5.0"
 
 [dependencies]
 anyhow = "1.0.59"
+boolinator = "2.4.0"
 chrono = {version = "^0.4.19", features = ["serde"]}
+const_format = "0.2.26"
 crc32fast = "^1.2.1"
 dotenv = "^0.15.0"
 futures = {version = "0.3", optional = true}

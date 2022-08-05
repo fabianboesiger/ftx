@@ -1,10 +1,18 @@
 use std::env::var;
 
+use const_format::concatcp;
+
 #[derive(Debug, Clone)]
 pub enum Endpoint {
     Com,
     Us,
 }
+
+const ENDPOINT_COM: &str = "https://ftx.com/api";
+const ENDPOINT_US: &str = "https://ftx.us/api";
+
+const ENDPOINT_HDR_PREFIX_COM: &str = "FTX-";
+const ENDPOINT_HDR_PREFIX_US: &str = "FTXUS-";
 
 impl Endpoint {
     pub const fn ws(&self) -> &'static str {
@@ -16,8 +24,8 @@ impl Endpoint {
 
     pub const fn rest(&self) -> &'static str {
         match self {
-            Endpoint::Com => "https://ftx.com/api",
-            Endpoint::Us => "https://ftx.us/api",
+            Endpoint::Com => ENDPOINT_COM,
+            Endpoint::Us => ENDPOINT_US,
         }
     }
 
@@ -25,6 +33,34 @@ impl Endpoint {
         match self {
             Endpoint::Com => "FTX",
             Endpoint::Us => "FTXUS",
+        }
+    }
+
+    pub const fn timestamp_header(&self) -> &'static str {
+        match self {
+            Endpoint::Com => concatcp!(ENDPOINT_HDR_PREFIX_COM, "TS"),
+            Endpoint::Us => concatcp!(ENDPOINT_HDR_PREFIX_US, "TS"),
+        }
+    }
+
+    pub const fn sign_header(&self) -> &'static str {
+        match self {
+            Endpoint::Com => concatcp!(ENDPOINT_HDR_PREFIX_COM, "SIGN"),
+            Endpoint::Us => concatcp!(ENDPOINT_HDR_PREFIX_US, "SIGN"),
+        }
+    }
+
+    pub const fn subaccount_header(&self) -> &'static str {
+        match self {
+            Endpoint::Com => concatcp!(ENDPOINT_HDR_PREFIX_COM, "SUBACCOUNT"),
+            Endpoint::Us => concatcp!(ENDPOINT_HDR_PREFIX_US, "SUBACCOUNT"),
+        }
+    }
+
+    pub const fn key_header(&self) -> &'static str {
+        match self {
+            Endpoint::Com => concatcp!(ENDPOINT_HDR_PREFIX_COM, "KEY"),
+            Endpoint::Us => concatcp!(ENDPOINT_HDR_PREFIX_US, "KEY"),
         }
     }
 }
