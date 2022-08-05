@@ -127,6 +127,7 @@ impl Ws {
         let channels = self.channels.clone();
         self.unsubscribe(&channels).await?;
 
+        // TODO: the .retain() in unsubscrube() should take care of this?
         self.channels.clear();
 
         Ok(())

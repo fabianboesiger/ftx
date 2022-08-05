@@ -113,8 +113,8 @@ impl Orderbook {
     pub fn new(symbol: Symbol) -> Orderbook {
         Orderbook {
             symbol,
-            bids: BTreeMap::new(),
-            asks: BTreeMap::new(),
+            bids: Default::default(),
+            asks: Default::default(),
         }
     }
 
@@ -194,13 +194,13 @@ impl Orderbook {
     }
 
     /// Returns the price of the best bid
-    pub fn bid_price(&self) -> Option<Decimal> {
-        self.bids.keys().rev().next().cloned()
+    pub fn bid_price(&self) -> Option<&Decimal> {
+        self.bids.keys().rev().next()
     }
 
     /// Returns the price of the best ask
-    pub fn ask_price(&self) -> Option<Decimal> {
-        self.asks.keys().next().cloned()
+    pub fn ask_price(&self) -> Option<&Decimal> {
+        self.asks.keys().next()
     }
 
     /// Returns the midpoint between the best bid price and best ask price.
@@ -211,23 +211,23 @@ impl Orderbook {
 
     /// Returns the price and quantity of the best bid
     /// (bid_price, bid_quantity)
-    pub fn best_bid(&self) -> Option<(Decimal, Decimal)> {
+    pub fn best_bid(&self) -> Option<(&Decimal, &Decimal)> {
         let (price, quantity) = self.bids.iter().rev().next()?;
 
-        Some((*price, *quantity))
+        Some((price, quantity))
     }
 
     /// Returns the price and quantity of the best ask
     /// (ask_price, ask_quantity)
-    pub fn best_ask(&self) -> Option<(Decimal, Decimal)> {
+    pub fn best_ask(&self) -> Option<(&Decimal, &Decimal)> {
         let (price, quantity) = self.asks.iter().next()?;
 
-        Some((*price, *quantity))
+        Some((price, quantity))
     }
 
     /// Returns the price and quantity of the best bid and best ask
     /// ((bid_price, bid_quantity), (ask_price, ask_quantity))
-    pub fn best_bid_and_ask(&self) -> Option<((Decimal, Decimal), (Decimal, Decimal))> {
+    pub fn best_bid_and_ask(&self) -> Option<((&Decimal, &Decimal), (&Decimal, &Decimal))> {
         Some((self.best_bid()?, self.best_ask()?))
     }
 

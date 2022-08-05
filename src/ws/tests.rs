@@ -157,14 +157,14 @@ async fn order_book_helpers() {
     ob.bids.insert(dec!(3), dec!(10));
     ob.bids.insert(dec!(2), dec!(15));
 
-    assert_eq!(ob.bid_price().unwrap(), dec!(4));
-    assert_eq!(ob.ask_price().unwrap(), dec!(5));
+    assert_eq!(ob.bid_price().unwrap(), &dec!(4));
+    assert_eq!(ob.ask_price().unwrap(), &dec!(5));
     assert_eq!(ob.mid_price().unwrap(), dec!(4.5));
-    assert_eq!(ob.best_bid().unwrap(), (dec!(4), dec!(5)));
-    assert_eq!(ob.best_ask().unwrap(), (dec!(5), dec!(20)));
+    assert_eq!(ob.best_bid().unwrap(), (&dec!(4), &dec!(5)));
+    assert_eq!(ob.best_ask().unwrap(), (&dec!(5), &dec!(20)));
     assert_eq!(
         ob.best_bid_and_ask().unwrap(),
-        ((dec!(4), dec!(5)), (dec!(5), dec!(20)))
+        ((&dec!(4), &dec!(5)), (&dec!(5), &dec!(20)))
     );
 
     assert_eq!(ob.quote(Side::Buy, dec!(15)).unwrap(), dec!(5));
