@@ -8,9 +8,6 @@ pub enum Endpoint {
     Us,
 }
 
-const ENDPOINT_COM: &str = "https://ftx.com/api";
-const ENDPOINT_US: &str = "https://ftx.us/api";
-
 const ENDPOINT_HDR_PREFIX_COM: &str = "FTX-";
 const ENDPOINT_HDR_PREFIX_US: &str = "FTXUS-";
 
@@ -24,8 +21,8 @@ impl Endpoint {
 
     pub const fn rest(&self) -> &'static str {
         match self {
-            Endpoint::Com => ENDPOINT_COM,
-            Endpoint::Us => ENDPOINT_US,
+            Endpoint::Com => "https://ftx.com/api",
+            Endpoint::Us => "https://ftx.us/api",
         }
     }
 
