@@ -29,7 +29,7 @@ async fn subscribe_unsubscribe_trades() {
     let mut ws = init_unauthenticated_ws().await;
 
     // Channels: BTC, ETH
-    ws.subscribe(vec![
+    ws.subscribe(&[
         Channel::Trades("BTC-PERP".to_owned()),
         Channel::Trades("ETH-PERP".to_owned()),
     ])
@@ -37,12 +37,12 @@ async fn subscribe_unsubscribe_trades() {
     .expect("Subscribe failed");
 
     // Channels: BTC
-    ws.unsubscribe(vec![Channel::Trades("ETH-PERP".to_owned())])
+    ws.unsubscribe(&[Channel::Trades("ETH-PERP".to_owned())])
         .await
         .expect("Unsubscribe failed");
 
     // Channels: BTC, LTC
-    ws.subscribe(vec![Channel::Trades("LTC-PERP".to_owned())])
+    ws.subscribe(&[Channel::Trades("LTC-PERP".to_owned())])
         .await
         .expect("Subscribe failed");
 
@@ -54,7 +54,7 @@ async fn subscribe_unsubscribe_trades() {
 async fn trades() {
     let mut ws = init_unauthenticated_ws().await;
 
-    ws.subscribe(vec![Channel::Trades("BTC-PERP".to_owned())])
+    ws.subscribe(&[Channel::Trades("BTC-PERP".to_owned())])
         .await
         .expect("Subscription failed.");
 
@@ -71,7 +71,7 @@ async fn order_book_update() {
     let mut ws = init_unauthenticated_ws().await;
 
     let symbol: Symbol = String::from("BTC-PERP");
-    ws.subscribe(vec![Channel::Orderbook(symbol.to_owned())])
+    ws.subscribe(&[Channel::Orderbook(symbol.to_owned())])
         .await
         .expect("Subscription failed.");
 
@@ -210,7 +210,7 @@ async fn order_book_checksum() {
     for symbol in symbols {
         let mut ws = init_unauthenticated_ws().await;
 
-        ws.subscribe(vec![Channel::Orderbook(symbol.to_string())])
+        ws.subscribe(&[Channel::Orderbook(symbol.to_string())])
             .await
             .expect("Subscription failed.");
 
@@ -244,7 +244,7 @@ async fn order_book_checksum() {
 async fn fills() {
     let mut ws = init_authenticated_ws().await;
 
-    ws.subscribe(vec![Channel::Fills])
+    ws.subscribe(&[Channel::Fills])
         .await
         .expect("Subscription failed.");
 
@@ -279,12 +279,12 @@ async fn subscribe_authenticated_updates_on_unauthenticated_channel() {
     //     Trying to subscribe to the FILL or ORDER channels requires authentification
     //     and has to fail on an unauthenticated socket
     let mut ws = init_unauthenticated_ws().await;
-    let mut result = ws.subscribe(vec![Channel::Fills]).await;
+    let mut result = ws.subscribe(&[Channel::Fills]).await;
     if let Err(Error::SocketNotAuthenticated) = result {
     } else {
         panic!("Should not be able to subscribe to FILL-updates on an unauthenticated websocket")
     }
-    result = ws.subscribe(vec![Channel::Orders]).await;
+    result = ws.subscribe(&[Channel::Orders]).await;
     if let Err(Error::SocketNotAuthenticated) = result {
     } else {
         panic!("Should not be able to subscribe to ORDER-updates on an unauthenticated websocket")
@@ -296,7 +296,7 @@ async fn subscribe_authenticated_updates_on_unauthenticated_channel() {
 async fn orders() {
     let mut ws = init_authenticated_ws().await;
 
-    ws.subscribe(vec![Channel::Orders])
+    ws.subscribe(&[Channel::Orders])
         .await
         .expect("Subscription failed.");
 

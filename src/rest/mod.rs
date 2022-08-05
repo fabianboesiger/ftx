@@ -17,7 +17,6 @@ use reqwest::{
     Client, ClientBuilder, Method,
 };
 use rust_decimal::prelude::*;
-use serde_json::{from_reader, to_string};
 use std::{
     ops::Not,
     time::{SystemTime, UNIX_EPOCH},
@@ -81,7 +80,7 @@ impl Rest {
         let params = matches!(R::METHOD, Method::GET).as_some(serde_qs::to_string(&req)?);
         let body = matches!(R::METHOD, Method::GET)
             .not()
-            .as_some(to_string(&req)?);
+            .as_some(serde_json::to_string(&req)?);
 
         let mut path = req.path().into_owned();
         if let Some(params) = params {
@@ -149,11 +148,11 @@ impl Rest {
 
         let resp_body = builder.send().await?.bytes().await?;
 
-        from_reader(&*resp_body)
+        serde_json::from_reader(&*resp_body)
             .map(|res: SuccessResponse<R::Response>| res.result)
             .map_err(|_| {
                 // try to parse the error response
-                from_reader(&*resp_body)
+                serde_json::from_reader(&*resp_body)
                     .map(|res: ErrorResponse| Error::Api(res.error))
                     // otherwise return the raw response
                     .unwrap_or_else(Into::into)
