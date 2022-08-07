@@ -93,12 +93,12 @@ async fn order_book_update() {
             Ok((_, Data::OrderbookData(data))) if data.action == OrderbookAction::Update => {
                 // Check that removed orders are in the orderbook
                 for bid in &data.bids {
-                    if bid.1 == dec!(0) {
+                    if bid.1.is_zero() {
                         assert!(orderbook.bids.contains_key(&bid.0));
                     }
                 }
                 for ask in &data.asks {
-                    if ask.1 == dec!(0) {
+                    if ask.1.is_zero() {
                         assert!(orderbook.asks.contains_key(&ask.0));
                     }
                 }
@@ -110,14 +110,14 @@ async fn order_book_update() {
                 // Check that removed orders are no longer in the orderbook
                 // Check that inserted orders have been updated correctly
                 for bid in &data.bids {
-                    if bid.1 == dec!(0) {
+                    if bid.1.is_zero() {
                         assert!(!orderbook.bids.contains_key(&bid.0));
                     } else {
                         assert_eq!(orderbook.bids.get(&bid.0), Some(&bid.1));
                     }
                 }
                 for ask in &data.asks {
-                    if ask.1 == dec!(0) {
+                    if ask.1.is_zero() {
                         assert!(!orderbook.asks.contains_key(&ask.0));
                     } else {
                         assert_eq!(orderbook.asks.get(&ask.0), Some(&ask.1));

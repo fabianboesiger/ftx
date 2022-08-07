@@ -123,8 +123,8 @@ impl Orderbook {
         self.asks.extend(data.asks.iter().cloned());
 
         if data.action == OrderbookAction::Update {
-            self.bids.retain(|_k, v| v != &dec!(0));
-            self.asks.retain(|_k, v| v != &dec!(0));
+            self.bids.retain(|_k, v| v.is_zero().not());
+            self.asks.retain(|_k, v| v.is_zero().not());
         }
     }
 
@@ -265,7 +265,7 @@ impl Orderbook {
         let mut fills: Vec<(Decimal, Decimal)> = Vec::new(); // (price, quantity)
         let mut remaining = quantity;
 
-        while remaining > dec!(0) {
+        while remaining.is_zero().not() && remaining.is_sign_positive() {
             let (price, quantity) = match side {
                 Side::Buy => asks_iter.next()?,
                 Side::Sell => bids_iter.next()?,
