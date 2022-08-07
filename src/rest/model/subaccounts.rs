@@ -161,6 +161,7 @@ pub struct TransferBetweenSubaccounts {
     pub destination: String,
 }
 
+// TODO: should this return a Result<> since it can fail?
 impl TransferBetweenSubaccounts {
     pub fn new<S>(coin: &str, size: S, source: &str, destination: &str) -> Self
     where

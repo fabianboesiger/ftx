@@ -2,7 +2,7 @@ use crate::ws::Channel;
 use thiserror::Error;
 use tokio_tungstenite::tungstenite;
 
-pub type Result<T> = std::result::Result<T, Error>;
+pub type Result<T> = anyhow::Result<T>;
 
 #[derive(Debug, Error)]
 pub enum Error {

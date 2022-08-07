@@ -40,10 +40,7 @@ impl Ws {
     pub async fn connect(options: Options) -> Result<Self> {
         let (mut stream, _) = connect_async(options.endpoint.ws()).await?;
         let is_authenticated = if let (Some(key), Some(secret)) = (options.key, options.secret) {
-            let timestamp = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_millis();
+            let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
             let sign_payload = format!("{}websocket_login", timestamp);
             let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
             let sign = hex::encode(sign);
@@ -95,7 +92,7 @@ impl Ws {
             // Subscribing to fills or orders requires us to be authenticated via an API key
             if (channel == &Channel::Fills || channel == &Channel::Orders) && !self.is_authenticated
             {
-                return Err(Error::SocketNotAuthenticated);
+                return Err(Error::SocketNotAuthenticated.into());
             }
             self.channels.push(channel.clone());
         }
@@ -110,7 +107,7 @@ impl Ws {
         // Check that the specified channels match an existing one
         for channel in channels.iter() {
             if !self.channels.contains(channel) {
-                return Err(Error::NotSubscribedToThisChannel(channel.clone()));
+                return Err(Error::NotSubscribedToThisChannel(channel.clone()).into());
             }
         }
 
@@ -189,7 +186,7 @@ impl Ws {
                 }
             }
 
-            return Err(Error::MissingSubscriptionConfirmation);
+            return Err(Error::MissingSubscriptionConfirmation.into());
         }
 
         Ok(())
