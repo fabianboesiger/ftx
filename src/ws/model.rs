@@ -137,72 +137,49 @@ impl Orderbook {
         let input = (0..100)
             .into_iter()
             .zip(self.bids.iter().rev().zip(self.asks.iter()))
-            .map(|(_, ((bid_price, bid_size), (ask_price, ask_size)))| {
+            .map(|(_, ((b_p, b_s), (a_p, a_s)))| {
                 // There may be a cleaner way to do this, but this avoids building more `String`s than necessary
                 match (
-                    _needs_padding(bid_price),
-                    _needs_padding(bid_size),
-                    _needs_padding(ask_price),
-                    _needs_padding(ask_size),
+                    _needs_padding(b_p),
+                    _needs_padding(b_s),
+                    _needs_padding(a_p),
+                    _needs_padding(a_s),
                 ) {
-                    (true, true, true, true) => format!(
-                        "{:.1}:{:.1}:{:.1}:{:.1}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
-                    (true, true, true, false) => format!(
-                        "{:.1}:{:.1}:{:.1}:{}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
-                    (true, true, false, true) => format!(
-                        "{:.1}:{:.1}:{}:{:.1}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
-                    (true, true, false, false) => format!(
-                        "{:.1}:{:.1}:{}:{}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
-                    (true, false, true, true) => format!(
-                        "{:.1}:{}:{:.1}:{:.1}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
-                    (true, false, true, false) => format!(
-                        "{:.1}:{}:{:.1}:{}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
-                    (true, false, false, true) => format!(
-                        "{:.1}:{}:{}:{:.1}",
-                        bid_price, bid_size, bid_price, ask_size
-                    ),
+                    (true, true, true, true) => {
+                        format!("{:.1}:{:.1}:{:.1}:{:.1}", b_p, b_s, a_p, a_s)
+                    }
+                    (true, true, true, false) => {
+                        format!("{:.1}:{:.1}:{:.1}:{}", b_p, b_s, a_p, a_s)
+                    }
+                    (true, true, false, true) => {
+                        format!("{:.1}:{:.1}:{}:{:.1}", b_p, b_s, a_p, a_s)
+                    }
+                    (true, true, false, false) => format!("{:.1}:{:.1}:{}:{}", b_p, b_s, a_p, a_s),
+                    (true, false, true, true) => {
+                        format!("{:.1}:{}:{:.1}:{:.1}", b_p, b_s, a_p, a_s)
+                    }
+                    (true, false, true, false) => format!("{:.1}:{}:{:.1}:{}", b_p, b_s, a_p, a_s),
+                    (true, false, false, true) => format!("{:.1}:{}:{}:{:.1}", b_p, b_s, b_p, a_s),
                     (true, false, false, false) => {
-                        format!("{:.1}:{}:{}:{}", bid_price, bid_size, ask_price, ask_size)
+                        format!("{:.1}:{}:{}:{}", b_p, b_s, a_p, a_s)
                     }
-                    (false, true, true, true) => format!(
-                        "{}:{:.1}:{:.1}:{:.1}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
-                    (false, true, true, false) => format!(
-                        "{}:{:.1}:{:.1}:{}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
-                    (false, true, false, true) => format!(
-                        "{}:{:.1}:{}:{:.1}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
+                    (false, true, true, true) => {
+                        format!("{}:{:.1}:{:.1}:{:.1}", b_p, b_s, a_p, a_s)
+                    }
+                    (false, true, true, false) => format!("{}:{:.1}:{:.1}:{}", b_p, b_s, a_p, a_s),
+                    (false, true, false, true) => format!("{}:{:.1}:{}:{:.1}", b_p, b_s, a_p, a_s),
                     (false, true, false, false) => {
-                        format!("{}:{:.1}:{}:{}", bid_price, bid_size, ask_price, ask_size)
+                        format!("{}:{:.1}:{}:{}", b_p, b_s, a_p, a_s)
                     }
-                    (false, false, true, true) => format!(
-                        "{}:{}:{:.1}:{:.1}",
-                        bid_price, bid_size, ask_price, ask_size
-                    ),
+                    (false, false, true, true) => format!("{}:{}:{:.1}:{:.1}", b_p, b_s, a_p, a_s),
                     (false, false, true, false) => {
-                        format!("{}:{}:{:.1}:{}", bid_price, bid_size, ask_price, ask_size)
+                        format!("{}:{}:{:.1}:{}", b_p, b_s, a_p, a_s)
                     }
                     (false, false, false, true) => {
-                        format!("{}:{}:{}:{:.1}", bid_price, bid_size, ask_price, ask_size)
+                        format!("{}:{}:{}:{:.1}", b_p, b_s, a_p, a_s)
                     }
                     (false, false, false, false) => {
-                        format!("{}:{}:{}:{}", bid_price, bid_size, ask_price, ask_size)
+                        format!("{}:{}:{}:{}", b_p, b_s, a_p, a_s)
                     }
                 }
             })
@@ -221,7 +198,7 @@ impl Orderbook {
 
     /// Returns the price of the best bid
     pub fn bid_price(&self) -> Option<&Decimal> {
-        self.bids.keys().rev().next()
+        self.bids.keys().next_back()
     }
 
     /// Returns the price of the best ask
@@ -238,7 +215,7 @@ impl Orderbook {
     /// Returns the price and quantity of the best bid
     /// (bid_price, bid_quantity)
     pub fn best_bid(&self) -> Option<(&Decimal, &Decimal)> {
-        self.bids.iter().rev().next()
+        self.bids.iter().next_back()
     }
 
     /// Returns the price and quantity of the best ask
