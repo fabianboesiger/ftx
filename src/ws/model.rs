@@ -119,19 +119,24 @@ impl Orderbook {
     }
 
     pub fn update(&mut self, data: &OrderbookData) {
-        self.bids.extend(data.bids.iter().cloned());
-        self.asks.extend(data.asks.iter().cloned());
-
-        if data.action == OrderbookAction::Update {
-            self.bids.retain(|_k, v| v.is_zero().not());
-            self.asks.retain(|_k, v| v.is_zero().not());
-        }
+        self.bids.extend(
+            data.bids
+                .iter()
+                .filter(|(_k, v)| v.is_zero().not())
+                .cloned(),
+        );
+        self.asks.extend(
+            data.asks
+                .iter()
+                .filter(|(_k, v)| v.is_zero().not())
+                .cloned(),
+        );
     }
 
     pub fn verify_checksum(&self, checksum: Checksum) -> bool {
         /// padding a 0 if the Decimal is a whole number
         fn _needs_padding(value: &Decimal) -> bool {
-            value.fract() == dec!(0)
+            value.fract().is_zero()
         }
 
         let input = (0..100)
@@ -159,7 +164,7 @@ impl Orderbook {
                         format!("{:.1}:{}:{:.1}:{:.1}", b_p, b_s, a_p, a_s)
                     }
                     (true, false, true, false) => format!("{:.1}:{}:{:.1}:{}", b_p, b_s, a_p, a_s),
-                    (true, false, false, true) => format!("{:.1}:{}:{}:{:.1}", b_p, b_s, b_p, a_s),
+                    (true, false, false, true) => format!("{:.1}:{}:{}:{:.1}", b_p, b_s, a_p, a_s),
                     (true, false, false, false) => {
                         format!("{:.1}:{}:{}:{}", b_p, b_s, a_p, a_s)
                     }
