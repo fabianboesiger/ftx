@@ -34,24 +34,24 @@ pub struct OrderInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetOpenOrders {
+pub struct GetOpenOrders<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub market: Option<String>,
+    pub market: Option<&'a str>,
 }
 
-impl GetOpenOrders {
+impl<'a> GetOpenOrders<'a> {
     pub fn all_market() -> Self {
         Self { market: None }
     }
 
-    pub fn with_market(market: &str) -> Self {
+    pub fn with_market(market: &'a str) -> Self {
         Self {
-            market: Some(market.to_string()),
+            market: Some(market),
         }
     }
 }
 
-impl Request for GetOpenOrders {
+impl Request for GetOpenOrders<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/orders";
     const AUTH: bool = true;
@@ -61,8 +61,8 @@ impl Request for GetOpenOrders {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct PlaceOrder {
-    pub market: String,
+pub struct PlaceOrder<'a> {
+    pub market: &'a str,
     pub side: Side,
     // Price should be serialized even if it is None, otherwise
     // market orders will break; test with rest::tests::market_order
@@ -73,11 +73,11 @@ pub struct PlaceOrder {
     pub ioc: bool,
     pub post_only: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub client_id: Option<String>,
+    pub client_id: Option<&'a str>,
     pub reject_on_price_band: bool,
 }
 
-impl Request for PlaceOrder {
+impl Request for PlaceOrder<'_> {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/orders";
     const AUTH: bool = true;
@@ -87,7 +87,7 @@ impl Request for PlaceOrder {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct ModifyOrder {
+pub struct ModifyOrder<'a> {
     #[serde(skip_serializing)]
     pub id: Id,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -95,10 +95,10 @@ pub struct ModifyOrder {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub client_id: Option<String>,
+    pub client_id: Option<&'a str>,
 }
 
-impl Request for ModifyOrder {
+impl Request for ModifyOrder<'_> {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/orders/{}/modify";
     const AUTH: bool = true;
@@ -160,9 +160,9 @@ impl Request for CancelOrder {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct CancelAllOrder {
+pub struct CancelAllOrder<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub market: Option<String>,
+    pub market: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub side: Option<Side>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -171,16 +171,16 @@ pub struct CancelAllOrder {
     pub limit_orders_only: Option<bool>,
 }
 
-impl CancelAllOrder {
-    pub fn with_market(market: &str) -> Self {
+impl<'a> CancelAllOrder<'a> {
+    pub fn with_market(market: &'a str) -> Self {
         Self {
-            market: Some(market.into()),
+            market: Some(market),
             ..Default::default()
         }
     }
 }
 
-impl Request for CancelAllOrder {
+impl Request for CancelAllOrder<'_> {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/orders";
     const AUTH: bool = true;
@@ -190,20 +190,18 @@ impl Request for CancelAllOrder {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct CancelOrderByClientId {
+pub struct CancelOrderByClientId<'a> {
     #[serde(skip_serializing)]
-    pub client_id: String,
+    pub client_id: &'a str,
 }
 
-impl CancelOrderByClientId {
-    pub fn new(client_id: &str) -> Self {
-        Self {
-            client_id: client_id.into(),
-        }
+impl<'a> CancelOrderByClientId<'a> {
+    pub fn new(client_id: &'a str) -> Self {
+        Self { client_id }
     }
 }
 
-impl Request for CancelOrderByClientId {
+impl Request for CancelOrderByClientId<'_> {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/orders/by_client_id/{}";
     const AUTH: bool = true;
@@ -217,20 +215,18 @@ impl Request for CancelOrderByClientId {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetOrderByClientId {
+pub struct GetOrderByClientId<'a> {
     #[serde(skip_serializing)]
-    pub client_id: String,
+    pub client_id: &'a str,
 }
 
-impl GetOrderByClientId {
-    pub fn new(client_id: &str) -> Self {
-        Self {
-            client_id: client_id.into(),
-        }
+impl<'a> GetOrderByClientId<'a> {
+    pub fn new(client_id: &'a str) -> Self {
+        Self { client_id }
     }
 }
 
-impl Request for GetOrderByClientId {
+impl Request for GetOrderByClientId<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/orders/by_client_id/{}";
     const AUTH: bool = true;
@@ -243,9 +239,9 @@ impl Request for GetOrderByClientId {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetOrderHistory {
+pub struct GetOrderHistory<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub market: Option<String>,
+    pub market: Option<&'a str>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub side: Option<Side>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -262,7 +258,7 @@ pub struct GetOrderHistory {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-impl Request for GetOrderHistory {
+impl Request for GetOrderHistory<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/orders/history";
     const AUTH: bool = true;

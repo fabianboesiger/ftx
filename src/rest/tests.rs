@@ -148,7 +148,7 @@ async fn get_historical_prices() {
     init_unauthenticated_api()
         .await
         .request(GetHistoricalPrices {
-            market_name: "BTC/USD".into(),
+            market_name: "BTC/USD",
             resolution: 300,
             ..Default::default()
         })
@@ -174,7 +174,7 @@ async fn get_funding_payments() {
         .request(GetFundingPayments {
             start_time: None,
             end_time: None,
-            future: Some("ETH-PERP".into()),
+            future: Some("ETH-PERP"),
         })
         .await
         .unwrap();
@@ -320,8 +320,8 @@ pub async fn manipulate_orders() {
     let api = init_api().await;
     // Testing with ETH since BTC's minimum provide (maker) size is 0.01 BTC,
     // too large for testing purposes
-    let market = String::from("ETH-PERP");
-    let price = api.request(GetMarket::new(&market)).await.unwrap().price;
+    let market = "ETH-PERP";
+    let price = api.request(GetMarket::new(market)).await.unwrap().price;
 
     // Bid size will start at 0.001, which is ETH-PERP's minimum size increment
     let initial_bid_size = dec!(0.001);
@@ -342,7 +342,7 @@ pub async fn manipulate_orders() {
     // Test place order
     let initial_order = api
         .request(PlaceOrder {
-            market: market.clone(),
+            market,
             side: Side::Buy,
             price: Some(initial_bid_price),
             r#type: OrderType::Limit,

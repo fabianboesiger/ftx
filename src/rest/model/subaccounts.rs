@@ -85,19 +85,17 @@ impl Request for ChangeSubaccountName {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct DeleteSubaccount {
-    pub nickname: String,
+pub struct DeleteSubaccount<'a> {
+    pub nickname: &'a str,
 }
 
-impl DeleteSubaccount {
-    pub fn new(nickname: &str) -> Self {
-        Self {
-            nickname: nickname.into(),
-        }
+impl<'a> DeleteSubaccount<'a> {
+    pub fn new(nickname: &'a str) -> Self {
+        Self { nickname }
     }
 }
 
-impl Request for DeleteSubaccount {
+impl Request for DeleteSubaccount<'_> {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/subaccounts";
     const AUTH: bool = true;
@@ -117,20 +115,18 @@ pub struct Balance {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetSubaccountBalances {
+pub struct GetSubaccountBalances<'a> {
     #[serde(skip_serializing)]
-    pub nickname: String,
+    pub nickname: &'a str,
 }
 
-impl GetSubaccountBalances {
-    pub fn new(nickname: &str) -> Self {
-        Self {
-            nickname: nickname.into(),
-        }
+impl<'a> GetSubaccountBalances<'a> {
+    pub fn new(nickname: &'a str) -> Self {
+        Self { nickname }
     }
 }
 
-impl Request for GetSubaccountBalances {
+impl Request for GetSubaccountBalances<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/subaccounts/{}/balances";
     const AUTH: bool = true;
@@ -154,30 +150,30 @@ pub struct Transfer {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct TransferBetweenSubaccounts {
-    pub coin: String,
+pub struct TransferBetweenSubaccounts<'a> {
+    pub coin: &'a str,
     pub size: Decimal,
-    pub source: String,
-    pub destination: String,
+    pub source: &'a str,
+    pub destination: &'a str,
 }
 
 // TODO: should this return a Result<> since it can fail?
-impl TransferBetweenSubaccounts {
-    pub fn new<S>(coin: &str, size: S, source: &str, destination: &str) -> Self
+impl<'a> TransferBetweenSubaccounts<'a> {
+    pub fn new<S>(coin: &'a str, size: S, source: &'a str, destination: &'a str) -> Self
     where
         Decimal: TryFrom<S>,
         <Decimal as TryFrom<S>>::Error: Debug,
     {
         Self {
-            coin: coin.into(),
+            coin,
             size: Decimal::try_from(size).unwrap(),
-            source: source.into(),
-            destination: destination.into(),
+            source,
+            destination,
         }
     }
 }
 
-impl Request for TransferBetweenSubaccounts {
+impl Request for TransferBetweenSubaccounts<'_> {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts/transfer";
     const AUTH: bool = true;

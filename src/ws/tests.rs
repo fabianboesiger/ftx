@@ -1,6 +1,6 @@
 use super::*;
 use crate::rest::{OrderStatus, Rest};
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use dotenv::dotenv;
 use rust_decimal_macros::dec;
 

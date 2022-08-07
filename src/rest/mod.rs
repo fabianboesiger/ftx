@@ -73,10 +73,7 @@ impl Rest {
         }
     }
 
-    pub async fn request<R>(&self, req: R) -> Result<R::Response>
-    where
-        R: Request,
-    {
+    pub async fn request<R: Request>(&self, req: R) -> Result<R::Response> {
         let params = matches!(R::METHOD, Method::GET).as_some(serde_qs::to_string(&req)?);
         let body = matches!(R::METHOD, Method::GET)
             .not()
@@ -233,7 +230,7 @@ impl Rest {
         depth: Option<u32>,
     ) -> Result<<GetOrderBook as Request>::Response> {
         self.request(GetOrderBook {
-            market_name: market_name.into(),
+            market_name,
             depth,
         })
         .await
@@ -248,7 +245,7 @@ impl Rest {
         end_time: Option<DateTime<Utc>>,
     ) -> Result<<GetTrades as Request>::Response> {
         self.request(GetTrades {
-            market_name: market_name.into(),
+            market_name,
             limit,
             start_time,
             end_time,
@@ -266,7 +263,7 @@ impl Rest {
         end_time: Option<DateTime<Utc>>,
     ) -> Result<<GetHistoricalPrices as Request>::Response> {
         self.request(GetHistoricalPrices {
-            market_name: market_name.into(),
+            market_name,
             resolution,
             limit,
             start_time,
@@ -373,7 +370,7 @@ impl Rest {
         end_time: Option<DateTime<Utc>>,
     ) -> Result<<GetOrderHistory as Request>::Response> {
         self.request(GetOrderHistory {
-            market: Some(market.into()),
+            market: Some(market),
             limit,
             start_time,
             end_time,
@@ -408,7 +405,7 @@ impl Rest {
         // }
 
         let req = PlaceOrder {
-            market: market.to_string(),
+            market,
             side,
             price,
             r#type,
@@ -416,7 +413,7 @@ impl Rest {
             reduce_only: reduce_only.unwrap_or_default(),
             ioc: ioc.unwrap_or_default(),
             post_only: post_only.unwrap_or_default(),
-            client_id: client_id.map(ToString::to_string),
+            client_id,
             reject_on_price_band: false,
         };
 
