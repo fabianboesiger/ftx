@@ -7,7 +7,7 @@ use {
 };
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetLendingRates;
+pub struct GetLendingRates {}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

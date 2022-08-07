@@ -280,7 +280,7 @@ impl Rest {
 
     #[deprecated=deprecate_msg!()]
     pub async fn get_account(&self) -> Result<<GetAccount as Request>::Response> {
-        self.request(GetAccount).await
+        self.request(GetAccount {}).await
     }
 
     #[deprecated=deprecate_msg!()]

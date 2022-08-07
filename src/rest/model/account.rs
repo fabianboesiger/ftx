@@ -33,7 +33,7 @@ pub struct Account {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetAccount;
+pub struct GetAccount {}
 
 impl Request for GetAccount {
     const METHOD: Method = Method::GET;
