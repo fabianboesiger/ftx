@@ -31,15 +31,13 @@ impl Request for GetSubaccounts {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct CreateSubaccount {
-    pub nickname: String,
+pub struct CreateSubaccount<'a> {
+    pub nickname: &'a str,
 }
 
-impl CreateSubaccount {
-    pub fn new(nickname: &str) -> Self {
-        Self {
-            nickname: nickname.to_string(),
-        }
+impl<'a> CreateSubaccount<'a> {
+    pub fn new(nickname: &'a str) -> Self {
+        Self { nickname }
     }
 }
 
@@ -51,7 +49,7 @@ pub struct Create {
     pub editable: bool,
 }
 
-impl Request for CreateSubaccount {
+impl Request for CreateSubaccount<'_> {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts";
     const AUTH: bool = true;
@@ -61,21 +59,21 @@ impl Request for CreateSubaccount {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct ChangeSubaccountName {
-    pub nickname: String,
-    pub new_nickname: String,
+pub struct ChangeSubaccountName<'a> {
+    pub nickname: &'a str,
+    pub new_nickname: &'a str,
 }
 
-impl ChangeSubaccountName {
-    pub fn new(nickname: &str, new_nickname: &str) -> Self {
+impl<'a> ChangeSubaccountName<'a> {
+    pub fn new(nickname: &'a str, new_nickname: &'a str) -> Self {
         Self {
-            nickname: nickname.into(),
-            new_nickname: new_nickname.into(),
+            nickname,
+            new_nickname,
         }
     }
 }
 
-impl Request for ChangeSubaccountName {
+impl Request for ChangeSubaccountName<'_> {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/subaccounts/update_name";
     const AUTH: bool = true;

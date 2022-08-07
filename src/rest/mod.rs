@@ -229,11 +229,7 @@ impl Rest {
         market_name: &str,
         depth: Option<u32>,
     ) -> Result<<GetOrderBook as Request>::Response> {
-        self.request(GetOrderBook {
-            market_name,
-            depth,
-        })
-        .await
+        self.request(GetOrderBook { market_name, depth }).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -311,11 +307,7 @@ impl Rest {
         coin: &str,
         method: Option<&str>,
     ) -> Result<<GetWalletDepositAddress as Request>::Response> {
-        self.request(GetWalletDepositAddress {
-            coin: coin.into(),
-            method: method.map(Into::into),
-        })
-        .await
+        self.request(GetWalletDepositAddress { coin, method }).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -398,12 +390,6 @@ impl Rest {
             return Err(Error::PlacingLimitOrderRequiresPrice.into());
         }
 
-        // if let OrderType::Limit = r#type {
-        //     if price.is_none() {
-        //         return Err(Error::PlacingLimitOrderRequiresPrice);
-        //     }
-        // }
-
         let req = PlaceOrder {
             market,
             side,
@@ -435,7 +421,7 @@ impl Rest {
         trail_value: Option<Decimal>,
     ) -> Result<OrderInfo> {
         self.request(PlaceTriggerOrder {
-            market: market.into(),
+            market,
             side,
             size,
             r#type,
@@ -456,7 +442,7 @@ impl Rest {
         size: Option<Decimal>,
     ) -> Result<OrderInfo> {
         self.request(ModifyOrderByClientId {
-            client_id: client_id.into(),
+            client_id,
             price,
             size,
         })
@@ -475,7 +461,7 @@ impl Rest {
             id: order_id,
             price,
             size,
-            client_id: client_id.map(Into::into),
+            client_id,
         })
         .await
     }
@@ -502,7 +488,7 @@ impl Rest {
         limit_orders_only: Option<bool>,
     ) -> Result<<CancelAllOrder as Request>::Response> {
         self.request(CancelAllOrder {
-            market: market.map(Into::into),
+            market,
             side,
             conditional_orders_only,
             limit_orders_only,

@@ -268,8 +268,8 @@ impl Request for GetOrderHistory<'_> {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct PlaceTriggerOrder {
-    pub market: String,
+pub struct PlaceTriggerOrder<'a> {
+    pub market: &'a str,
     pub side: Side,
     pub size: Decimal,
     pub r#type: OrderType,
@@ -284,7 +284,7 @@ pub struct PlaceTriggerOrder {
     pub trail_value: Option<Decimal>,
 }
 
-impl Request for PlaceTriggerOrder {
+impl Request for PlaceTriggerOrder<'_> {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/conditional_orders";
     const AUTH: bool = true;
@@ -294,16 +294,16 @@ impl Request for PlaceTriggerOrder {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct ModifyOrderByClientId {
+pub struct ModifyOrderByClientId<'a> {
     #[serde(skip_serializing)]
-    pub client_id: String,
+    pub client_id: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size: Option<Decimal>,
 }
 
-impl Request for ModifyOrderByClientId {
+impl Request for ModifyOrderByClientId<'_> {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/orders/by_client_id/{}/modify";
     const AUTH: bool = true;
