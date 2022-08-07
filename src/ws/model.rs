@@ -121,14 +121,19 @@ impl Orderbook {
     pub fn update(&mut self, data: &OrderbookData) {
         match data.action {
             OrderbookAction::Partial => {
-                self.bids.clear();
-                self.asks.clear();
-                for bid in &data.bids {
-                    self.bids.insert(bid.0, bid.1);
-                }
-                for ask in &data.asks {
-                    self.asks.insert(ask.0, ask.1);
-                }
+                self.bids = data
+                    .bids
+                    .iter()
+                    .cloned()
+                    .map(|(price, size)| (price, size))
+                    .collect();
+
+                self.asks = data
+                    .asks
+                    .iter()
+                    .cloned()
+                    .map(|(price, size)| (price, size))
+                    .collect();
             }
             OrderbookAction::Update => {
                 for bid in &data.bids {
@@ -149,40 +154,87 @@ impl Orderbook {
         }
     }
 
-    /// Internal helper function that serializes Decimal to String,
-    /// padding a 0 if the Decimal is a whole number
-    fn _pad_0(&self, value: Decimal) -> String {
-        if value.fract() == dec!(0) {
-            format!("{:.1}", value)
-        } else {
-            value.to_string()
-        }
-    }
-
     pub fn verify_checksum(&self, checksum: Checksum) -> bool {
-        let mut input: Vec<String> = Vec::new();
-
-        let mut bids_iter = self.bids.iter().rev();
-        let mut asks_iter = self.asks.iter();
-
-        for _i in 0..100 {
-            let bid = bids_iter.next();
-            let ask = asks_iter.next();
-
-            if let Some(bid) = bid {
-                let bid_price = self._pad_0(*bid.0);
-                let bid_quantity = self._pad_0(*bid.1);
-                input.push(format!("{}:{}", bid_price, bid_quantity));
-            }
-            if let Some(ask) = ask {
-                let ask_price = self._pad_0(*ask.0);
-                let ask_quantity = self._pad_0(*ask.1);
-                input.push(format!("{}:{}", ask_price, ask_quantity));
-            }
+        /// padding a 0 if the Decimal is a whole number
+        fn _needs_padding(value: &Decimal) -> bool {
+            value.fract() == dec!(0)
         }
 
-        let input: String = input.join(":");
-        // println!("{}", input);
+        let input = (0..100)
+            .into_iter()
+            .zip(self.bids.iter().rev().zip(self.asks.iter()))
+            .map(|(_, ((bid_price, bid_size), (ask_price, ask_size)))| {
+                // There may be a cleaner way to do this, but this avoids building more `String`s than necessary
+                match (
+                    _needs_padding(bid_price),
+                    _needs_padding(bid_size),
+                    _needs_padding(ask_price),
+                    _needs_padding(ask_size),
+                ) {
+                    (true, true, true, true) => format!(
+                        "{:.1}:{:.1}:{:.1}:{:.1}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (true, true, true, false) => format!(
+                        "{:.1}:{:.1}:{:.1}:{}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (true, true, false, true) => format!(
+                        "{:.1}:{:.1}:{}:{:.1}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (true, true, false, false) => format!(
+                        "{:.1}:{:.1}:{}:{}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (true, false, true, true) => format!(
+                        "{:.1}:{}:{:.1}:{:.1}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (true, false, true, false) => format!(
+                        "{:.1}:{}:{:.1}:{}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (true, false, false, true) => format!(
+                        "{:.1}:{}:{}:{:.1}",
+                        bid_price, bid_size, bid_price, ask_size
+                    ),
+                    (true, false, false, false) => {
+                        format!("{:.1}:{}:{}:{}", bid_price, bid_size, ask_price, ask_size)
+                    }
+                    (false, true, true, true) => format!(
+                        "{}:{:.1}:{:.1}:{:.1}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (false, true, true, false) => format!(
+                        "{}:{:.1}:{:.1}:{}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (false, true, false, true) => format!(
+                        "{}:{:.1}:{}:{:.1}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (false, true, false, false) => {
+                        format!("{}:{:.1}:{}:{}", bid_price, bid_size, ask_price, ask_size)
+                    }
+                    (false, false, true, true) => format!(
+                        "{}:{}:{:.1}:{:.1}",
+                        bid_price, bid_size, ask_price, ask_size
+                    ),
+                    (false, false, true, false) => {
+                        format!("{}:{}:{:.1}:{}", bid_price, bid_size, ask_price, ask_size)
+                    }
+                    (false, false, false, true) => {
+                        format!("{}:{}:{}:{:.1}", bid_price, bid_size, ask_price, ask_size)
+                    }
+                    (false, false, false, false) => {
+                        format!("{}:{}:{}:{}", bid_price, bid_size, ask_price, ask_size)
+                    }
+                }
+            })
+            .collect::<Vec<String>>()
+            .join(":");
+
         let input = input.as_bytes();
 
         let mut hasher = Hasher::new();
@@ -212,21 +264,18 @@ impl Orderbook {
     /// Returns the price and quantity of the best bid
     /// (bid_price, bid_quantity)
     pub fn best_bid(&self) -> Option<(&Decimal, &Decimal)> {
-        let (price, quantity) = self.bids.iter().rev().next()?;
-
-        Some((price, quantity))
+        self.bids.iter().rev().next()
     }
 
     /// Returns the price and quantity of the best ask
     /// (ask_price, ask_quantity)
     pub fn best_ask(&self) -> Option<(&Decimal, &Decimal)> {
-        let (price, quantity) = self.asks.iter().next()?;
-
-        Some((price, quantity))
+        self.asks.iter().next()
     }
 
     /// Returns the price and quantity of the best bid and best ask
     /// ((bid_price, bid_quantity), (ask_price, ask_quantity))
+    #[allow(clippy::type_complexity)]
     pub fn best_bid_and_ask(&self) -> Option<((&Decimal, &Decimal), (&Decimal, &Decimal))> {
         Some((self.best_bid()?, self.best_ask()?))
     }
@@ -258,10 +307,9 @@ impl Orderbook {
         }
 
         // Step 2: Compute the weighted average
-        let mut dot_product = dec!(0);
-        for (fill_price, fill_quantity) in fills.iter() {
-            dot_product += fill_price * fill_quantity;
-        }
+        let dot_product = fills
+            .iter()
+            .fold(dec!(0), |acc, (price, quantity)| acc + (price * quantity));
 
         Some(dot_product / quantity)
     }
