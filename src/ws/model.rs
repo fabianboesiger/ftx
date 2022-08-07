@@ -5,7 +5,7 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, TimestampSecondsWithFrac};
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, ops::Not};
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -119,38 +119,12 @@ impl Orderbook {
     }
 
     pub fn update(&mut self, data: &OrderbookData) {
-        match data.action {
-            OrderbookAction::Partial => {
-                self.bids = data
-                    .bids
-                    .iter()
-                    .cloned()
-                    .map(|(price, size)| (price, size))
-                    .collect();
+        self.bids.extend(data.bids.iter().cloned());
+        self.asks.extend(data.asks.iter().cloned());
 
-                self.asks = data
-                    .asks
-                    .iter()
-                    .cloned()
-                    .map(|(price, size)| (price, size))
-                    .collect();
-            }
-            OrderbookAction::Update => {
-                for bid in &data.bids {
-                    if bid.1 == dec!(0) {
-                        self.bids.remove(&bid.0);
-                    } else {
-                        self.bids.insert(bid.0, bid.1);
-                    }
-                }
-                for ask in &data.asks {
-                    if ask.1 == dec!(0) {
-                        self.asks.remove(&ask.0);
-                    } else {
-                        self.asks.insert(ask.0, ask.1);
-                    }
-                }
-            }
+        if data.action == OrderbookAction::Update {
+            self.bids.retain(|_k, v| v != &dec!(0));
+            self.asks.retain(|_k, v| v != &dec!(0));
         }
     }
 
