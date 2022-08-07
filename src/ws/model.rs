@@ -119,18 +119,11 @@ impl Orderbook {
     }
 
     pub fn update(&mut self, data: &OrderbookData) {
-        self.bids.extend(
-            data.bids
-                .iter()
-                .filter(|(_k, v)| v.is_zero().not())
-                .cloned(),
-        );
-        self.asks.extend(
-            data.asks
-                .iter()
-                .filter(|(_k, v)| v.is_zero().not())
-                .cloned(),
-        );
+        self.bids.extend(data.bids.iter().cloned());
+        self.asks.extend(data.asks.iter().cloned());
+
+        self.bids.retain(|_k, v| v.is_zero().not());
+        self.asks.retain(|_k, v| v.is_zero().not());
     }
 
     pub fn verify_checksum(&self, checksum: Checksum) -> bool {
