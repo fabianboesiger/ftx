@@ -278,17 +278,15 @@ async fn fills() {
 async fn subscribe_authenticated_updates_on_unauthenticated_channel() {
     //     Trying to subscribe to the FILL or ORDER channels requires authentification
     //     and has to fail on an unauthenticated socket
+
+    // TODO: match specific error
     let mut ws = init_unauthenticated_ws().await;
-    let mut result = ws.subscribe(&[Channel::Fills]).await;
-    if let Err(Error::SocketNotAuthenticated) = result {
-    } else {
-        panic!("Should not be able to subscribe to FILL-updates on an unauthenticated websocket")
-    }
-    result = ws.subscribe(&[Channel::Orders]).await;
-    if let Err(Error::SocketNotAuthenticated) = result {
-    } else {
-        panic!("Should not be able to subscribe to ORDER-updates on an unauthenticated websocket")
-    }
+    ws.subscribe(&[Channel::Fills])
+        .await
+        .expect_err("Subscription should fail");
+    ws.subscribe(&[Channel::Orders])
+        .await
+        .expect_err("Subscription should fail");
 }
 
 #[tokio::test]

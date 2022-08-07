@@ -22,9 +22,9 @@ async fn init_unauthenticated_api() -> Rest {
     Rest::new(Options::default())
 }
 
-fn read_only<T>(result: Result<T>) {
-    //TODO: fix this
-
+fn read_only<T: std::fmt::Debug>(result: Result<T>) {
+    result.expect_err("Expected error");
+    //TODO: match specific error
     // match result {
     //     Err(Error::Api(error)) if error == *"Not allowed with read-only permissions" => {}
     //     _ => panic!("Expected read-only subaccount."),
