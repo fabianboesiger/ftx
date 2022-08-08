@@ -11,7 +11,6 @@ repository = "https://github.com/fabianboesiger/ftx"
 version = "0.5.0"
 
 [dependencies]
-anyhow = "1.0"
 boolinator = "2.4"
 chrono = { version = "^0.4.19", features = ["serde"] }
 const_format = "0.2"

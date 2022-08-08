@@ -1,6 +1,5 @@
 use super::*;
 use crate::rest::{OrderStatus, Rest};
-use anyhow::Result;
 use dotenv::dotenv;
 use rust_decimal_macros::dec;
 
@@ -19,7 +18,7 @@ async fn init_unauthenticated_ws() -> Ws {
 
 #[allow(dead_code)]
 async fn init_api() -> Result<Rest> {
-    dotenv()?;
+    dotenv().expect("dotenv panic in init_api()");
 
     Ok(Rest::new(Options::from_env()))
 }

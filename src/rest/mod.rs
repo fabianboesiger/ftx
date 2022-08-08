@@ -103,8 +103,10 @@ impl Rest {
             )),
             // Always include timestamp in header
             Some((
-                HeaderName::from_str(self.endpoint.timestamp_header())?,
-                HeaderValue::from_str(&format!("{}", timestamp))?,
+                HeaderName::from_str(self.endpoint.timestamp_header())
+                    .map_err(|e| Error::Api(format!("invalid header {:?}", e)))?,
+                HeaderValue::from_str(&format!("{}", timestamp))
+                    .map_err(|e| Error::Api(format!("invalid header {:?}", e)))?,
             )),
             // If requires auth, include a sig
             R::AUTH.as_option().and_then(|_| {

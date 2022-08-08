@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-pub type Result<T> = anyhow::Result<T>;
+pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
@@ -21,4 +21,7 @@ pub enum Error {
 
     #[error(transparent)]
     Json(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    SystemTime(#[from] std::time::SystemTimeError),
 }
