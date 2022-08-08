@@ -17,10 +17,10 @@ async fn init_unauthenticated_ws() -> Ws {
 }
 
 #[allow(dead_code)]
-async fn init_api() -> Rest {
-    dotenv().ok();
+async fn init_api() -> Result<Rest> {
+    dotenv().expect("dotenv panic in init_api()");
 
-    Rest::new(Options::from_env())
+    Ok(Rest::new(Options::from_env()))
 }
 
 #[tokio::test]
@@ -28,7 +28,7 @@ async fn subscribe_unsubscribe_trades() {
     let mut ws = init_unauthenticated_ws().await;
 
     // Channels: BTC, ETH
-    ws.subscribe(vec![
+    ws.subscribe(&[
         Channel::Trades("BTC-PERP".to_owned()),
         Channel::Trades("ETH-PERP".to_owned()),
     ])
@@ -36,12 +36,12 @@ async fn subscribe_unsubscribe_trades() {
     .expect("Subscribe failed");
 
     // Channels: BTC
-    ws.unsubscribe(vec![Channel::Trades("ETH-PERP".to_owned())])
+    ws.unsubscribe(&[Channel::Trades("ETH-PERP".to_owned())])
         .await
         .expect("Unsubscribe failed");
 
     // Channels: BTC, LTC
-    ws.subscribe(vec![Channel::Trades("LTC-PERP".to_owned())])
+    ws.subscribe(&[Channel::Trades("LTC-PERP".to_owned())])
         .await
         .expect("Subscribe failed");
 
@@ -53,7 +53,7 @@ async fn subscribe_unsubscribe_trades() {
 async fn trades() {
     let mut ws = init_unauthenticated_ws().await;
 
-    ws.subscribe(vec![Channel::Trades("BTC-PERP".to_owned())])
+    ws.subscribe(&[Channel::Trades("BTC-PERP".to_owned())])
         .await
         .expect("Subscription failed.");
 
@@ -70,7 +70,7 @@ async fn order_book_update() {
     let mut ws = init_unauthenticated_ws().await;
 
     let symbol: Symbol = String::from("BTC-PERP");
-    ws.subscribe(vec![Channel::Orderbook(symbol.to_owned())])
+    ws.subscribe(&[Channel::Orderbook(symbol.to_owned())])
         .await
         .expect("Subscription failed.");
 
@@ -92,12 +92,12 @@ async fn order_book_update() {
             Ok((_, Data::OrderbookData(data))) if data.action == OrderbookAction::Update => {
                 // Check that removed orders are in the orderbook
                 for bid in &data.bids {
-                    if bid.1 == dec!(0) {
+                    if bid.1.is_zero() {
                         assert!(orderbook.bids.contains_key(&bid.0));
                     }
                 }
                 for ask in &data.asks {
-                    if ask.1 == dec!(0) {
+                    if ask.1.is_zero() {
                         assert!(orderbook.asks.contains_key(&ask.0));
                     }
                 }
@@ -109,14 +109,14 @@ async fn order_book_update() {
                 // Check that removed orders are no longer in the orderbook
                 // Check that inserted orders have been updated correctly
                 for bid in &data.bids {
-                    if bid.1 == dec!(0) {
+                    if bid.1.is_zero() {
                         assert!(!orderbook.bids.contains_key(&bid.0));
                     } else {
                         assert_eq!(orderbook.bids.get(&bid.0), Some(&bid.1));
                     }
                 }
                 for ask in &data.asks {
-                    if ask.1 == dec!(0) {
+                    if ask.1.is_zero() {
                         assert!(!orderbook.asks.contains_key(&ask.0));
                     } else {
                         assert_eq!(orderbook.asks.get(&ask.0), Some(&ask.1));
@@ -156,14 +156,14 @@ async fn order_book_helpers() {
     ob.bids.insert(dec!(3), dec!(10));
     ob.bids.insert(dec!(2), dec!(15));
 
-    assert_eq!(ob.bid_price().unwrap(), dec!(4));
-    assert_eq!(ob.ask_price().unwrap(), dec!(5));
+    assert_eq!(ob.bid_price().unwrap(), &dec!(4));
+    assert_eq!(ob.ask_price().unwrap(), &dec!(5));
     assert_eq!(ob.mid_price().unwrap(), dec!(4.5));
-    assert_eq!(ob.best_bid().unwrap(), (dec!(4), dec!(5)));
-    assert_eq!(ob.best_ask().unwrap(), (dec!(5), dec!(20)));
+    assert_eq!(ob.best_bid().unwrap(), (&dec!(4), &dec!(5)));
+    assert_eq!(ob.best_ask().unwrap(), (&dec!(5), &dec!(20)));
     assert_eq!(
         ob.best_bid_and_ask().unwrap(),
-        ((dec!(4), dec!(5)), (dec!(5), dec!(20)))
+        ((&dec!(4), &dec!(5)), (&dec!(5), &dec!(20)))
     );
 
     assert_eq!(ob.quote(Side::Buy, dec!(15)).unwrap(), dec!(5));
@@ -209,7 +209,7 @@ async fn order_book_checksum() {
     for symbol in symbols {
         let mut ws = init_unauthenticated_ws().await;
 
-        ws.subscribe(vec![Channel::Orderbook(symbol.to_string())])
+        ws.subscribe(&[Channel::Orderbook(symbol.to_string())])
             .await
             .expect("Subscription failed.");
 
@@ -243,7 +243,7 @@ async fn order_book_checksum() {
 async fn fills() {
     let mut ws = init_authenticated_ws().await;
 
-    ws.subscribe(vec![Channel::Fills])
+    ws.subscribe(&[Channel::Fills])
         .await
         .expect("Subscription failed.");
 
@@ -277,17 +277,15 @@ async fn fills() {
 async fn subscribe_authenticated_updates_on_unauthenticated_channel() {
     //     Trying to subscribe to the FILL or ORDER channels requires authentification
     //     and has to fail on an unauthenticated socket
+
+    // TODO: match specific error
     let mut ws = init_unauthenticated_ws().await;
-    let mut result = ws.subscribe(vec![Channel::Fills]).await;
-    if let Err(Error::SocketNotAuthenticated) = result {
-    } else {
-        panic!("Should not be able to subscribe to FILL-updates on an unauthenticated websocket")
-    }
-    result = ws.subscribe(vec![Channel::Orders]).await;
-    if let Err(Error::SocketNotAuthenticated) = result {
-    } else {
-        panic!("Should not be able to subscribe to ORDER-updates on an unauthenticated websocket")
-    }
+    ws.subscribe(&[Channel::Fills])
+        .await
+        .expect_err("Subscription should fail");
+    ws.subscribe(&[Channel::Orders])
+        .await
+        .expect_err("Subscription should fail");
 }
 
 #[tokio::test]
@@ -295,7 +293,7 @@ async fn subscribe_authenticated_updates_on_unauthenticated_channel() {
 async fn orders() {
     let mut ws = init_authenticated_ws().await;
 
-    ws.subscribe(vec![Channel::Orders])
+    ws.subscribe(&[Channel::Orders])
         .await
         .expect("Subscription failed.");
 

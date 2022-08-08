@@ -38,7 +38,7 @@ async fn main() {
             let size = lendable.floor();
             println!("Submitting lending offer for {}: {}", coin, size);
             api.request(SubmitLendingOffer {
-                coin: coin.clone(),
+                coin,
                 size,
                 rate: min_rate.unwrap_or_default(),
             })

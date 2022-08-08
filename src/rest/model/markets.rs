@@ -47,20 +47,18 @@ impl Request for GetMarkets {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetMarket {
+pub struct GetMarket<'a> {
     #[serde(skip_serializing)]
-    pub market_name: String,
+    pub market_name: &'a str,
 }
 
-impl GetMarket {
-    pub fn new(market_name: &str) -> Self {
-        Self {
-            market_name: market_name.into(),
-        }
+impl<'a> GetMarket<'a> {
+    pub fn new(market_name: &'a str) -> Self {
+        Self { market_name }
     }
 }
 
-impl Request for GetMarket {
+impl Request for GetMarket<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}";
     const AUTH: bool = false;
@@ -81,30 +79,30 @@ pub struct Orderbook {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetOrderBook {
+pub struct GetOrderBook<'a> {
     #[serde(skip_serializing)]
-    pub market_name: String,
+    pub market_name: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub depth: Option<u32>,
 }
 
-impl GetOrderBook {
-    pub fn new(market_name: &str) -> Self {
+impl<'a> GetOrderBook<'a> {
+    pub fn new(market_name: &'a str) -> Self {
         Self {
-            market_name: market_name.into(),
+            market_name,
             ..Default::default()
         }
     }
 
-    pub fn with_depth(market_name: &str, depth: u32) -> Self {
+    pub fn with_depth(market_name: &'a str, depth: u32) -> Self {
         Self {
-            market_name: market_name.into(),
+            market_name,
             depth: Some(depth),
         }
     }
 }
 
-impl Request for GetOrderBook {
+impl Request for GetOrderBook<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/orderbook";
     const AUTH: bool = false;
@@ -128,9 +126,9 @@ pub struct Trade {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetTrades {
+pub struct GetTrades<'a> {
     #[serde(skip_serializing)]
-    pub market_name: String,
+    pub market_name: &'a str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
     #[serde(
@@ -145,23 +143,23 @@ pub struct GetTrades {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-impl GetTrades {
-    pub fn new(market_name: &str) -> Self {
+impl<'a> GetTrades<'a> {
+    pub fn new(market_name: &'a str) -> Self {
         Self {
-            market_name: market_name.into(),
+            market_name,
             ..Default::default()
         }
     }
     // User can specify limit, start_time, and end_time.
     // If none, use Option::None as parameter.
     pub fn new_paged(
-        market_name: &str,
+        market_name: &'a str,
         limit: Option<u32>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
     ) -> Self {
         Self {
-            market_name: market_name.into(),
+            market_name,
             limit,
             start_time,
             end_time,
@@ -169,7 +167,7 @@ impl GetTrades {
     }
 }
 
-impl Request for GetTrades {
+impl Request for GetTrades<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/trades";
     const AUTH: bool = false;
@@ -193,9 +191,9 @@ pub struct Candle {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetHistoricalPrices {
+pub struct GetHistoricalPrices<'a> {
     #[serde(skip_serializing)]
-    pub market_name: String,
+    pub market_name: &'a str,
     pub resolution: u32,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u32>,
@@ -211,10 +209,10 @@ pub struct GetHistoricalPrices {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-impl GetHistoricalPrices {
-    pub fn new(market_name: &str, resolution: Resolution) -> Self {
+impl<'a> GetHistoricalPrices<'a> {
+    pub fn new(market_name: &'a str, resolution: Resolution) -> Self {
         Self {
-            market_name: market_name.into(),
+            market_name,
             resolution: resolution.get_seconds(),
             ..Default::default()
         }
@@ -222,14 +220,14 @@ impl GetHistoricalPrices {
     // User can specify limit, start_time, and end_time.
     // If none, use Option::None as parameter.
     pub fn new_paged(
-        market_name: &str,
+        market_name: &'a str,
         resolution: Resolution,
         limit: Option<u32>,
         start_time: Option<DateTime<Utc>>,
         end_time: Option<DateTime<Utc>>,
     ) -> Self {
         Self {
-            market_name: market_name.into(),
+            market_name,
             resolution: resolution.get_seconds(),
             limit,
             start_time,
@@ -238,7 +236,7 @@ impl GetHistoricalPrices {
     }
 }
 
-impl Request for GetHistoricalPrices {
+impl Request for GetHistoricalPrices<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/markets/{}/candles";
     const AUTH: bool = false;
