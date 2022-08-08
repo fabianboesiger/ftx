@@ -389,7 +389,7 @@ impl Rest {
     ) -> Result<<PlaceOrder as Request>::Response> {
         // Limit orders should have price specified
         if matches!(r#type, OrderType::Limit) && price.is_none() {
-            return Err(Error::PlacingLimitOrderRequiresPrice.into());
+            return Err(Error::PlacingLimitOrderRequiresPrice);
         }
 
         let req = PlaceOrder {

@@ -92,7 +92,7 @@ impl Ws {
             // Subscribing to fills or orders requires us to be authenticated via an API key
             if (channel == &Channel::Fills || channel == &Channel::Orders) && !self.is_authenticated
             {
-                return Err(Error::SocketNotAuthenticated.into());
+                return Err(Error::SocketNotAuthenticated);
             }
             self.channels.push(channel.clone());
         }
@@ -107,7 +107,7 @@ impl Ws {
         // Check that the specified channels match an existing one
         for channel in channels.iter() {
             if !self.channels.contains(channel) {
-                return Err(Error::NotSubscribedToThisChannel(channel.clone()).into());
+                return Err(Error::NotSubscribedToThisChannel(channel.clone()));
             }
         }
 
@@ -186,7 +186,7 @@ impl Ws {
                 }
             }
 
-            return Err(Error::MissingSubscriptionConfirmation.into());
+            return Err(Error::MissingSubscriptionConfirmation);
         }
 
         Ok(())
