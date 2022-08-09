@@ -21,6 +21,8 @@ pub struct GetFills {
     pub end_time: Option<DateTime<Utc>>,
     #[serde(skip_serializing_if = "Option::is_none", rename = "orderId")]
     pub order_id: Option<Id>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit: Option<usize>,
 }
 
 impl GetFills {
