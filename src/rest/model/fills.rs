@@ -7,7 +7,7 @@ use serde::Serialize;
 #[derive(Debug, Clone, Serialize, Default)]
 
 pub struct GetFills {
-    #[serde(rename = "camelCase")]
+    #[serde(rename = "marketName")]
     pub market_name: String,
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -19,7 +19,7 @@ pub struct GetFills {
         serialize_with = "super::serialize_as_timestamp"
     )]
     pub end_time: Option<DateTime<Utc>>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "camelCase")]
+    #[serde(skip_serializing_if = "Option::is_none", rename = "orderId")]
     pub order_id: Option<Id>,
 }
 
