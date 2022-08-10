@@ -5,6 +5,7 @@ mod model;
 #[cfg(test)]
 pub(crate) mod tests;
 
+use boolinator::Boolinator;
 pub use error::*;
 pub use model::*;
 
@@ -16,8 +17,10 @@ use reqwest::{
     Client, ClientBuilder, Method,
 };
 use rust_decimal::prelude::*;
-use serde_json::{from_reader, to_string};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    ops::Not,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 macro_rules! deprecate_msg {
     () => {
@@ -33,6 +36,7 @@ pub struct Rest {
 }
 
 impl Rest {
+    // TODO: this should return Result<> if it can fail
     pub fn new(
         Options {
             endpoint,
@@ -42,21 +46,19 @@ impl Rest {
         }: Options,
     ) -> Self {
         // Set default headers.
-        let mut headers = HeaderMap::new();
-
-        if let Some(key) = &key {
-            headers.insert(
-                HeaderName::from_str(&format!("{}-KEY", endpoint.header_prefix())).unwrap(),
-                HeaderValue::from_str(key).unwrap(),
-            );
-        }
-
-        if let Some(subaccount) = &subaccount {
-            headers.insert(
-                HeaderName::from_str(&format!("{}-SUBACCOUNT", endpoint.header_prefix())).unwrap(),
-                HeaderValue::from_str(subaccount).unwrap(),
-            );
-        }
+        let headers = [
+            (&key, endpoint.key_header()),
+            (&subaccount, endpoint.subaccount_header()),
+        ]
+        .iter()
+        .flat_map(|(hdr_val, hdr_ident)| hdr_val.as_ref().map(|v| (v, hdr_ident)))
+        .map(|(hdr_val, hdr_key)| {
+            (
+                HeaderName::from_str(hdr_key).unwrap(),
+                HeaderValue::from_str(hdr_val).unwrap(),
+            )
+        })
+        .collect();
 
         let client = ClientBuilder::new()
             .default_headers(headers)
@@ -71,14 +73,11 @@ impl Rest {
         }
     }
 
-    pub async fn request<R>(&self, req: R) -> Result<R::Response>
-    where
-        R: Request,
-    {
-        let (params, body) = match R::METHOD {
-            Method::GET => (Some(serde_qs::to_string(&req)?), String::new()),
-            _ => (None, to_string(&req)?),
-        };
+    pub async fn request<R: Request>(&self, req: R) -> Result<R::Response> {
+        let params = matches!(R::METHOD, Method::GET).as_some(serde_qs::to_string(&req)?);
+        let body = matches!(R::METHOD, Method::GET)
+            .not()
+            .as_some(serde_json::to_string(&req)?);
 
         let mut path = req.path().into_owned();
         if let Some(params) = params {
@@ -89,93 +88,75 @@ impl Rest {
         }
         let url = format!("{}{}", self.endpoint.rest(), path);
 
-        let timestamp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .unwrap()
-            .as_millis();
+        let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
 
         log::trace!("timestamp: {}", timestamp);
         log::trace!("method: {}", R::METHOD);
         log::trace!("path: {}", path);
-        log::trace!("body: {}", body);
+        log::trace!("body: {:?}", body);
 
-        let mut headers = HeaderMap::new();
-        headers.insert(
-            reqwest::header::CONTENT_TYPE,
-            HeaderValue::from_static("application/json"),
-        );
-        headers.insert(
-            HeaderName::from_str(&format!("{}-TS", self.endpoint.header_prefix())).unwrap(),
-            HeaderValue::from_str(&format!("{}", timestamp)).unwrap(),
-        );
+        let headers: HeaderMap = IntoIterator::into_iter([
+            // Always include content_type header
+            Some((
+                reqwest::header::CONTENT_TYPE,
+                HeaderValue::from_static("application/json"),
+            )),
+            // Always include timestamp in header
+            Some((
+                HeaderName::from_str(self.endpoint.timestamp_header())
+                    .map_err(|e| Error::Api(format!("invalid header {:?}", e)))?,
+                HeaderValue::from_str(&format!("{}", timestamp))
+                    .map_err(|e| Error::Api(format!("invalid header {:?}", e)))?,
+            )),
+            // If requires auth, include a sig
+            R::AUTH.as_option().and_then(|_| {
+                let secret = self.secret.as_ref().ok_or(Error::NoSecretConfigured).ok()?;
 
-        if R::AUTH {
-            let secret = match self.secret {
-                Some(ref secret) => &**secret,
-                None => {
-                    return Err(Error::NoSecretConfigured);
-                }
-            };
+                let sign_payload = format!(
+                    "{}{}/api{}{}",
+                    timestamp,
+                    R::METHOD,
+                    path,
+                    body.as_deref().unwrap_or("")
+                );
 
-            let sign_payload = format!("{}{}/api{}{}", timestamp, R::METHOD, path, body);
+                let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
+                let sign = hex::encode(sign);
+                Some((
+                    HeaderName::from_str(self.endpoint.sign_header()).ok()?,
+                    HeaderValue::from_str(&sign).ok()?,
+                ))
+            }),
+            // If subaccount is set, include it
+            self.subaccount.as_ref().and_then(|subaccount| {
+                Some((
+                    HeaderName::from_str(self.endpoint.subaccount_header()).ok()?,
+                    HeaderValue::from_str(subaccount).ok()?,
+                ))
+            }),
+        ])
+        .flatten()
+        .collect();
 
-            let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
-            let sign = hex::encode(sign);
-            headers.insert(
-                HeaderName::from_str(&format!("{}-SIGN", self.endpoint.header_prefix())).unwrap(),
-                HeaderValue::from_str(&sign).unwrap(),
-            );
-        }
+        let builder = self.client.request(R::METHOD, url).headers(headers);
+        let builder = if let Some(body) = body {
+            builder.body(body)
+        } else {
+            builder
+        };
 
-        if let Some(subaccount) = &self.subaccount {
-            headers.insert(
-                HeaderName::from_str(&format!("{}-SUBACCOUNT", self.endpoint.header_prefix()))
-                    .unwrap(),
-                HeaderValue::from_str(subaccount).unwrap(),
-            );
-        }
+        let resp_body = builder.send().await?.bytes().await?;
 
-        /*
-        let response: String = self
-            .client
-            .request(R::METHOD, url)
-            .query(&params)
-            .headers(headers)
-            .body(body)
-            .send()
-            .await?
-            .text()
-            .await?;
-
-        use std::fs::File;
-        use std::io::prelude::*;
-        let mut file = File::create("response.json").unwrap();
-        file.write_all(response.as_bytes()).unwrap();
-
-        panic!("{:#?}", response);
-        */
-
-        let body = self
-            .client
-            .request(R::METHOD, url)
-            .headers(headers)
-            .body(body)
-            .send()
-            .await?
-            .bytes()
-            .await?;
-
-        match from_reader(&*body) {
-            Ok(SuccessResponse { result, .. }) => Ok(result),
-
-            Err(e) => {
-                if let Ok(ErrorResponse { error, .. }) = from_reader(&*body) {
-                    Err(Error::Api(error))
-                } else {
-                    Err(e.into())
-                }
-            }
-        }
+        serde_json::from_reader(&*resp_body)
+            .map(|res: SuccessResponse<R::Response>| res.result)
+            .map_err(|_| {
+                // try to parse the error response
+                serde_json::from_reader(&*resp_body)
+                    .map(|res: ErrorResponse| Error::Api(res.error))
+                    // otherwise return the raw response
+                    .unwrap_or_else(Into::into)
+            })
+            .map_err(Into::into)
     }
 
     #[deprecated=deprecate_msg!()]
@@ -250,11 +231,7 @@ impl Rest {
         market_name: &str,
         depth: Option<u32>,
     ) -> Result<<GetOrderBook as Request>::Response> {
-        self.request(GetOrderBook {
-            market_name: market_name.into(),
-            depth,
-        })
-        .await
+        self.request(GetOrderBook { market_name, depth }).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -266,7 +243,7 @@ impl Rest {
         end_time: Option<DateTime<Utc>>,
     ) -> Result<<GetTrades as Request>::Response> {
         self.request(GetTrades {
-            market_name: market_name.into(),
+            market_name,
             limit,
             start_time,
             end_time,
@@ -284,7 +261,7 @@ impl Rest {
         end_time: Option<DateTime<Utc>>,
     ) -> Result<<GetHistoricalPrices as Request>::Response> {
         self.request(GetHistoricalPrices {
-            market_name: market_name.into(),
+            market_name,
             resolution,
             limit,
             start_time,
@@ -332,11 +309,7 @@ impl Rest {
         coin: &str,
         method: Option<&str>,
     ) -> Result<<GetWalletDepositAddress as Request>::Response> {
-        self.request(GetWalletDepositAddress {
-            coin: coin.into(),
-            method: method.map(Into::into),
-        })
-        .await
+        self.request(GetWalletDepositAddress { coin, method }).await
     }
 
     #[deprecated=deprecate_msg!()]
@@ -391,7 +364,7 @@ impl Rest {
         end_time: Option<DateTime<Utc>>,
     ) -> Result<<GetOrderHistory as Request>::Response> {
         self.request(GetOrderHistory {
-            market: Some(market.into()),
+            market: Some(market),
             limit,
             start_time,
             end_time,
@@ -414,8 +387,13 @@ impl Rest {
         post_only: Option<bool>,
         client_id: Option<&str>,
     ) -> Result<<PlaceOrder as Request>::Response> {
+        // Limit orders should have price specified
+        if matches!(r#type, OrderType::Limit) && price.is_none() {
+            return Err(Error::PlacingLimitOrderRequiresPrice);
+        }
+
         let req = PlaceOrder {
-            market: market.to_string(),
+            market,
             side,
             price,
             r#type,
@@ -423,16 +401,9 @@ impl Rest {
             reduce_only: reduce_only.unwrap_or_default(),
             ioc: ioc.unwrap_or_default(),
             post_only: post_only.unwrap_or_default(),
-            client_id: client_id.map(ToString::to_string),
+            client_id,
             reject_on_price_band: false,
         };
-
-        // Limit orders should have price specified
-        if let OrderType::Limit = r#type {
-            if price.is_none() {
-                return Err(Error::PlacingLimitOrderRequiresPrice);
-            }
-        }
 
         self.request(req).await
     }
@@ -452,7 +423,7 @@ impl Rest {
         trail_value: Option<Decimal>,
     ) -> Result<OrderInfo> {
         self.request(PlaceTriggerOrder {
-            market: market.into(),
+            market,
             side,
             size,
             r#type,
@@ -473,7 +444,7 @@ impl Rest {
         size: Option<Decimal>,
     ) -> Result<OrderInfo> {
         self.request(ModifyOrderByClientId {
-            client_id: client_id.into(),
+            client_id,
             price,
             size,
         })
@@ -492,7 +463,7 @@ impl Rest {
             id: order_id,
             price,
             size,
-            client_id: client_id.map(Into::into),
+            client_id,
         })
         .await
     }
@@ -519,7 +490,7 @@ impl Rest {
         limit_orders_only: Option<bool>,
     ) -> Result<<CancelAllOrder as Request>::Response> {
         self.request(CancelAllOrder {
-            market: market.map(Into::into),
+            market,
             side,
             conditional_orders_only,
             limit_orders_only,

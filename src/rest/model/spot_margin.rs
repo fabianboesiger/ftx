@@ -79,13 +79,13 @@ impl Request for GetLendingInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct SubmitLendingOffer {
-    pub coin: String,
+pub struct SubmitLendingOffer<'a> {
+    pub coin: &'a str,
     pub size: Decimal,
     pub rate: Decimal,
 }
 
-impl Request for SubmitLendingOffer {
+impl Request for SubmitLendingOffer<'_> {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/spot_margin/offers";
     const AUTH: bool = true;

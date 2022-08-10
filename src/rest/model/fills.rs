@@ -6,9 +6,9 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize, Default)]
 
-pub struct GetFills {
+pub struct GetFills<'a> {
     #[serde(rename = "marketName")]
-    pub market_name: String,
+    pub market_name: &'a str,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "super::serialize_as_timestamp"
@@ -25,16 +25,16 @@ pub struct GetFills {
     pub limit: Option<usize>,
 }
 
-impl GetFills {
-    pub fn new(market_name: &str) -> Self {
+impl<'a> GetFills<'a> {
+    pub fn new(market_name: &'a str) -> Self {
         Self {
-            market_name: market_name.into(),
+            market_name,
             ..Self::default()
         }
     }
 }
 
-impl Request for GetFills {
+impl Request for GetFills<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/fills";
     const AUTH: bool = true;

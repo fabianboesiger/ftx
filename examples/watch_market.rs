@@ -16,7 +16,7 @@ async fn main() -> Result<()> {
     let mut orderbook = Orderbook::new(market.to_owned());
 
     websocket
-        .subscribe(vec![
+        .subscribe(&[
             Channel::Trades(market.to_owned()),
             Channel::Orderbook(market.to_owned()),
         ])

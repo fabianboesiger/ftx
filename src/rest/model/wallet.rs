@@ -78,29 +78,29 @@ impl Request for GetWalletBalances {
 
 #[derive(Debug, Clone, Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct GetWalletDepositAddress {
+pub struct GetWalletDepositAddress<'a> {
     #[serde(skip_serializing)]
-    pub coin: String,
-    pub method: Option<String>,
+    pub coin: &'a str,
+    pub method: Option<&'a str>,
 }
 
-impl GetWalletDepositAddress {
-    pub fn new(coin: &str) -> Self {
+impl<'a> GetWalletDepositAddress<'a> {
+    pub fn new(coin: &'a str) -> Self {
         Self {
-            coin: coin.into(),
+            coin,
             ..Default::default()
         }
     }
 
-    pub fn with_method(coin: &str, method: &str) -> Self {
+    pub fn with_method(coin: &'a str, method: &'a str) -> Self {
         Self {
-            coin: coin.into(),
-            method: Some(method.into()),
+            coin,
+            method: Some(method),
         }
     }
 }
 
-impl Request for GetWalletDepositAddress {
+impl Request for GetWalletDepositAddress<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/wallet/deposit_address";
     const AUTH: bool = true;
