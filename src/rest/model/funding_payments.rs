@@ -17,9 +17,9 @@ pub struct FundingPayment {
 type FundingPayments = Vec<FundingPayment>;
 
 #[derive(Debug, Clone, Serialize, Default)]
-pub struct GetFundingPayments {
+pub struct GetFundingPayments<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub future: Option<String>,
+    pub future: Option<&'a str>,
     #[serde(
         skip_serializing_if = "Option::is_none",
         serialize_with = "super::serialize_as_timestamp"
@@ -32,7 +32,7 @@ pub struct GetFundingPayments {
     pub end_time: Option<DateTime<Utc>>,
 }
 
-impl Request for GetFundingPayments {
+impl Request for GetFundingPayments<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/funding_payments";
     const AUTH: bool = true;

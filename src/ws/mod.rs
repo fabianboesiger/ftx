@@ -40,10 +40,7 @@ impl Ws {
     pub async fn connect(options: Options) -> Result<Self> {
         let (mut stream, _) = connect_async(options.endpoint.ws()).await?;
         let is_authenticated = if let (Some(key), Some(secret)) = (options.key, options.secret) {
-            let timestamp = SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .unwrap()
-                .as_millis();
+            let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();
             let sign_payload = format!("{}websocket_login", timestamp);
             let sign = HMAC::mac(sign_payload.as_bytes(), secret.as_bytes());
             let sign = hex::encode(sign);
@@ -90,7 +87,7 @@ impl Ws {
 
     /// Subscribe to specified `Channel`s
     /// For FILLS the socket needs to be authenticated
-    pub async fn subscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
+    pub async fn subscribe(&mut self, channels: &[Channel]) -> Result<()> {
         for channel in channels.iter() {
             // Subscribing to fills or orders requires us to be authenticated via an API key
             if (channel == &Channel::Fills || channel == &Channel::Orders) && !self.is_authenticated
@@ -106,7 +103,7 @@ impl Ws {
     }
 
     /// Unsubscribe from specified `Channel`s
-    pub async fn unsubscribe(&mut self, channels: Vec<Channel>) -> Result<()> {
+    pub async fn unsubscribe(&mut self, channels: &[Channel]) -> Result<()> {
         // Check that the specified channels match an existing one
         for channel in channels.iter() {
             if !self.channels.contains(channel) {
@@ -114,8 +111,7 @@ impl Ws {
             }
         }
 
-        self.subscribe_or_unsubscribe(channels.clone(), false)
-            .await?;
+        self.subscribe_or_unsubscribe(channels, false).await?;
 
         // Unsubscribe successful, remove specified channels from self.channels
         self.channels.retain(|c| !channels.contains(c));
@@ -125,8 +121,10 @@ impl Ws {
 
     /// Unsubscribe from all currently subscribed `Channel`s
     pub async fn unsubscribe_all(&mut self) -> Result<()> {
-        self.unsubscribe(self.channels.clone()).await?;
+        let channels = self.channels.clone();
+        self.unsubscribe(&channels).await?;
 
+        // TODO: the .retain() in unsubscrube() should take care of this?
         self.channels.clear();
 
         Ok(())
@@ -134,7 +132,7 @@ impl Ws {
 
     async fn subscribe_or_unsubscribe(
         &mut self,
-        channels: Vec<Channel>,
+        channels: &[Channel],
         subscribe: bool,
     ) -> Result<()> {
         let op = if subscribe {
@@ -145,11 +143,11 @@ impl Ws {
 
         'channels: for channel in channels {
             let (channel, symbol) = match channel {
-                Channel::Orderbook(symbol) => ("orderbook", symbol),
-                Channel::Trades(symbol) => ("trades", symbol),
-                Channel::Ticker(symbol) => ("ticker", symbol),
-                Channel::Fills => ("fills", "".to_string()),
-                Channel::Orders => ("orders", "".to_string()),
+                Channel::Orderbook(symbol) => ("orderbook", symbol.as_str()),
+                Channel::Trades(symbol) => ("trades", symbol.as_str()),
+                Channel::Ticker(symbol) => ("ticker", symbol.as_str()),
+                Channel::Fills => ("fills", ""),
+                Channel::Orders => ("orders", ""),
             };
 
             self.stream

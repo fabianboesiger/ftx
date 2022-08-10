@@ -20,4 +20,7 @@ pub enum Error {
 
     #[error(transparent)]
     Serde(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    SystemTime(#[from] std::time::SystemTimeError),
 }
