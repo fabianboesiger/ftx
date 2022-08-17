@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, TimestampSecondsWithFrac};
 use std::{collections::BTreeMap, ops::Not};
 
-#[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum Channel {
     Orderbook(Symbol),
@@ -91,7 +91,7 @@ pub struct OrderbookData {
 
 type Checksum = u32;
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderbookAction {
     /// Initial snapshot of the orderbook
@@ -268,7 +268,7 @@ impl Orderbook {
 #[serde(rename_all = "camelCase")]
 pub struct Fill {
     pub id: Id,
-    pub market: Symbol,
+    pub market: Option<Symbol>,
     pub future: Option<Symbol>,
     pub base_currency: Option<Coin>,
     pub quote_currency: Option<Coin>,
@@ -276,8 +276,8 @@ pub struct Fill {
     pub side: Side,
     pub price: Decimal,
     pub size: Decimal,
-    pub order_id: Id,
-    pub trade_id: Id,
+    pub order_id: Option<Id>,
+    pub trade_id: Option<Id>,
     pub time: DateTime<Utc>,
     pub fee: Decimal,
     pub fee_rate: Decimal,
@@ -285,7 +285,7 @@ pub struct Fill {
     pub liquidity: Liquidity,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum Liquidity {
     Maker,

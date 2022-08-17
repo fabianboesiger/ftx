@@ -5,7 +5,7 @@ pub type Id = u64;
 pub type Coin = String;
 pub type Symbol = String;
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum OrderType {
     Market,
@@ -23,7 +23,7 @@ impl Default for OrderType {
     }
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 /// Represents the status of the order.
 /// However, the REST and websockets APIs assign these values differently.
@@ -62,7 +62,7 @@ pub enum OrderStatus {
     Closed,
 }
 
-#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum Side {
     Buy,
@@ -75,7 +75,7 @@ impl Default for Side {
     }
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum FutureType {
     Future,
@@ -84,7 +84,7 @@ pub enum FutureType {
     Move,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum DepositStatus {
     Confirmed,
@@ -94,7 +94,7 @@ pub enum DepositStatus {
     Initiated,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum MarketType {
     Future,
@@ -124,7 +124,7 @@ pub struct Position {
     pub collateral_used: Decimal,
 }
 
-#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq)]
+#[derive(Copy, Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum WithdrawStatus {
     Requested,
