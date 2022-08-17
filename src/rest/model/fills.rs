@@ -7,7 +7,7 @@ use serde::Serialize;
 #[derive(Debug, Clone, Serialize, Default)]
 
 pub struct GetFills<'a> {
-    #[serde(rename = "marketName")]
+    #[serde(rename = "market")]
     pub market_name: &'a str,
     #[serde(
         skip_serializing_if = "Option::is_none",
