@@ -69,7 +69,7 @@ async fn trades() {
 async fn order_book_update() {
     let mut ws = init_unauthenticated_ws().await;
 
-    let symbol: Symbol = String::from("BTC-PERP");
+    let symbol: Symbol = String::from("SHIB-PERP");
     ws.subscribe(&[Channel::Orderbook(symbol.to_owned())])
         .await
         .expect("Subscription failed.");
