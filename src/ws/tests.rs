@@ -79,9 +79,7 @@ async fn order_book_update() {
     // The initial snapshot of the order book
     match ws.next().await.unwrap() {
         Ok((_, Data::OrderbookData(data))) if data.action == OrderbookAction::Partial => {
-            orderbook.update(&data);
-            assert!(orderbook.verify_checksum(data.checksum));
-            // println!("{:#?}", orderbook);
+            assert!(orderbook.update(&data).is_ok());
         }
         _ => panic!("Order book snapshot data expected."),
     }
@@ -103,8 +101,7 @@ async fn order_book_update() {
                 }
 
                 // Update the order book
-                orderbook.update(&data);
-                assert!(orderbook.verify_checksum(data.checksum));
+                assert!(orderbook.update(&data).is_ok());
 
                 // Check that removed orders are no longer in the orderbook
                 // Check that inserted orders have been updated correctly
@@ -218,8 +215,7 @@ async fn order_book_checksum() {
         // Initial snapshot
         match ws.next().await.unwrap() {
             Ok((_, Data::OrderbookData(data))) if data.action == OrderbookAction::Partial => {
-                orderbook.update(&data);
-                assert!(orderbook.verify_checksum(data.checksum));
+                assert!(orderbook.update(&data).is_ok());
                 // println!("{:#?}", orderbook);
             }
             _ => panic!("Order book snapshot data expected."),
@@ -228,8 +224,7 @@ async fn order_book_checksum() {
         // Orderbook update
         match ws.next().await.unwrap() {
             Ok((_, Data::OrderbookData(data))) if data.action == OrderbookAction::Update => {
-                orderbook.update(&data);
-                assert!(orderbook.verify_checksum(data.checksum));
+                assert!(orderbook.update(&data).is_ok());
             }
             _ => panic!("Order book update data expected."),
         }

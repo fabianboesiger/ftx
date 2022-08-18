@@ -33,7 +33,7 @@ async fn main() -> Result<()> {
                 );
             }
             (_, Data::OrderbookData(orderbook_data)) => {
-                orderbook.update(&orderbook_data);
+                orderbook.update(&orderbook_data)?;
                 print!("."); // To signify orderbook update
                 io::stdout().flush().unwrap(); // Emits the output immediately
             }

@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, TimestampSecondsWithFrac};
 use std::{collections::BTreeMap, ops::Not};
 
+use super::Error;
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum Channel {
@@ -105,6 +107,7 @@ pub enum OrderbookAction {
 /// Supports efficient insertions, updates, and deletions via a BTreeMap.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Orderbook {
+    initialized: bool,
     pub symbol: Symbol,
     pub bids: BTreeMap<Decimal, Decimal>,
     pub asks: BTreeMap<Decimal, Decimal>,
@@ -113,17 +116,39 @@ impl Orderbook {
     pub fn new(symbol: Symbol) -> Orderbook {
         Orderbook {
             symbol,
+            initialized: false,
             bids: Default::default(),
             asks: Default::default(),
         }
     }
 
-    pub fn update(&mut self, data: &OrderbookData) {
+    pub fn is_initialized(&self) -> bool {
+        self.initialized
+    }
+
+    fn apply(&mut self, data: &OrderbookData) -> Result<(), Error> {
         self.bids.extend(data.bids.iter().cloned());
         self.asks.extend(data.asks.iter().cloned());
 
         self.bids.retain(|_k, v| v.is_zero().not());
         self.asks.retain(|_k, v| v.is_zero().not());
+
+        if self.verify_checksum(data.checksum) {
+            Ok(())
+        } else {
+            Err(Error::IncorrectChecksum)
+        }
+    }
+
+    pub fn update(&mut self, data: &OrderbookData) -> Result<(), Error> {
+        if self.is_initialized() {
+            self.apply(data)
+        } else if data.action == OrderbookAction::Partial {
+            self.initialized = true;
+            self.apply(data)
+        } else {
+            Err(Error::MissingPartial)
+        }
     }
 
     pub fn verify_checksum(&self, checksum: Checksum) -> bool {
