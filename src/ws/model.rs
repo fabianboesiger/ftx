@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, TimestampSecondsWithFrac};
 use std::{collections::BTreeMap, ops::Not};
 
+use super::Error;
+
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum Channel {
@@ -105,81 +107,78 @@ pub enum OrderbookAction {
 /// Supports efficient insertions, updates, and deletions via a BTreeMap.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Orderbook {
+    initialized: bool,
     pub symbol: Symbol,
     pub bids: BTreeMap<Decimal, Decimal>,
     pub asks: BTreeMap<Decimal, Decimal>,
 }
+
+fn format_value(value: &Decimal) -> String {
+    if value.fract().is_zero() {
+        format!("{value:.1}")
+    } else if *value < dec!(0.0001) {
+        let mut formatted = format!("{value:e}");
+        let minus_idx = formatted
+            .find('-')
+            .expect("Passed abs(value) higher than 1");
+        formatted.insert(minus_idx + 1, '0');
+        formatted
+    } else {
+        value.to_string()
+    }
+}
+
 impl Orderbook {
     pub fn new(symbol: Symbol) -> Orderbook {
         Orderbook {
             symbol,
+            initialized: false,
             bids: Default::default(),
             asks: Default::default(),
         }
     }
 
-    pub fn update(&mut self, data: &OrderbookData) {
+    pub fn is_initialized(&self) -> bool {
+        self.initialized
+    }
+
+    fn apply(&mut self, data: &OrderbookData) -> Result<(), Error> {
         self.bids.extend(data.bids.iter().cloned());
         self.asks.extend(data.asks.iter().cloned());
 
         self.bids.retain(|_k, v| v.is_zero().not());
         self.asks.retain(|_k, v| v.is_zero().not());
+
+        if self.verify_checksum(&data.checksum) {
+            Ok(())
+        } else {
+            Err(Error::IncorrectChecksum)
+        }
     }
 
-    pub fn verify_checksum(&self, checksum: Checksum) -> bool {
-        /// padding a 0 if the Decimal is a whole number
-        fn _needs_padding(value: &Decimal) -> bool {
-            value.fract().is_zero()
+    pub fn update(&mut self, data: &OrderbookData) -> Result<(), Error> {
+        if self.is_initialized() {
+            self.apply(data)
+        } else if data.action == OrderbookAction::Partial {
+            self.initialized = true;
+            self.apply(data)
+        } else {
+            Err(Error::MissingPartial)
         }
+    }
 
+    pub fn verify_checksum(&self, checksum: &Checksum) -> bool {
         let input = (0..100)
             .into_iter()
             .zip(self.bids.iter().rev().zip(self.asks.iter()))
             .map(|(_, ((b_p, b_s), (a_p, a_s)))| {
-                // There may be a cleaner way to do this, but this avoids building more `String`s than necessary
-                match (
-                    _needs_padding(b_p),
-                    _needs_padding(b_s),
-                    _needs_padding(a_p),
-                    _needs_padding(a_s),
-                ) {
-                    (true, true, true, true) => {
-                        format!("{:.1}:{:.1}:{:.1}:{:.1}", b_p, b_s, a_p, a_s)
-                    }
-                    (true, true, true, false) => {
-                        format!("{:.1}:{:.1}:{:.1}:{}", b_p, b_s, a_p, a_s)
-                    }
-                    (true, true, false, true) => {
-                        format!("{:.1}:{:.1}:{}:{:.1}", b_p, b_s, a_p, a_s)
-                    }
-                    (true, true, false, false) => format!("{:.1}:{:.1}:{}:{}", b_p, b_s, a_p, a_s),
-                    (true, false, true, true) => {
-                        format!("{:.1}:{}:{:.1}:{:.1}", b_p, b_s, a_p, a_s)
-                    }
-                    (true, false, true, false) => format!("{:.1}:{}:{:.1}:{}", b_p, b_s, a_p, a_s),
-                    (true, false, false, true) => format!("{:.1}:{}:{}:{:.1}", b_p, b_s, a_p, a_s),
-                    (true, false, false, false) => {
-                        format!("{:.1}:{}:{}:{}", b_p, b_s, a_p, a_s)
-                    }
-                    (false, true, true, true) => {
-                        format!("{}:{:.1}:{:.1}:{:.1}", b_p, b_s, a_p, a_s)
-                    }
-                    (false, true, true, false) => format!("{}:{:.1}:{:.1}:{}", b_p, b_s, a_p, a_s),
-                    (false, true, false, true) => format!("{}:{:.1}:{}:{:.1}", b_p, b_s, a_p, a_s),
-                    (false, true, false, false) => {
-                        format!("{}:{:.1}:{}:{}", b_p, b_s, a_p, a_s)
-                    }
-                    (false, false, true, true) => format!("{}:{}:{:.1}:{:.1}", b_p, b_s, a_p, a_s),
-                    (false, false, true, false) => {
-                        format!("{}:{}:{:.1}:{}", b_p, b_s, a_p, a_s)
-                    }
-                    (false, false, false, true) => {
-                        format!("{}:{}:{}:{:.1}", b_p, b_s, a_p, a_s)
-                    }
-                    (false, false, false, false) => {
-                        format!("{}:{}:{}:{}", b_p, b_s, a_p, a_s)
-                    }
-                }
+                vec![
+                    format_value(b_p),
+                    format_value(b_s),
+                    format_value(a_p),
+                    format_value(a_s),
+                ]
+                .join(":")
             })
             .collect::<Vec<String>>()
             .join(":");
@@ -191,7 +190,7 @@ impl Orderbook {
         let output = hasher.finalize();
 
         // println!("Output: {}, Checksum: {}", output, checksum);
-        output == checksum
+        output == *checksum
     }
 
     /// Returns the price of the best bid
@@ -290,4 +289,16 @@ pub struct Fill {
 pub enum Liquidity {
     Maker,
     Taker,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // check examples from https://docs.ftx.com/#orderbooks
+    #[test]
+    fn test_format_value() {
+        assert_eq!(&format_value(&dec!(0.000075)), "7.5e-05");
+        assert_eq!(&format_value(&dec!(0.1)), "0.1");
+    }
 }

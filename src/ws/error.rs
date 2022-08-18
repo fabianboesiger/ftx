@@ -6,6 +6,12 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, Error)]
 pub enum Error {
+    #[error("Orderbook checksum was not correct")]
+    IncorrectChecksum,
+
+    #[error("Orderbook has not yet received partial")]
+    MissingPartial,
+
     #[error("Not subscribed to this channel {0:?}")]
     NotSubscribedToThisChannel(Channel),
 
