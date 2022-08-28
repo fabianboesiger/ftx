@@ -179,7 +179,7 @@ impl Request for GetTrades<'_> {
     }
 }
 
-#[derive(Copy, Clone, Debug, Deserialize)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Candle {
     pub close: Decimal,
