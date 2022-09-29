@@ -14,7 +14,7 @@ pub struct GetLendingRates {}
 pub struct LendingRate {
     pub coin: String,
     pub estimate: Decimal, // estimated hourly lending rate for the next spot margin cycle
-    pub previous: Decimal, // hourly lending rate in the previous spot margin cycle
+    pub previous: Option<Decimal>, // hourly lending rate in the previous spot margin cycle
 }
 
 impl Request for GetLendingRates {
