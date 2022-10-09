@@ -1,5 +1,5 @@
 use {
-    dotenv::dotenv,
+    dotenvy::dotenv,
     ftx::{
         options::Options,
         rest::{

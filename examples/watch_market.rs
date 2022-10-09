@@ -1,4 +1,4 @@
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use ftx::options::Options;
 use ftx::ws::Result;
 use ftx::ws::{Channel, Data, Orderbook, Ws};
