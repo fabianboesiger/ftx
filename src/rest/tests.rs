@@ -1,5 +1,5 @@
 use super::*;
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use rust_decimal_macros::dec;
 use std::env::var;
 

@@ -1,6 +1,6 @@
 use super::*;
 use crate::rest::{OrderStatus, Rest};
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use rust_decimal_macros::dec;
 
 async fn init_authenticated_ws() -> Ws {

@@ -1,4 +1,4 @@
-use dotenv::dotenv;
+use dotenvy::dotenv;
 use ftx::{
     options::Options,
     rest::{GetAccount, GetPositions, Rest},
