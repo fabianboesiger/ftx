@@ -41,3 +41,4 @@ tokio = { version = "^1.21.0", features = ["full"] }
 [features]
 default = ["ws"]
 ws = ["tokio-tungstenite", "tokio", "futures"]
+optimized-access = []

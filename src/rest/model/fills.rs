@@ -38,6 +38,7 @@ impl Request for GetFills<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/fills";
     const AUTH: bool = true;
-
+    #[cfg(feature = "optimized-access")]
+    const OPTIMIZED_ACCESS_SUPPORTED: bool = true;
     type Response = Vec<Fill>;
 }

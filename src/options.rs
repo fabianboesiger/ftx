@@ -25,7 +25,13 @@ impl Endpoint {
             Endpoint::Us => "https://ftx.us/api",
         }
     }
-
+    #[cfg(feature = "optimized-access")]
+    pub const fn optimized_access_rest(&self) -> &'static str {
+        match self {
+            Endpoint::Com => "https://api.ftx.com/api",
+            Endpoint::Us => "https://ftx.us/api",
+        }
+    }
     pub const fn header_prefix(&self) -> &'static str {
         match self {
             Endpoint::Com => "FTX",

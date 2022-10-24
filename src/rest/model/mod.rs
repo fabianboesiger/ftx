@@ -32,7 +32,8 @@ pub trait Request: Serialize {
     const METHOD: Method;
     const PATH: &'static str;
     const AUTH: bool = false;
-
+    #[cfg(feature = "optimized-access")]
+    const OPTIMIZED_ACCESS_SUPPORTED : bool = false;
     type Response: DeserializeOwned;
 
     fn path(&self) -> Cow<'_, str> {

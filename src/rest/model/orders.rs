@@ -55,7 +55,8 @@ impl Request for GetOpenOrders<'_> {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/orders";
     const AUTH: bool = true;
-
+    #[cfg(feature = "optimized-access")]
+    const OPTIMIZED_ACCESS_SUPPORTED: bool = true;
     type Response = Vec<OrderInfo>;
 }
 
@@ -81,7 +82,8 @@ impl Request for PlaceOrder<'_> {
     const METHOD: Method = Method::POST;
     const PATH: &'static str = "/orders";
     const AUTH: bool = true;
-
+    #[cfg(feature = "optimized-access")]
+    const OPTIMIZED_ACCESS_SUPPORTED: bool = true;
     type Response = OrderInfo;
 }
 
@@ -150,7 +152,8 @@ impl Request for CancelOrder {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/orders/{}";
     const AUTH: bool = true;
-
+    #[cfg(feature = "optimized-access")]
+    const OPTIMIZED_ACCESS_SUPPORTED: bool = true;
     type Response = String;
 
     fn path(&self) -> Cow<'_, str> {
@@ -205,7 +208,8 @@ impl Request for CancelOrderByClientId<'_> {
     const METHOD: Method = Method::DELETE;
     const PATH: &'static str = "/orders/by_client_id/{}";
     const AUTH: bool = true;
-
+    #[cfg(feature = "optimized-access")]
+    const OPTIMIZED_ACCESS_SUPPORTED: bool = true;
     type Response = String;
 
     fn path(&self) -> Cow<'_, str> {
