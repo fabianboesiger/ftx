@@ -89,8 +89,7 @@ impl Rest {
         #[cfg(feature = "optimized-access")]
         let url = if R::OPTIMIZED_ACCESS_SUPPORTED {
             format!("{}{}", self.endpoint.optimized_access_rest(), path)
-        }
-        else {
+        } else {
             format!("{}{}", self.endpoint.rest(), path)
         };
         #[cfg(not(feature = "optimized-access"))]
