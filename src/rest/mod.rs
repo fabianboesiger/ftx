@@ -86,6 +86,13 @@ impl Rest {
                 path.push_str(&params);
             }
         }
+        #[cfg(feature = "optimized-access")]
+        let url = if R::OPTIMIZED_ACCESS_SUPPORTED {
+            format!("{}{}", self.endpoint.optimized_access_rest(), path)
+        } else {
+            format!("{}{}", self.endpoint.rest(), path)
+        };
+        #[cfg(not(feature = "optimized-access"))]
         let url = format!("{}{}", self.endpoint.rest(), path);
 
         let timestamp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis();

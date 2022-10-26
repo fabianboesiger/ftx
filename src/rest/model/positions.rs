@@ -11,6 +11,7 @@ impl Request for GetPositions {
     const METHOD: Method = Method::GET;
     const PATH: &'static str = "/positions";
     const AUTH: bool = true;
-
+    #[cfg(feature = "optimized-access")]
+    const OPTIMIZED_ACCESS_SUPPORTED: bool = true;
     type Response = Vec<Position>;
 }
