@@ -1,3 +1,5 @@
+# ⚠️ DO NOT TRADE VIA FTX: [FTX has filed for Bankruptcy](https://www.forbes.com/sites/jonathanponciano/2022/11/11/ftx-files-for-bankruptcy-former-billionaire-sam-bankman-fried-resigns-as-ceo/?sh=11c0ebdf231d) ⚠️
+
 # FTX API
 
 Unofficial Rust API bindings for the FTX exchange.
